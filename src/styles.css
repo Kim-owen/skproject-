@@ -169,3 +169,75 @@
 @utility hairline {
   border: 1px solid color-mix(in oklab, var(--primary) 10%, transparent);
 }
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+@utility animate-fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@utility animate-fade-in {
+  animation: fadeIn 1s ease both;
+}
+
+@utility animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@utility animate-pulse-glow {
+  animation: pulseGlow 10s ease-in-out infinite;
+}
+
+@utility delay-100 {
+  animation-delay: 100ms;
+}
+
+@utility delay-200 {
+  animation-delay: 200ms;
+}
+
+@utility delay-300 {
+  animation-delay: 300ms;
+}
+
+@utility delay-400 {
+  animation-delay: 400ms;
+}

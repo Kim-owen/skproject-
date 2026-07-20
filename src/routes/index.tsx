@@ -51,7 +51,7 @@ function Home() {
     <ShopLayout>
       {/* Subtle backdrop gradient */}
       <div className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[600px] overflow-hidden">
-        <div className="absolute left-1/2 top-[-250px] h-[550px] w-[1000px] -translate-x-1/2 rounded-full bg-primary/5 blur-[120px]" />
+        <div className="absolute left-1/2 top-[-250px] h-[550px] w-[1000px] -translate-x-1/2 rounded-full bg-primary/5 blur-[120px] animate-pulse-glow" />
       </div>
 
       {/* Hero section */}
@@ -59,18 +59,18 @@ function Home() {
         <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
           {/* Text block */}
           <div className="flex flex-col justify-center lg:col-span-7">
-            <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold tracking-wide text-primary">
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold tracking-wide text-primary animate-fade-in-up">
               <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               Same-day delivery across Accra
             </span>
-            <h1 className="mt-6 font-display text-5xl font-extrabold tracking-tight text-foreground md:text-7xl leading-[1.05]">
+            <h1 className="mt-6 font-display text-5xl font-extrabold tracking-tight text-foreground md:text-7xl leading-[1.05] animate-fade-in-up delay-100">
               Modern provisions,<br />
               <span className="text-primary font-normal italic font-serif">delivered fresh.</span>
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground animate-fade-in-up delay-200">
               The curated pantry for modern Accra. Order premium meats, poultry, house-made shito, and household essentials online.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3.5">
+            <div className="mt-8 flex flex-wrap gap-3.5 animate-fade-in-up delay-300">
               <Button asChild size="lg" className="rounded-xl shadow-md shadow-primary/10 transition-all hover:shadow-lg">
                 <Link to="/shop">
                   Start shopping <ArrowRight className="ml-2 h-4 w-4" />
@@ -82,7 +82,7 @@ function Home() {
             </div>
 
             {/* Quick stats row */}
-            <div className="mt-12 grid grid-cols-3 gap-6 border-t border-border/80 pt-8 text-sm">
+            <div className="mt-12 grid grid-cols-3 gap-6 border-t border-border/80 pt-8 text-sm animate-fade-in-up delay-400">
               <div>
                 <p className="font-display text-2xl font-bold text-foreground">42 min</p>
                 <p className="text-xs text-muted-foreground mt-1">Average delivery today</p>
@@ -99,8 +99,8 @@ function Home() {
           </div>
 
           {/* Visual Showcase */}
-          <div className="relative lg:col-span-5">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-border bg-card shadow-xl shadow-foreground/5">
+          <div className="relative lg:col-span-5 animate-fade-in-up delay-200">
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-border bg-card shadow-xl shadow-foreground/5 animate-float">
               <img
                 src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800"
                 alt="Fresh organic groceries"
