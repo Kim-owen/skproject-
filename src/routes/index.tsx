@@ -172,21 +172,34 @@ function Home() {
         </div>
       </section>
 
-      {/* Product Catalog Section */}
+      {/* Product Catalog Section with Modern Web Animations */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-        <div className="text-center mb-12">
-          <p className="text-xs font-bold uppercase tracking-widest text-amber-400">OUR PRODUCTS</p>
-          <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
-            FLAVORFUL. FRESH. MADE FOR YOU.
+        <div className="text-center mb-12 animate-fade-in-up">
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-extrabold uppercase tracking-widest text-amber-400 backdrop-blur-md shadow-md mb-3">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+            </span>
+            <span>Handcrafted Ghanaian Delicacies</span>
+          </div>
+          <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl leading-tight">
+            FLAVORFUL. FRESH. <span className="text-amber-500 font-serif italic">MADE FOR YOU.</span>
           </h2>
-          <p className="mt-3 text-sm text-muted-foreground max-w-xl mx-auto">
-            Explore our range of delicious products made with love and the finest ingredients.
+          <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            Explore our range of authentic homemade products prepared with passion and premium ingredients across Ghana.
           </p>
         </div>
 
+        {/* Animated 4-Column Product Grid */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} />
+          {products.map((p, idx) => (
+            <div
+              key={p.id}
+              className="animate-fade-in-up transition-all duration-500"
+              style={{ animationDelay: `${idx * 100}ms` }}
+            >
+              <ProductCard product={p} />
+            </div>
           ))}
         </div>
       </section>
