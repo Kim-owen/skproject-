@@ -267,18 +267,48 @@ export type Database = {
           full_name: string | null
           id: string
           phone: string | null
+          wallet_balance_ghs: number
         }
         Insert: {
           created_at?: string
           full_name?: string | null
           id: string
           phone?: string | null
+          wallet_balance_ghs?: number
         }
         Update: {
           created_at?: string
           full_name?: string | null
           id?: string
           phone?: string | null
+          wallet_balance_ghs?: number
+        }
+        Relationships: []
+      }
+      wallet_transactions: {
+        Row: {
+          amount_ghs: number
+          created_at: string
+          description: string | null
+          id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount_ghs: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount_ghs?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }

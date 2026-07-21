@@ -16,7 +16,7 @@ const createOrderInput = z.object({
   delivery_zone_id: z.string().uuid().optional().nullable(),
   ghana_post_gps: z.string().trim().max(15).optional().or(z.literal("")),
   gps_coordinates: z.string().trim().max(60).optional().or(z.literal("")),
-  payment_method: z.enum(["paystack", "cash_on_delivery"]),
+  payment_method: z.enum(["paystack", "cash_on_delivery", "wallet"]),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
   items: z.array(itemSchema).min(1).max(50),
 });

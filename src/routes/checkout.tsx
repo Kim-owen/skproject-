@@ -49,8 +49,35 @@ function Checkout() {
   const [gpsCoordinates, setGpsCoordinates] = useState("");
   const [locating, setLocating] = useState(false);
   const [notes, setNotes] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "cash_on_delivery">("paystack");
+  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "cash_on_delivery" | "wallet">("paystack");
   const [submitting, setSubmitting] = useState(false);
+
+  // User Auth & Wallet State
+  const [authUser, setAuthUser] = useState<any>(null);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setAuthUser(data.user);
+        setEmail(data.user.email || "");
+        setName(data.user.user_metadata?.full_name || "");
+        // Fetch wallet balance
+        supabase
+          .from("profiles")
+          .select("wallet_balance_ghs, phone, full_name")
+          .eq("id", data.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (profile) {
+              setWalletBalance(Number(profile.wallet_balance_ghs || 0));
+              if (profile.phone) setPhone(profile.phone);
+              if (profile.full_name && !name) setName(profile.full_name);
+            }
+          });
+      }
+    });
+  }, []);
 
   // Uber Dynamic Map & Estimate State
   const [mapModalOpen, setMapModalOpen] = useState(false);
@@ -160,6 +187,40 @@ function Checkout() {
     <ShopLayout>
       <form onSubmit={submit} className="mx-auto grid max-w-5xl gap-8 px-4 py-10 md:grid-cols-[1fr,340px]">
         <div className="space-y-6">
+
+          {/* Account Auth & Wallet Status Callout */}
+          {!authUser ? (
+            <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-zinc-900 to-black p-5 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm text-white">Barima Ba Account & Wallet Rewards</h3>
+                  <p className="text-xs text-zinc-400">Sign in to use your store credit wallet, receive instant refunds, and track orders easily.</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <Button asChild size="sm" className="rounded-xl bg-amber-500 text-black font-extrabold text-xs">
+                  <Link to="/auth">Sign In / Register</Link>
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/40 via-zinc-900 to-black p-4 text-white shadow-md flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  💳
+                </div>
+                <div>
+                  <span className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider block">Logged in as {name || authUser.email}</span>
+                  <span className="text-xs text-zinc-300">Barima Ba Wallet Balance: <strong className="text-emerald-400 font-mono">{formatGHS(walletBalance)}</strong></span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <section className="rounded-xl border bg-card p-5">
             <h2 className="text-lg font-semibold">Contact details</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -388,13 +449,36 @@ function Checkout() {
           </Dialog>
 
           <section className="rounded-xl border bg-card p-5">
-            <h2 className="text-lg font-semibold">Payment</h2>
-            <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as "paystack" | "cash_on_delivery")} className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
-                <RadioGroupItem value="paystack" /><span><span className="block font-medium">Pay online</span><span className="block text-xs text-muted-foreground">Mobile Money · Card</span></span>
+            <h2 className="text-lg font-semibold">Payment Method</h2>
+            <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as "paystack" | "cash_on_delivery" | "wallet")} className="mt-4 grid gap-3 sm:grid-cols-3">
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10 transition-all">
+                <RadioGroupItem value="paystack" className="mt-1" />
+                <div>
+                  <span className="block font-bold text-foreground">Pay online</span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">Mobile Money · Visa / Card</span>
+                </div>
               </label>
-              <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
-                <RadioGroupItem value="cash_on_delivery" /><span><span className="block font-medium">Cash on delivery</span><span className="block text-xs text-muted-foreground">Pay when it arrives</span></span>
+
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10 transition-all">
+                <RadioGroupItem value="cash_on_delivery" className="mt-1" />
+                <div>
+                  <span className="block font-bold text-foreground">Cash on delivery</span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">Pay cash to driver</span>
+                </div>
+              </label>
+
+              <label className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
+                walletBalance >= total ? "has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10" : "opacity-60 bg-muted/30"
+              }`}>
+                <RadioGroupItem value="wallet" className="mt-1" disabled={!authUser || walletBalance < total} />
+                <div>
+                  <div className="flex items-center gap-1.5 font-bold text-foreground">
+                    <span>💳 Barima Ba Wallet</span>
+                  </div>
+                  <span className="block text-xs text-amber-500 font-bold mt-0.5">
+                    {authUser ? `Balance: ${formatGHS(walletBalance)}` : "Sign in to use wallet"}
+                  </span>
+                </div>
               </label>
             </RadioGroup>
           </section>

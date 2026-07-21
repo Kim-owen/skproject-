@@ -28,6 +28,7 @@ CREATE TABLE public.profiles (
   id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name text,
   phone text,
+  wallet_balance_ghs numeric(10,2) NOT NULL DEFAULT 0.00,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
@@ -36,6 +37,20 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "read own profile" ON public.profiles FOR SELECT TO authenticated USING (auth.uid() = id);
 CREATE POLICY "update own profile" ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id);
 CREATE POLICY "insert own profile" ON public.profiles FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
+
+-- WALLET TRANSACTIONS
+CREATE TABLE public.wallet_transactions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  type text NOT NULL CHECK (type IN ('deposit', 'refund', 'payment', 'cashback')),
+  amount_ghs numeric(10,2) NOT NULL,
+  description text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+GRANT SELECT, INSERT ON public.wallet_transactions TO authenticated;
+GRANT ALL ON public.wallet_transactions TO service_role;
+ALTER TABLE public.wallet_transactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "read own wallet tx" ON public.wallet_transactions FOR SELECT TO authenticated USING (auth.uid() = user_id);
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
