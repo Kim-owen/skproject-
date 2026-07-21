@@ -109,21 +109,16 @@ function Home() {
               <span>{heroSettings.badge_text || "Nationwide Express Delivery Across Ghana"}</span>
             </div>
 
-            {/* Sound Mute/Unmute Toggle Button */}
+            {/* Sound Mute/Unmute Symbol Only Button */}
             <button
               onClick={toggleSound}
-              className="flex items-center gap-2 rounded-full border border-amber-500/40 bg-black/80 px-4 py-2 text-xs font-extrabold uppercase tracking-wider text-amber-400 backdrop-blur-xl shadow-xl hover:scale-105 transition-all"
+              aria-label={isMuted ? "Unmute Sound" : "Mute Sound"}
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-amber-500/40 bg-black/80 text-amber-400 backdrop-blur-xl shadow-xl hover:scale-110 active:scale-95 transition-all"
             >
               {isMuted ? (
-                <>
-                  <VolumeX className="h-4 w-4 text-amber-400" />
-                  <span>Tap to Unmute Sound 🔊</span>
-                </>
+                <VolumeX className="h-5 w-5 text-amber-400" />
               ) : (
-                <>
-                  <Volume2 className="h-4 w-4 text-amber-400 animate-pulse" />
-                  <span>Sound On 🎵 (Tap to Mute)</span>
-                </>
+                <Volume2 className="h-5 w-5 text-amber-400 animate-pulse" />
               )}
             </button>
           </div>
