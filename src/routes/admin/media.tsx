@@ -23,11 +23,12 @@ function AdminMediaPage() {
   const saveProduct = useServerFn(upsertProduct);
   const qc = useQueryClient();
 
-  const { data: products = [], isLoading: loadingProducts } = useQuery({
+  const { data: mediaData, isLoading: loadingProducts } = useQuery({
     queryKey: ["admin-products"],
     queryFn: () => fetchProducts(),
     enabled: guard === "ok",
   });
+  const products = mediaData?.products ?? [];
 
   const [activeTab, setActiveTab] = useState<"products" | "hero_bg" | "catering_gallery">("products");
   const [uploadingId, setUploadingId] = useState<string | null>(null);
@@ -50,7 +51,20 @@ function AdminMediaPage() {
       // Update product record
       const prod = products.find((p: any) => p.id === productId);
       if (prod) {
-        await saveProduct({ ...prod, image_url: publicUrl });
+        await saveProduct({
+          data: {
+            id: prod.id,
+            name: prod.name,
+            slug: prod.slug,
+            unit: prod.unit,
+            price_ghs: Number(prod.price_ghs),
+            stock_quantity: prod.stock_quantity,
+            is_active: prod.is_active,
+            category_id: prod.category_id || undefined,
+            description: prod.description || undefined,
+            image_url: publicUrl,
+          },
+        });
         qc.invalidateQueries({ queryKey: ["admin-products"] });
         qc.invalidateQueries({ queryKey: ["featured-products"] });
         toast.success(`Image replaced successfully for ${prod.name}`);
@@ -71,7 +85,20 @@ function AdminMediaPage() {
     }
     setUploadingId(product.id);
     try {
-      await saveProduct({ ...product, image_url: newUrl });
+      await saveProduct({
+        data: {
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          unit: product.unit,
+          price_ghs: Number(product.price_ghs),
+          stock_quantity: product.stock_quantity,
+          is_active: product.is_active,
+          category_id: product.category_id || undefined,
+          description: product.description || undefined,
+          image_url: newUrl,
+        },
+      });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       qc.invalidateQueries({ queryKey: ["featured-products"] });
       toast.success(`Image URL updated for ${product.name}`);

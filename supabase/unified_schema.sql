@@ -122,7 +122,7 @@ CREATE POLICY "admins manage zones" ON public.delivery_zones FOR ALL TO authenti
 -- ORDERS & ENUMS
 CREATE TYPE public.order_status AS ENUM ('pending','confirmed','packed','out_for_delivery','delivered','cancelled');
 CREATE TYPE public.payment_status AS ENUM ('unpaid','paid','failed','refunded');
-CREATE TYPE public.payment_method AS ENUM ('paystack','cash_on_delivery');
+CREATE TYPE public.payment_method AS ENUM ('paystack','cash_on_delivery','wallet');
 CREATE TYPE public.delivery_type AS ENUM ('delivery','pickup');
 
 CREATE TABLE public.orders (

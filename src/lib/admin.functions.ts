@@ -15,7 +15,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [orders, products, lowStock] = await Promise.all([
-      supabaseAdmin.from("orders").select("id, total_ghs, status, payment_status, created_at").order("created_at", { ascending: false }).limit(500),
+      supabaseAdmin.from("orders").select("id, order_number, total_ghs, status, payment_status, created_at").order("created_at", { ascending: false }).limit(500),
       supabaseAdmin.from("products").select("id, name, stock_quantity, is_active, unit"),
       supabaseAdmin.from("products").select("id, name, stock_quantity, unit").lte("stock_quantity", 5).eq("is_active", true).order("stock_quantity"),
     ]);
@@ -112,7 +112,7 @@ export const updateOrderDispatchDetails = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const updatePayload: Record<string, any> = {};
+    const updatePayload: Record<string, unknown> = {};
     if (data.dispatch_partner !== undefined) updatePayload.dispatch_partner = data.dispatch_partner;
     if (data.rider_name !== undefined) updatePayload.rider_name = data.rider_name;
     if (data.rider_phone !== undefined) updatePayload.rider_phone = data.rider_phone;
@@ -130,7 +130,7 @@ export const updateOrderDispatchDetails = createServerFn({ method: "POST" })
 
     const { error } = await supabaseAdmin
       .from("orders")
-      .update(updatePayload)
+      .update(updatePayload as any)
       .eq("id", data.order_id);
     if (error) throw new Error(error.message);
 
