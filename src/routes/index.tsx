@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ShopLayout } from "@/components/shop/Layout";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/shop/ProductCard";
+import { ProductSlideshow } from "@/components/shop/ProductSlideshow";
 import { ArrowRight, ArrowUpRight, Leaf, Shield, Flame, Truck, Heart, Award, Utensils, Phone, CheckCircle2, Volume2, VolumeX } from "lucide-react";
 import { formatGHS } from "@/lib/cart";
 import { getHeroSettings, DEFAULT_HERO_SETTINGS } from "@/lib/settings.functions";
@@ -18,7 +19,7 @@ const featuredQuery = {
       .select("id, name, slug, unit, price_ghs, image_url, stock_quantity, category_id")
       .eq("is_active", true)
       .order("created_at", { ascending: false })
-      .limit(6);
+      .limit(12);
     if (error) throw error;
     return data ?? [];
   },
@@ -190,17 +191,16 @@ function Home() {
           </p>
         </div>
 
-        {/* Animated 4-Column Product Grid */}
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {products.map((p, idx) => (
-            <div
-              key={p.id}
-              className="animate-fade-in-up transition-all duration-500"
-              style={{ animationDelay: `${idx * 100}ms` }}
-            >
-              <ProductCard product={p} />
-            </div>
-          ))}
+        {/* Dynamic Auto-Sliding Product Showcase Carousel */}
+        <ProductSlideshow products={products} />
+
+        {/* View Full Catalog Button */}
+        <div className="mt-8 text-center">
+          <Button asChild size="lg" className="rounded-2xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-sm px-8 py-6 shadow-xl shadow-amber-500/20 hover:scale-105 transition-all">
+            <Link to="/shop">
+              EXPLORE FULL PRODUCTS CATALOG <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </section>
 
