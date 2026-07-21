@@ -149,6 +149,13 @@ function Checkout() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!authUser) {
+      toast.error("Please sign in or create an account to place your order.");
+      navigate({ to: "/auth" });
+      return;
+    }
+
     setSubmitting(true);
     try {
       const res = await create({
@@ -190,20 +197,23 @@ function Checkout() {
 
           {/* Account Auth & Wallet Status Callout */}
           {!authUser ? (
-            <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-zinc-900 to-black p-5 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-500/20 via-zinc-900 to-black p-5 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
-                  <Sparkles className="h-5 w-5" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500 text-black shrink-0 font-extrabold shadow-md">
+                  🔐
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm text-white">Barima Ba Account & Wallet Rewards</h3>
-                  <p className="text-xs text-zinc-400">Sign in to use your store credit wallet, receive instant refunds, and track orders easily.</p>
+                  <h3 className="font-extrabold text-sm text-amber-400 uppercase tracking-wide flex items-center gap-2">
+                    <span>Account Required For Checkout</span>
+                    <span className="rounded-full bg-amber-500/20 text-amber-300 text-[10px] px-2 py-0.5 border border-amber-500/30">PLEASE SIGN IN</span>
+                  </h3>
+                  <p className="text-xs text-zinc-300 mt-0.5">You must be signed in to complete payment, use your wallet balance, and track order status.</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <Button asChild size="sm" className="rounded-xl bg-amber-500 text-black font-extrabold text-xs">
-                  <Link to="/auth">Sign In / Register</Link>
+              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
+                <Button asChild size="lg" className="w-full sm:w-auto rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs shadow-lg shadow-amber-500/20">
+                  <Link to="/auth">Sign In / Register Now</Link>
                 </Button>
               </div>
             </div>
