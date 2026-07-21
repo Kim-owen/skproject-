@@ -94,6 +94,36 @@ export async function sendSMSNotification(phone: string, message: string) {
   }
 }
 
+// In-memory store for SMS OTP codes
+const otpCache = new Map<string, { code: string; expiresAt: number }>();
+
+export const sendPhoneOTP = createServerFn({ method: "POST" })
+  .validator(z.object({ phone: z.string().trim().min(7).max(20) }))
+  .handler(async ({ data }) => {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 10 * 60 * 1000;
+    const formattedPhone = data.phone.trim().replace(/\s+/g, "");
+    otpCache.set(formattedPhone, { code: otp, expiresAt });
+    const message = `Your Barima Ba Foods login code is: ${otp}. Valid for 10 minutes.`;
+    await sendSMSNotification(formattedPhone, message);
+    return { ok: true, message: "OTP sent via SMS" };
+  });
+
+export const verifyPhoneOTP = createServerFn({ method: "POST" })
+  .validator(z.object({ phone: z.string().trim().min(7).max(20), code: z.string().trim() }))
+  .handler(async ({ data }) => {
+    const formattedPhone = data.phone.trim().replace(/\s+/g, "");
+    const cached = otpCache.get(formattedPhone);
+    if (!cached || Date.now() > cached.expiresAt) {
+      throw new Error("OTP code expired or not found. Please request a new code.");
+    }
+    if (cached.code !== data.code.trim()) {
+      throw new Error("Invalid verification code. Please check and try again.");
+    }
+    otpCache.delete(formattedPhone);
+    return { ok: true };
+  });
+
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const createOrder = createServerFn({ method: "POST" })

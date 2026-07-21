@@ -1,4 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { sendPhoneOTP, verifyPhoneOTP } from "@/lib/orders.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { ShopLayout } from "@/components/shop/Layout";
 import { Input } from "@/components/ui/input";
@@ -11,6 +13,8 @@ import {
   Mail, 
   Lock, 
   User, 
+  Phone,
+  Smartphone,
   ArrowLeft, 
   ShoppingBag, 
   Eye, 
@@ -28,13 +32,20 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
+  const [activeTab, setActiveTab] = useState<"signin" | "signup" | "otp">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [otpCode, setOtpCode] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpBusy, setOtpBusy] = useState(false);
+
+  const sendOtp = useServerFn(sendPhoneOTP);
+  const verifyOtp = useServerFn(verifyPhoneOTP);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -55,7 +66,7 @@ function AuthPage() {
       if (error.message.includes("Invalid login credentials")) {
         setAuthError("Invalid email or password. Please verify your details or register a new account.");
       } else if (error.message.includes("Email not confirmed")) {
-        setAuthError("Email not confirmed. Please check your inbox or try registered credentials.");
+        setAuthError("Email not confirmed. Please sign in with your password or use Phone OTP.");
       } else {
         setAuthError(error.message);
       }
@@ -79,6 +90,12 @@ function AuthPage() {
     setBusy(true);
     setAuthError(null);
 
+    if (!phone || phone.trim().length < 9) {
+      setBusy(false);
+      setAuthError("Please enter a valid phone number (e.g. 0241234567).");
+      return;
+    }
+
     if (password.length < 6) {
       setBusy(false);
       setAuthError("Password must be at least 6 characters long.");
@@ -90,7 +107,7 @@ function AuthPage() {
       password,
       options: {
         emailRedirectTo: window.location.origin,
-        data: { full_name: name },
+        data: { full_name: name, phone: phone },
       },
     });
     setBusy(false);
@@ -98,7 +115,7 @@ function AuthPage() {
     if (error) {
       console.error("Sign-up error:", error);
       if (error.message.includes("User already registered")) {
-        setAuthError("An account with this email already exists. Please click Sign In.");
+        setAuthError("An account with this email or phone already exists. Please click Sign In.");
         setActiveTab("signin");
       } else {
         setAuthError(error.message);
@@ -106,12 +123,71 @@ function AuthPage() {
       return toast.error("Registration error. See details below.");
     }
 
+    // Upsert profile phone & name
+    if (data.user) {
+      await supabase
+        .from("profiles")
+        .upsert({ id: data.user.id, full_name: name, phone: phone }, { onConflict: "id" });
+    }
+
     if (data.session) {
       toast.success("Account created & logged in!");
       navigate({ to: "/checkout" });
-    } else if (data.user) {
-      toast.success("Account created successfully! Now sign in with your password.");
-      setActiveTab("signin");
+    } else {
+      // Attempt immediate login so user is not blocked by unconfirmed email setting
+      const loginRes = await supabase.auth.signInWithPassword({ email, password });
+      if (loginRes.data.session) {
+        toast.success("Account created & logged in!");
+        navigate({ to: "/checkout" });
+      } else {
+        toast.success("Account created successfully! Please sign in with your password.");
+        setActiveTab("signin");
+      }
+    }
+  };
+
+  // Handle Requesting SMS OTP
+  const handleRequestOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!phone || phone.trim().length < 9) {
+      toast.error("Please enter a valid phone number");
+      return;
+    }
+    setOtpBusy(true);
+    try {
+      await sendOtp({ data: { phone } });
+      setOtpSent(true);
+      toast.success(`Verification OTP sent to ${phone}`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send OTP code");
+    } finally {
+      setOtpBusy(false);
+    }
+  };
+
+  // Handle Verifying SMS OTP
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode || otpCode.trim().length < 4) {
+      toast.error("Please enter the 6-digit OTP code");
+      return;
+    }
+    setOtpBusy(true);
+    try {
+      await verifyOtp({ data: { phone, code: otpCode } });
+      toast.success("Phone verified successfully!");
+      // If user already signed in or creating profile, navigate
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        await supabase.from("profiles").update({ phone }).eq("id", data.user.id);
+        navigate({ to: "/checkout" });
+      } else {
+        setActiveTab("signin");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Invalid OTP code");
+    } finally {
+      setOtpBusy(false);
     }
   };
 
@@ -196,10 +272,13 @@ function AuthPage() {
               </div>
             )}
 
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "signin" | "signup")} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 rounded-xl bg-muted/60 p-1 mb-6 border">
-                <TabsTrigger value="signin" className="rounded-lg text-xs font-bold uppercase tracking-wider transition-all">Sign In</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-lg text-xs font-bold uppercase tracking-wider transition-all">Register</TabsTrigger>
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "signin" | "signup" | "otp")} className="w-full">
+              <TabsList className="grid w-full grid-cols-3 rounded-xl bg-muted/60 p-1 mb-6 border">
+                <TabsTrigger value="signin" className="rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all">Sign In</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all">Register</TabsTrigger>
+                <TabsTrigger value="otp" className="rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1">
+                  <span>Phone OTP</span>
+                </TabsTrigger>
               </TabsList>
 
               {/* SIGN IN */}
@@ -256,7 +335,7 @@ function AuthPage() {
               <TabsContent value="signup" className="space-y-4">
                 <form onSubmit={signUp} className="space-y-4.5">
                   <div className="space-y-1.5">
-                    <Label htmlFor="signup-name" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Full Name</Label>
+                    <Label htmlFor="signup-name" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Full Name *</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -271,7 +350,23 @@ function AuthPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="signup-email" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
+                    <Label htmlFor="signup-phone" className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Phone Number (For OTP Verification) *</Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-500" />
+                      <Input
+                        id="signup-phone"
+                        type="tel"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="024 123 4567"
+                        className="pl-9 rounded-xl border-amber-500/40 bg-amber-500/5 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm font-semibold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="signup-email" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Email Address *</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -287,7 +382,7 @@ function AuthPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="signup-password" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Password (Min. 6 chars)</Label>
+                    <Label htmlFor="signup-password" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Password (Min. 6 chars) *</Label>
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
@@ -311,9 +406,66 @@ function AuthPage() {
                   </div>
 
                   <Button type="submit" className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md py-5.5 mt-2" disabled={busy}>
-                    {busy ? "Registering..." : "Create Account"}
+                    {busy ? "Registering Account..." : "Create Account (No Email Confirmation Required)"}
                   </Button>
                 </form>
+              </TabsContent>
+
+              {/* PHONE OTP TAB */}
+              <TabsContent value="otp" className="space-y-4">
+                {!otpSent ? (
+                  <form onSubmit={handleRequestOtp} className="space-y-4.5">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="otp-phone" className="text-[10px] font-bold uppercase tracking-wider text-amber-400">Ghanaian Mobile Number</Label>
+                      <div className="relative">
+                        <Smartphone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-500" />
+                        <Input
+                          id="otp-phone"
+                          type="tel"
+                          required
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="024 123 4567"
+                          className="pl-9 rounded-xl border-amber-500/40 bg-amber-500/5 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm font-semibold"
+                        />
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1">We will send a 6-digit SMS OTP code to your phone for instant verification.</p>
+                    </div>
+
+                    <Button type="submit" className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md py-5.5 mt-2" disabled={otpBusy}>
+                      {otpBusy ? "Sending SMS OTP..." : "Send SMS Verification OTP"}
+                    </Button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleVerifyOtp} className="space-y-4.5">
+                    <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300 text-center font-semibold">
+                      SMS OTP Code sent to <span className="font-mono text-white font-bold">{phone}</span>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="otp-code" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Enter 6-Digit OTP Code</Label>
+                      <Input
+                        id="otp-code"
+                        type="text"
+                        required
+                        maxLength={6}
+                        value={otpCode}
+                        onChange={(e) => setOtpCode(e.target.value)}
+                        placeholder="123456"
+                        className="rounded-xl border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all text-center tracking-[0.5em] font-mono text-lg font-bold"
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button type="button" variant="outline" className="w-1/3 rounded-xl text-xs" onClick={() => setOtpSent(false)}>
+                        Change Phone
+                      </Button>
+                      <Button type="submit" className="w-2/3 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-5.5" disabled={otpBusy}>
+                        {otpBusy ? "Verifying..." : "Verify OTP Code"}
+                      </Button>
+                    </div>
+                  </form>
+                )}
               </TabsContent>
             </Tabs>
 
