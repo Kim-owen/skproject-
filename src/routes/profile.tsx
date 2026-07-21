@@ -49,7 +49,15 @@ function ProfilePage() {
   // Profile Form State
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [ghanaPostGps, setGhanaPostGps] = useState("");
+  const [gpsCoordinates, setGpsCoordinates] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Change Password State
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -72,6 +80,9 @@ function ProfilePage() {
     if (accountData?.profile) {
       setFullName(accountData.profile.full_name || "");
       setPhone(accountData.profile.phone || "");
+      setDeliveryAddress(accountData.profile.delivery_address || "");
+      setGhanaPostGps(accountData.profile.ghana_post_gps || "");
+      setGpsCoordinates(accountData.profile.gps_coordinates || "");
     }
   }, [accountData]);
 
@@ -79,13 +90,43 @@ function ProfilePage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await updateProfile({ data: { full_name: fullName, phone } });
+      await updateProfile({
+        data: {
+          full_name: fullName,
+          phone,
+          delivery_address: deliveryAddress,
+          ghana_post_gps: ghanaPostGps,
+          gps_coordinates: gpsCoordinates,
+        },
+      });
       queryClient.invalidateQueries({ queryKey: ["user-account-details"] });
-      toast.success("Profile updated successfully!");
+      toast.success("Profile & Saved Delivery Location updated successfully!");
     } catch (err: any) {
       toast.error(err.message || "Failed to update profile");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters long.");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+    setChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setChangingPassword(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Password changed successfully!");
+      setNewPassword("");
+      setConfirmNewPassword("");
     }
   };
 
@@ -331,39 +372,119 @@ function ProfilePage() {
 
           {/* SETTINGS TAB */}
           <TabsContent value="settings" className="space-y-6">
-            <div className="rounded-2xl border bg-card p-6 shadow-sm max-w-xl space-y-6">
-              <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
-                <User className="h-5 w-5 text-amber-500" /> Edit Personal Information
-              </h3>
+            <div className="grid gap-6 md:grid-cols-2">
+              
+              {/* Personal Details & Saved Delivery Address */}
+              <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-6">
+                <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2">
+                  <User className="h-5 w-5 text-amber-500" /> Personal Info & Saved Location
+                </h3>
 
-              <form onSubmit={handleSaveProfile} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="prof-name" className="text-xs font-bold">Full Name</Label>
-                  <Input id="prof-name" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="rounded-xl" />
-                </div>
+                <form onSubmit={handleSaveProfile} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="prof-name" className="text-xs font-bold">Full Name</Label>
+                    <Input id="prof-name" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="rounded-xl" />
+                  </div>
 
-                <div className="space-y-1.5">
-                  <Label htmlFor="prof-phone" className="text-xs font-bold">Mobile Phone (Mobile Money / SMS OTP)</Label>
-                  <Input id="prof-phone" required type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-xl" />
-                </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="prof-phone" className="text-xs font-bold">Mobile Phone (MoMo / SMS OTP)</Label>
+                    <Input id="prof-phone" required type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="rounded-xl" />
+                  </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold">Email Address</Label>
-                  <Input disabled value={authUser.email} className="rounded-xl bg-muted/50" />
-                  <span className="text-[10px] text-muted-foreground">Email is tied to your login account.</span>
-                </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="prof-address" className="text-xs font-bold">Default Delivery Address</Label>
+                    <Input
+                      id="prof-address"
+                      value={deliveryAddress}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
+                      placeholder="e.g. Apt 4B, Mensah Wood St, East Legon, Accra"
+                      className="rounded-xl"
+                    />
+                  </div>
 
-                <Button type="submit" disabled={saving} className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold px-6">
-                  {saving ? "Saving Changes..." : "Save Profile Details"}
-                </Button>
-              </form>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="prof-gps" className="text-xs font-bold">Ghana Post GPS Code</Label>
+                      <Input
+                        id="prof-gps"
+                        value={ghanaPostGps}
+                        onChange={(e) => setGhanaPostGps(e.target.value)}
+                        placeholder="GA-183-9024"
+                        className="rounded-xl font-mono uppercase"
+                      />
+                    </div>
 
-              <div className="border-t border-border pt-6 space-y-4">
-                <h4 className="font-bold text-sm text-foreground">Session & Security</h4>
-                <Button onClick={handleSignOut} className="rounded-xl bg-red-500/15 border border-red-500/40 text-red-400 hover:bg-red-500/25 font-extrabold text-xs gap-2">
-                  <LogOut className="h-4 w-4" /> Sign Out of Account
-                </Button>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="prof-coords" className="text-xs font-bold">Pinned GPS Coordinates</Label>
+                      <Input
+                        id="prof-coords"
+                        value={gpsCoordinates}
+                        onChange={(e) => setGpsCoordinates(e.target.value)}
+                        placeholder="5.6350, -0.1600"
+                        className="rounded-xl font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <Button type="submit" disabled={saving} className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-5">
+                    {saving ? "Saving Details..." : "Save Info & Location"}
+                  </Button>
+                </form>
               </div>
+
+              {/* Change Password & Security */}
+              <div className="space-y-6">
+                <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-4">
+                  <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2">
+                    <ShieldCheck className="h-5 w-5 text-amber-500" /> Change Account Password
+                  </h3>
+
+                  <form onSubmit={handleChangePassword} className="space-y-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="new-pass" className="text-xs font-bold">New Password (Min 6 chars)</Label>
+                      <Input
+                        id="new-pass"
+                        type="password"
+                        required
+                        minLength={6}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="rounded-xl"
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="confirm-new-pass" className="text-xs font-bold">Confirm New Password</Label>
+                      <Input
+                        id="confirm-new-pass"
+                        type="password"
+                        required
+                        minLength={6}
+                        value={confirmNewPassword}
+                        onChange={(e) => setConfirmNewPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className={`rounded-xl ${
+                          confirmNewPassword && newPassword !== confirmNewPassword ? "border-red-500 bg-red-500/5" : ""
+                        }`}
+                      />
+                    </div>
+
+                    <Button type="submit" disabled={changingPassword} className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-5">
+                      {changingPassword ? "Updating Password..." : "Update Password"}
+                    </Button>
+                  </form>
+                </div>
+
+                <div className="rounded-2xl border bg-card p-6 shadow-sm space-y-4">
+                  <h4 className="font-bold text-sm text-foreground">Session Security</h4>
+                  <p className="text-xs text-muted-foreground">Sign out of your account on this browser session.</p>
+                  <Button onClick={handleSignOut} className="w-full rounded-xl bg-red-500/15 border border-red-500/40 text-red-400 hover:bg-red-500/25 font-extrabold text-xs gap-2 py-5">
+                    <LogOut className="h-4 w-4" /> Sign Out of Account
+                  </Button>
+                </div>
+              </div>
+
             </div>
           </TabsContent>
         </Tabs>

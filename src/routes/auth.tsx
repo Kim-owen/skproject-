@@ -36,6 +36,7 @@ function AuthPage() {
   const [activeTab, setActiveTab] = useState<"signin" | "signup" | "otp">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
@@ -44,6 +45,14 @@ function AuthPage() {
   const [otpCode, setOtpCode] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpBusy, setOtpBusy] = useState(false);
+
+  // Forgot Password & Recovery states
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [resetSent, setResetSent] = useState(false);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
   const sendOtp = useServerFn(sendPhoneOTP);
   const verifyOtp = useServerFn(verifyPhoneOTP);
@@ -132,6 +141,12 @@ function AuthPage() {
       return;
     }
 
+    if (password !== confirmPassword) {
+      setBusy(false);
+      setAuthError("Passwords do not match. Please verify your password entry.");
+      return toast.error("Passwords do not match!");
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -218,6 +233,53 @@ function AuthPage() {
       toast.error(err.message || "Invalid OTP code");
     } finally {
       setOtpBusy(false);
+    }
+  };
+
+  // Handle Forgot Password Email Request
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const targetEmail = forgotEmail || email;
+    if (!targetEmail || !targetEmail.includes("@")) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    setBusy(true);
+    setAuthError(null);
+    const { error } = await supabase.auth.resetPasswordForEmail(targetEmail, {
+      redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/auth?type=recovery`,
+    });
+    setBusy(false);
+    if (error) {
+      setAuthError(error.message);
+      toast.error(error.message);
+    } else {
+      setResetSent(true);
+      toast.success("Password reset instructions sent to your email!");
+    }
+  };
+
+  // Handle Recovery Password Update
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) {
+      toast.error("New password must be at least 6 characters long.");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      toast.error("Passwords do not match!");
+      return;
+    }
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success("Password updated successfully! Please sign in with your new password.");
+      setIsRecoveryMode(false);
+      setShowForgotPassword(false);
+      setActiveTab("signin");
     }
   };
 
@@ -384,52 +446,106 @@ function AuthPage() {
 
               {/* SIGN IN */}
               <TabsContent value="signin" className="space-y-4">
-                <form onSubmit={signIn} className="space-y-4.5">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="signin-email" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        id="signin-email"
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="name@example.com"
-                        className="pl-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm"
-                      />
+                {!showForgotPassword ? (
+                  <form onSubmit={signIn} className="space-y-4.5">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="signin-email" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Email Address</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          id="signin-email"
+                          type="email"
+                          required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="name@example.com"
+                          className="pl-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm"
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="signin-password" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Password</Label>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="signin-password" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Password</Label>
+                        <button
+                          type="button"
+                          onClick={() => setShowForgotPassword(true)}
+                          className="text-[11px] font-bold text-amber-400 hover:underline"
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          id="signin-password"
+                          type={showPassword ? "text" : "password"}
+                          required
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="pl-9 pr-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
                     </div>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        id="signin-password"
-                        type={showPassword ? "text" : "password"}
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="pl-9 pr-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
 
-                  <Button type="submit" className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md py-5.5 mt-2" disabled={busy}>
-                    {busy ? "Signing in..." : "Sign In"}
-                  </Button>
-                </form>
+                    <Button type="submit" className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md py-5.5 mt-2" disabled={busy}>
+                      {busy ? "Signing in..." : "Sign In"}
+                    </Button>
+                  </form>
+                ) : (
+                  <form onSubmit={handleForgotPassword} className="space-y-4.5 border border-amber-500/30 rounded-2xl bg-amber-500/5 p-4">
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-bold text-amber-400">Reset Your Password</h4>
+                      <p className="text-xs text-muted-foreground">Enter your account email address and we'll send you a password reset link.</p>
+                    </div>
+
+                    {!resetSent ? (
+                      <>
+                        <div className="space-y-1.5">
+                          <Label htmlFor="forgot-email" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Account Email Address</Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              id="forgot-email"
+                              type="email"
+                              required
+                              value={forgotEmail || email}
+                              onChange={(e) => setForgotEmail(e.target.value)}
+                              placeholder="name@example.com"
+                              className="pl-9 rounded-xl border-border bg-background text-sm"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button type="button" variant="outline" onClick={() => setShowForgotPassword(false)} className="w-1/3 rounded-xl text-xs font-bold">
+                            Cancel
+                          </Button>
+                          <Button type="submit" disabled={busy} className="w-2/3 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs">
+                            {busy ? "Sending..." : "Send Reset Link"}
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="space-y-3 text-center">
+                        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-300 font-semibold">
+                          ✓ Reset link sent to <span className="font-bold text-white">{forgotEmail || email}</span>! Please check your inbox.
+                        </div>
+                        <Button type="button" variant="outline" onClick={() => setShowForgotPassword(false)} className="w-full rounded-xl text-xs font-bold">
+                          Return to Sign In
+                        </Button>
+                      </div>
+                    )}
+                  </form>
+                )}
               </TabsContent>
 
               {/* REGISTER */}
@@ -482,27 +598,41 @@ function AuthPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="signup-password" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Password (Min. 6 chars) *</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        id="signup-password"
-                        type={showPassword ? "text" : "password"}
-                        required
-                        minLength={6}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        className="pl-9 pr-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="signup-password" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Password (Min 6) *</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          id="signup-password"
+                          type={showPassword ? "text" : "password"}
+                          required
+                          minLength={6}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className="pl-9 pr-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="signup-confirm-password" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Confirm Password *</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          id="signup-confirm-password"
+                          type={showPassword ? "text" : "password"}
+                          required
+                          minLength={6}
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="••••••••"
+                          className={`pl-9 pr-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 text-sm ${
+                            confirmPassword && password !== confirmPassword ? "border-red-500/80 bg-red-500/5" : ""
+                          }`}
+                        />
+                      </div>
                     </div>
                   </div>
 

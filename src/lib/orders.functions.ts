@@ -274,7 +274,7 @@ export const getUserAccountDetails = createServerFn({ method: "GET" })
     const userId = context.userId;
 
     const [profileRes, txRes] = await Promise.all([
-      supabaseAdmin.from("profiles").select("id, full_name, phone, wallet_balance_ghs, created_at").eq("id", userId).single(),
+      supabaseAdmin.from("profiles").select("id, full_name, phone, delivery_address, ghana_post_gps, gps_coordinates, wallet_balance_ghs, created_at").eq("id", userId).single(),
       supabaseAdmin.from("wallet_transactions").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(30),
     ]);
 
@@ -302,6 +302,9 @@ export const updateUserProfileData = createServerFn({ method: "POST" })
   .validator(z.object({
     full_name: z.string().trim().min(2).max(100),
     phone: z.string().trim().min(7).max(20),
+    delivery_address: z.string().trim().max(500).optional(),
+    ghana_post_gps: z.string().trim().max(30).optional(),
+    gps_coordinates: z.string().trim().max(60).optional(),
   }))
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -309,6 +312,9 @@ export const updateUserProfileData = createServerFn({ method: "POST" })
       id: context.userId,
       full_name: data.full_name,
       phone: data.phone,
+      ...(data.delivery_address !== undefined ? { delivery_address: data.delivery_address } : {}),
+      ...(data.ghana_post_gps !== undefined ? { ghana_post_gps: data.ghana_post_gps } : {}),
+      ...(data.gps_coordinates !== undefined ? { gps_coordinates: data.gps_coordinates } : {}),
     }, { onConflict: "id" });
     if (error) throw new Error(error.message);
     return { ok: true };

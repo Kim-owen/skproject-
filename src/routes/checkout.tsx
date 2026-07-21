@@ -62,10 +62,10 @@ function Checkout() {
         setAuthUser(data.user);
         setEmail(data.user.email || "");
         setName(data.user.user_metadata?.full_name || "");
-        // Fetch wallet balance
+        // Fetch wallet balance and saved location profile
         supabase
           .from("profiles")
-          .select("wallet_balance_ghs, phone, full_name")
+          .select("wallet_balance_ghs, phone, full_name, delivery_address, ghana_post_gps, gps_coordinates")
           .eq("id", data.user.id)
           .single()
           .then(({ data: profile }) => {
@@ -73,6 +73,12 @@ function Checkout() {
               setWalletBalance(Number(profile.wallet_balance_ghs || 0));
               if (profile.phone) setPhone(profile.phone);
               if (profile.full_name && !name) setName(profile.full_name);
+              if (profile.delivery_address) setAddress(profile.delivery_address);
+              if (profile.ghana_post_gps) setGhanaPostGps(profile.ghana_post_gps);
+              if (profile.gps_coordinates) {
+                setGpsCoordinates(profile.gps_coordinates);
+                fetchUberQuote(profile.gps_coordinates);
+              }
             }
           });
       }

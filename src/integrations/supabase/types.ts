@@ -267,6 +267,9 @@ export type Database = {
           full_name: string | null
           id: string
           phone: string | null
+          delivery_address: string | null
+          ghana_post_gps: string | null
+          gps_coordinates: string | null
           wallet_balance_ghs: number
         }
         Insert: {
@@ -274,6 +277,9 @@ export type Database = {
           full_name?: string | null
           id: string
           phone?: string | null
+          delivery_address?: string | null
+          ghana_post_gps?: string | null
+          gps_coordinates?: string | null
           wallet_balance_ghs?: number
         }
         Update: {
@@ -281,6 +287,9 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          delivery_address?: string | null
+          ghana_post_gps?: string | null
+          gps_coordinates?: string | null
           wallet_balance_ghs?: number
         }
         Relationships: []
