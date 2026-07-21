@@ -74,6 +74,19 @@ function OrderPage() {
               🚗 {partnerLabel}
             </span>
           </div>
+
+          {/* 1-Click WhatsApp Order Confirmation Receipt Button */}
+          <div className="mt-6 pt-4 border-t border-amber-500/20 max-w-md mx-auto">
+            <a
+              href={`https://wa.me/233241234567?text=Hello%20Barima%20Ba%20Foods!%20I%20just%20placed%20Order%20${order.order_number}%20for%20${encodeURIComponent(order.customer_name)}.%20Total:%20GHS%20${order.total_ghs}.%20Please%20confirm%20kitchen%20preparation!`}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 hover:bg-emerald-600 px-5 py-3 text-xs font-extrabold text-black shadow-xl shadow-emerald-500/20 transition-all hover:scale-105"
+            >
+              <MessageSquare className="h-4 w-4 fill-black" />
+              <span>Send Order Receipt to Kitchen WhatsApp (+233 24 123 4567)</span>
+            </a>
+          </div>
         </div>
 
         {/* Uber Courier & Dispatch Card (If Assigned) */}
