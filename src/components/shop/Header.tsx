@@ -76,13 +76,13 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-amber-500/20 bg-background/95 backdrop-blur-xl transition-all shadow-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        {/* Brand Logo & Custom Generated Barima Ba Emblem */}
+        {/* Brand Logo & Client Barima Ba Chef Emblem */}
         <Link to="/" className="group flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-black border border-amber-500/40 p-1 shadow-lg shadow-amber-500/20 transition-transform group-hover:scale-105 overflow-hidden">
+          <div className="flex h-11 w-14 items-center justify-center rounded-xl bg-white border border-amber-500/50 p-1 shadow-lg shadow-amber-500/20 transition-transform group-hover:scale-105 overflow-hidden">
             <img
               src="/images/barima-ba-logo.png"
-              alt="Barima Ba Foods Logo"
-              className="h-full w-full object-cover rounded-lg"
+              alt="Barima Ba Shito Logo"
+              className="h-full w-full object-contain rounded-md"
             />
           </div>
           <div className="flex flex-col">
@@ -191,11 +191,11 @@ export function Header() {
             {/* Top Navigation Bar */}
             <div className="flex items-center justify-between border-b border-amber-500/20 pb-4 mb-6">
               <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-black border border-amber-500/40 p-1 shadow-lg shadow-amber-500/20 shrink-0 overflow-hidden">
+                <div className="flex h-11 w-14 items-center justify-center rounded-xl bg-white border border-amber-500/50 p-1 shadow-md shrink-0 overflow-hidden">
                   <img
                     src="/images/barima-ba-logo.png"
-                    alt="Barima Ba Foods Logo"
-                    className="h-full w-full object-cover rounded-lg"
+                    alt="Barima Ba Shito Logo"
+                    className="h-full w-full object-contain rounded-md"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -431,11 +431,11 @@ export function Footer() {
           {/* Column 1: About Us */}
           <div className="md:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-black border border-amber-500/40 p-1 shadow-md overflow-hidden shrink-0">
+              <div className="flex h-12 w-16 items-center justify-center rounded-xl bg-white border border-amber-500/50 p-1 shadow-md overflow-hidden shrink-0">
                 <img
                   src="/images/barima-ba-logo.png"
-                  alt="Barima Ba Foods Logo"
-                  className="h-full w-full object-cover rounded-lg"
+                  alt="Barima Ba Shito Logo"
+                  className="h-full w-full object-contain rounded-md"
                 />
               </div>
               <span className="font-display text-2xl font-extrabold tracking-tight text-white">

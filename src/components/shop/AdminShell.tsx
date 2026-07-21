@@ -46,8 +46,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
       {/* Mobile Sticky Header */}
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-card/85 px-4 backdrop-blur-md md:hidden">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black border border-amber-500/30 overflow-hidden">
-            <img src="/images/barima-ba-logo.png" alt="Barima Ba Logo" className="h-full w-full object-cover" />
+          <div className="flex h-9 w-12 items-center justify-center rounded-lg bg-white border border-amber-500/40 p-0.5 shadow-sm overflow-hidden shrink-0">
+            <img src="/images/barima-ba-logo.png" alt="Barima Ba Shito Logo" className="h-full w-full object-contain rounded-md" />
           </div>
           <span className="font-display text-base font-bold tracking-tight text-foreground">
             BARIMA BA <span className="text-amber-500">· Admin</span>
@@ -64,8 +64,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <div>
               <SheetHeader className="pb-6 border-b">
                 <SheetTitle className="flex items-center gap-2.5 text-left">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-black border border-amber-500/30 overflow-hidden">
-                    <img src="/images/barima-ba-logo.png" alt="Barima Ba Logo" className="h-full w-full object-cover" />
+                  <div className="flex h-9 w-12 items-center justify-center rounded-lg bg-white border border-amber-500/40 p-0.5 shadow-sm overflow-hidden shrink-0">
+                    <img src="/images/barima-ba-logo.png" alt="Barima Ba Shito Logo" className="h-full w-full object-contain rounded-md" />
                   </div>
                   <span className="font-display text-base font-bold tracking-tight text-foreground">
                     BARIMA BA <span className="text-amber-500">· Admin</span>
@@ -95,8 +95,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
         <aside className="hidden w-64 flex-shrink-0 md:flex flex-col justify-between h-[calc(100vh-4rem)] sticky top-24 pb-4">
           <div>
             <Link to="/" className="mb-8 flex items-center gap-3 px-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black border border-amber-500/30 overflow-hidden">
-                <img src="/images/barima-ba-logo.png" alt="Barima Ba Logo" className="h-full w-full object-cover" />
+              <div className="flex h-10 w-14 items-center justify-center rounded-xl bg-white border border-amber-500/40 p-0.5 shadow-sm overflow-hidden shrink-0">
+                <img src="/images/barima-ba-logo.png" alt="Barima Ba Shito Logo" className="h-full w-full object-contain rounded-md" />
               </div>
               <span className="font-display text-lg font-extrabold tracking-tight text-foreground">
                 BARIMA BA <span className="text-amber-500">· Admin</span>
