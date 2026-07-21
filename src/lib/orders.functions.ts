@@ -65,10 +65,10 @@ export const calculateUberEstimate = createServerFn({ method: "POST" })
   });
 
 export async function sendSMSNotification(phone: string, message: string) {
-  const apiKey = process.env.ARKESEL_API_KEY;
+  const apiKey = process.env.TXTCONNECT_API_KEY || process.env.ARKESEL_API_KEY;
   console.log(`[SMS MOCK] To: ${phone} | Message: ${message}`);
   if (!apiKey) {
-    console.log("[SMS WARNING] ARKESEL_API_KEY is not configured in .env. Skipping HTTP request.");
+    console.log("[SMS WARNING] TXTCONNECT_API_KEY is not configured in .env. Skipping HTTP request.");
     return;
   }
   try {
@@ -78,22 +78,23 @@ export async function sendSMSNotification(phone: string, message: string) {
     } else if (formattedPhone.startsWith("+")) {
       formattedPhone = formattedPhone.slice(1);
     }
-    const res = await fetch("https://sms.arkesel.com/api/v2/sms/send", {
+    const res = await fetch("https://api.txtconnect.net/dev/api/sms/send", {
       method: "POST",
       headers: {
-        "api-key": apiKey,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        sender: "ProvShop",
-        message: message,
-        recipients: [formattedPhone],
+        to: formattedPhone,
+        from: process.env.TXTCONNECT_SENDER_ID || "BarimaBa",
+        unicode: "regular",
+        sms: message,
       }),
     });
     const json = await res.json();
-    console.log("[SMS API RESPONSE]", json);
+    console.log("[TXTCONNECT SMS RESPONSE]", json);
   } catch (e) {
-    console.error("[SMS ERROR]", e);
+    console.error("[TXTCONNECT SMS ERROR]", e);
   }
 }
 
