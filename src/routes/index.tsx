@@ -1,11 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery, useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { ShopLayout } from "@/components/shop/Layout";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { ArrowRight, ArrowUpRight, Truck, ShieldCheck, Smartphone, Zap, MapPin } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Leaf, Shield, Flame, Truck, Heart, Award, Utensils, Phone, CheckCircle2 } from "lucide-react";
 import { formatGHS } from "@/lib/cart";
+import { getHeroSettings, DEFAULT_HERO_SETTINGS } from "@/lib/settings.functions";
+import { HeroMedia } from "@/components/shop/HeroMedia";
 
 const featuredQuery = {
   queryKey: ["featured-products"],
@@ -45,163 +48,211 @@ function HomePending() {
 
 function Home() {
   const { data: products } = useSuspenseQuery(featuredQuery);
+  const fetchHeroSettings = useServerFn(getHeroSettings);
+
+  const { data: heroSettings = DEFAULT_HERO_SETTINGS } = useQuery({
+    queryKey: ["hero-settings"],
+    queryFn: () => fetchHeroSettings(),
+    staleTime: 60_000,
+  });
+
   const hero = products[0];
 
   return (
     <ShopLayout>
-      {/* Subtle backdrop gradient */}
-      <div className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[600px] overflow-hidden">
-        <div className="absolute left-1/2 top-[-250px] h-[550px] w-[1000px] -translate-x-1/2 rounded-full bg-primary/5 blur-[120px] animate-pulse-glow" />
-      </div>
-
-      {/* Hero section */}
-      <section className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:pt-16">
-        <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
-          {/* Text block */}
-          <div className="flex flex-col justify-center lg:col-span-7">
-            <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold tracking-wide text-primary animate-fade-in-up">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-              Same-day delivery across Accra
-            </span>
-            <h1 className="mt-6 font-display text-5xl font-extrabold tracking-tight text-foreground md:text-7xl leading-[1.05] animate-fade-in-up delay-100">
-              Modern provisions,<br />
-              <span className="text-primary font-normal italic font-serif">delivered fresh.</span>
-            </h1>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground animate-fade-in-up delay-200">
-              The curated pantry for modern Accra. Order premium meats, poultry, house-made shito, and household essentials online.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3.5 animate-fade-in-up delay-300">
-              <Button asChild size="lg" className="rounded-xl shadow-md shadow-primary/10 transition-all hover:shadow-lg">
-                <Link to="/shop">
-                  Start shopping <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="rounded-xl border-border bg-transparent hover:bg-muted/50">
-                <Link to="/track">Track your order</Link>
-              </Button>
-            </div>
-
-            {/* Quick stats row */}
-            <div className="mt-12 grid grid-cols-3 gap-6 border-t border-border/80 pt-8 text-sm animate-fade-in-up delay-400">
-              <div>
-                <p className="font-display text-2xl font-bold text-foreground">42 min</p>
-                <p className="text-xs text-muted-foreground mt-1">Average delivery today</p>
-              </div>
-              <div>
-                <p className="font-display text-2xl font-bold text-foreground">MoMo / Card</p>
-                <p className="text-xs text-muted-foreground mt-1">Pay online or on delivery</p>
-              </div>
-              <div>
-                <p className="font-display text-2xl font-bold text-foreground">8+ Zones</p>
-                <p className="text-xs text-muted-foreground mt-1">Accra coverage area</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Visual Showcase */}
-          <div className="relative lg:col-span-5 animate-fade-in-up delay-200">
-            <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-border bg-card shadow-xl shadow-foreground/5 animate-float">
-              <img
-                src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800"
-                alt="Fresh organic groceries"
-                className="h-full w-full object-cover transition-transform duration-700 hover:scale-102"
+      {/* Hero Section with Cinematic Video & Gold Accent Copy */}
+      <section className="relative mx-auto max-w-7xl px-3 sm:px-6 pt-4 pb-8">
+        <div className="relative min-h-[85vh] w-full overflow-hidden rounded-[2.5rem] border border-amber-500/20 bg-black/40 backdrop-blur-md shadow-2xl transition-all duration-700">
+          {/* Background Ambient Video Layer */}
+          {heroSettings.media_type === "video" && heroSettings.video_url ? (
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+              <video
+                src={heroSettings.video_url}
+                poster={heroSettings.poster_url}
+                autoPlay={heroSettings.autoplay}
+                muted={true}
+                loop={heroSettings.loop}
+                playsInline
+                className="h-full w-full object-cover opacity-40 sm:opacity-55 scale-105 animate-slow-pan"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6 rounded-2xl border border-border/50 bg-background/80 p-4 backdrop-blur-md">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Accra Express</p>
-                    <p className="font-display text-base font-semibold text-foreground mt-0.5">Freshly packed on order</p>
-                  </div>
-                  <div className="rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                    100% Quality
-                  </div>
-                </div>
+            </div>
+          ) : (
+            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+              <img
+                src={heroSettings.poster_url}
+                alt="Ambient Background"
+                className="h-full w-full object-cover opacity-35 scale-105 blur-[1px]"
+              />
+            </div>
+          )}
+
+          {/* Scrim Gradient Overlays for High Contrast */}
+          <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-black/85 via-transparent to-black/50" />
+          <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/15 via-transparent to-transparent" />
+
+          {/* Hero Content Container */}
+          <div className="relative z-10 grid gap-10 lg:grid-cols-12 lg:items-center px-6 py-12 sm:px-12 lg:py-16 min-h-[85vh]">
+            <div className="flex flex-col justify-center lg:col-span-7">
+              {/* Shimmer Pill Badge */}
+              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-4 py-1.5 text-xs font-extrabold tracking-widest uppercase text-amber-400 shadow-sm backdrop-blur-md animate-fade-in-up">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+                </span>
+                <span>{heroSettings.badge_text || "Nationwide Delivery Across Ghana"}</span>
+              </div>
+
+              {/* Main Headline */}
+              <h1 className="mt-6 font-display text-5xl font-extrabold tracking-tight text-white md:text-7xl leading-[1.05] animate-fade-in-up delay-100">
+                {heroSettings.headline_main || "BARIMA BA FOODS"}
+                <span className="block mt-1 font-serif italic text-amber-400 animate-shimmer">
+                  {heroSettings.headline_highlight || "Taste. Quality. Trust."}
+                </span>
+              </h1>
+
+              {/* Subheading */}
+              <p className="mt-6 max-w-xl text-base sm:text-lg leading-relaxed text-zinc-300 animate-fade-in-up delay-200">
+                {heroSettings.subheading || "Premium quality homemade Ghanaian foods made with passion, rich in flavor and crafted for your satisfaction."}
+              </p>
+
+              {/* Action Buttons */}
+              <div className="mt-8 flex flex-wrap gap-4 animate-fade-in-up delay-300">
+                <Button asChild size="lg" className="rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black px-8 py-6 text-base font-extrabold shadow-xl shadow-amber-500/25 transition-all hover:scale-102">
+                  <Link to="/shop">
+                    SHOP NOW <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="rounded-2xl border-amber-500/40 bg-black/60 backdrop-blur-md px-8 py-6 text-base font-bold text-amber-400 hover:bg-amber-500/10 hover:border-amber-400 transition-all">
+                  <Link to="/shop">OUR SERVICES</Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Right Column: Hero Video Component Showcase */}
+            <div className="relative lg:col-span-5 animate-fade-in-up delay-200">
+              <div className="relative transform transition-all duration-500 hover:scale-[1.01]">
+                <HeroMedia settings={heroSettings} />
               </div>
             </div>
           </div>
+
+          <div className="pointer-events-none absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-background to-transparent" />
         </div>
       </section>
 
-      {/* Value props strip */}
-      <section className="mx-auto mt-16 max-w-7xl px-4 sm:px-6">
-        <div className="grid gap-6 rounded-2xl border border-border bg-card/50 p-6 sm:grid-cols-3">
+      {/* 5-Column Trust Highlights Ribbon */}
+      <section className="mx-auto mt-4 max-w-7xl px-3 sm:px-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5 rounded-3xl border border-amber-500/20 bg-black/60 p-4 backdrop-blur-md shadow-xl text-center">
           {[
-            { icon: Truck, title: "Same-day delivery", body: "Order before 3pm for delivery today." },
-            { icon: Smartphone, title: "Flexible payments", body: "MTN, Telecel, Card, or Cash on Delivery." },
-            { icon: ShieldCheck, title: "Freshness guaranteed", body: "Hand-picked and cut fresh, or your money back." },
-          ].map((v) => (
-            <div key={v.title} className="flex items-start gap-4 p-2">
-              <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 text-primary shrink-0">
-                <v.icon className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-foreground text-sm">{v.title}</h3>
-                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{v.body}</p>
-              </div>
+            { icon: Leaf, title: "100% NATURAL", desc: "No artificial preservatives" },
+            { icon: Shield, title: "PREMIUM QUALITY", desc: "Selected ingredients" },
+            { icon: Flame, title: "RICH IN FLAVOR", desc: "Authentic recipes" },
+            { icon: Truck, title: "NATIONWIDE DELIVERY", desc: "Fast across Ghana" },
+            { icon: Heart, title: "CUSTOMER SATISFACTION", desc: "Guaranteed satisfaction" },
+          ].map((item) => (
+            <div key={item.title} className="flex flex-col items-center p-3 rounded-2xl border border-amber-500/10 bg-amber-500/5 hover:border-amber-500/30 transition-all">
+              <item.icon className="h-6 w-6 text-amber-400 mb-2" />
+              <h4 className="font-extrabold text-xs tracking-wider text-amber-300">{item.title}</h4>
+              <p className="text-[11px] text-zinc-400 mt-1 leading-tight">{item.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Featured products */}
+      {/* Product Catalog Section */}
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-        <div className="mb-8 flex items-end justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-primary">Popular today</p>
-            <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-foreground md:text-4xl">
-              Fresh this week
-            </h2>
-          </div>
-          <Button asChild variant="ghost" className="text-muted-foreground hover:text-primary sm:inline-flex">
-            <Link to="/shop">
-              View catalogue <ArrowUpRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
+        <div className="text-center mb-12">
+          <p className="text-xs font-bold uppercase tracking-widest text-amber-400">OUR PRODUCTS</p>
+          <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl">
+            FLAVORFUL. FRESH. MADE FOR YOU.
+          </h2>
+          <p className="mt-3 text-sm text-muted-foreground max-w-xl mx-auto">
+            Explore our range of delicious products made with love and the finest ingredients.
+          </p>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
+      </section>
 
-        {/* Featured Drop block (Editorial layout) */}
-        {hero && (
-          <div className="mt-20 overflow-hidden rounded-3xl border border-border bg-card shadow-lg">
-            <div className="grid gap-0 md:grid-cols-12">
-              <div className="flex flex-col justify-center p-8 md:col-span-7 md:p-12">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Featured Selection</span>
-                <h3 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground md:text-5xl">
-                  {hero.name}
-                </h3>
-                <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-md">
-                  Freshly catalogued, cleaned, and packed to preserve maximum flavor and nutritional value. Ready for dispatch today.
-                </p>
-                <div className="mt-8 flex items-center gap-6">
-                  <div>
-                    <p className="font-display text-2xl font-bold text-primary">{formatGHS(Number(hero.price_ghs))}</p>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mt-0.5">per {hero.unit}</p>
-                  </div>
-                  <Button asChild size="lg" className="rounded-xl shadow-md transition-all">
-                    <Link to="/product/$slug" params={{ slug: hero.slug }}>
-                      View product <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
+      {/* Catering Services Showcase Section */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+        <div className="overflow-hidden rounded-[2.5rem] border border-amber-500/30 bg-black/60 backdrop-blur-xl shadow-2xl p-8 sm:p-12">
+          <div className="grid gap-10 md:grid-cols-12 md:items-center">
+            <div className="md:col-span-6 flex flex-col justify-center">
+              <span className="text-xs font-extrabold uppercase tracking-widest text-amber-400">OUR CATERING SERVICES</span>
+              <h3 className="mt-3 font-display text-3xl sm:text-4xl font-extrabold text-white leading-tight">
+                DELICIOUS FOOD FOR EVERY OCCASION
+              </h3>
+              <p className="mt-4 text-sm leading-relaxed text-zinc-300">
+                From small gatherings to big events, we provide tasty, hygienic and beautifully presented meals that make your events unforgettable.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {["Weddings", "Parties & Celebrations", "Corporate Events", "Funerals & More"].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-sm font-semibold text-amber-300">
+                    <CheckCircle2 className="h-5 w-5 text-amber-400 shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-8">
+                <Button asChild size="lg" className="rounded-2xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-lg shadow-amber-500/25">
+                  <Link to="/shop">
+                    <Utensils className="mr-2 h-5 w-5" /> BOOK OUR CATERING
+                  </Link>
+                </Button>
               </div>
-              {hero.image_url && (
-                <div className="relative aspect-[4/3] md:aspect-auto md:col-span-5 border-t md:border-t-0 md:border-l border-border bg-muted overflow-hidden">
-                  <img
-                    src={hero.image_url}
-                    alt={hero.name}
-                    className="h-full w-full object-cover transition-transform duration-500 hover:scale-102"
-                  />
-                </div>
-              )}
+            </div>
+            
+            <div className="md:col-span-6 grid grid-cols-2 gap-4">
+              <img src="/images/spicy-african-bg.png" alt="Catering Spread" className="rounded-2xl object-cover h-44 w-full border border-amber-500/20 shadow-md" />
+              <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=600" alt="Ghanaian Cuisine" className="rounded-2xl object-cover h-44 w-full border border-amber-500/20 shadow-md" />
+              <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=600" alt="Grilled Meat" className="col-span-2 rounded-2xl object-cover h-52 w-full border border-amber-500/20 shadow-md" />
             </div>
           </div>
-        )}
+        </div>
+      </section>
+
+      {/* Value Proposition Grid Strip */}
+      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4 rounded-3xl border border-amber-500/20 bg-black/50 p-6 backdrop-blur-md text-center">
+          {[
+            { icon: Award, title: "EXPERTLY MADE", desc: "Prepared by experts with years of experience." },
+            { icon: Shield, title: "QUALITY INGREDIENTS", desc: "We use only the best ingredients." },
+            { icon: Heart, title: "MADE WITH LOVE", desc: "Every product is crafted with passion." },
+            { icon: CheckCircle2, title: "TRUSTED BY MANY", desc: "Customers love us & keep coming back." },
+          ].map((v) => (
+            <div key={v.title} className="flex flex-col items-center p-3">
+              <v.icon className="h-7 w-7 text-amber-400 mb-2" />
+              <h4 className="font-extrabold text-xs tracking-wider text-amber-300">{v.title}</h4>
+              <p className="text-xs text-zinc-400 mt-1">{v.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Direct Contact Bar */}
+      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <div className="rounded-3xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 p-6 text-black shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <Truck className="h-10 w-10 shrink-0" />
+            <div>
+              <h4 className="font-extrabold text-lg uppercase tracking-wide">NATIONWIDE DELIVERY</h4>
+              <p className="text-xs font-semibold">We deliver to your doorstep anywhere in Ghana.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 bg-black/90 px-6 py-3 rounded-2xl text-amber-400 shadow-md">
+            <Phone className="h-5 w-5" />
+            <div className="text-left">
+              <p className="text-[10px] uppercase font-bold text-zinc-400">CALL / WHATSAPP</p>
+              <p className="text-sm font-extrabold text-white">+233 24 123 4567 | +233 50 123 4567</p>
+            </div>
+          </div>
+        </div>
       </section>
     </ShopLayout>
   );

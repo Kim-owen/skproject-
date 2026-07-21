@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ShoppingCart, LogIn, Sparkles } from "lucide-react";
+import { ShoppingCart, LogIn, Crown, Phone, Instagram, Menu, X, Truck, ChevronDown, Camera, Star, HelpCircle, PackageCheck } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
@@ -9,7 +9,11 @@ export function Header() {
   const { count } = useCart();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [bump, setBump] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const prev = useRef(count);
+
   useEffect(() => {
     if (count !== prev.current && count > 0) {
       setBump(true);
@@ -19,11 +23,23 @@ export function Header() {
     prev.current = count;
   }, [count]);
 
-  const link = (to: string, label: string) => (
+  // Close dropdown on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const navLink = (to: string, label: string) => (
     <Link
       to={to}
-      className={`text-sm font-medium transition-colors hover:text-primary ${
-        pathname === to ? "text-primary" : "text-muted-foreground"
+      onClick={() => setMobileOpen(false)}
+      className={`text-xs font-bold uppercase tracking-wider transition-all duration-200 hover:text-amber-400 py-1 ${
+        pathname === to ? "text-amber-400 font-extrabold border-b-2 border-amber-400" : "text-foreground/80 hover:scale-105"
       }`}
     >
       {label}
@@ -31,83 +47,276 @@ export function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-amber-500/20 bg-background/90 backdrop-blur-xl transition-all shadow-md">
+      {/* Top Pro Announcement Bar */}
+      <div className="bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 px-4 py-1 text-center text-[11px] font-extrabold uppercase tracking-widest text-black">
+        <span>⚡ Nationwide Express Delivery Across Ghana · Call / WhatsApp: +233 24 123 4567</span>
+      </div>
+
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-            <Sparkles className="h-4 w-4" strokeWidth={2.5} />
+        {/* Brand Logo & Golden Crown Badge */}
+        <Link to="/" className="group flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-black shadow-lg shadow-amber-500/25 transition-transform group-hover:scale-105">
+            <Crown className="h-5 w-5 fill-black" strokeWidth={2} />
           </div>
-          <span className="font-display text-xl font-bold tracking-tight text-foreground">
-            Provision<span className="text-primary">·Shop</span>
-          </span>
+          <div className="flex flex-col">
+            <span className="font-display text-xl font-extrabold tracking-tight text-foreground leading-none">
+              BARIMA BA <span className="text-amber-500">FOODS</span>
+            </span>
+            <span className="text-[10px] font-serif italic text-amber-500/90 tracking-wider mt-0.5">
+              Taste. Quality. Trust.
+            </span>
+          </div>
         </Link>
-        <nav className="hidden items-center gap-8 md:flex">
-          {link("/", "Home")}
-          {link("/shop", "Shop")}
-          {link("/track", "Track order")}
+
+        {/* Clean Desktop Navigation Links */}
+        <nav className="hidden md:flex items-center gap-7">
+          {navLink("/", "Home")}
+          {navLink("/shop", "Products")}
+          {navLink("/catering", "Catering")}
+          {navLink("/about", "About")}
+
+          {/* More / Explore Glassmorphic Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-foreground/80 hover:text-amber-400 py-1 transition-colors focus:outline-none"
+            >
+              <span>Explore</span>
+              <ChevronDown className={`h-3.5 w-3.5 text-amber-400 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {dropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-56 rounded-2xl border border-amber-500/30 bg-black/90 p-2 backdrop-blur-2xl shadow-2xl animate-fade-in-up z-50">
+                <Link
+                  to="/gallery"
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center gap-3 rounded-xl p-2.5 text-xs font-semibold text-zinc-200 hover:bg-amber-500/10 hover:text-amber-400 transition-all"
+                >
+                  <Camera className="h-4 w-4 text-amber-400" />
+                  <span>Visual Gallery</span>
+                </Link>
+                <Link
+                  to="/testimonials"
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center gap-3 rounded-xl p-2.5 text-xs font-semibold text-zinc-200 hover:bg-amber-500/10 hover:text-amber-400 transition-all"
+                >
+                  <Star className="h-4 w-4 text-amber-400" />
+                  <span>Testimonials</span>
+                </Link>
+                <Link
+                  to="/faq"
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center gap-3 rounded-xl p-2.5 text-xs font-semibold text-zinc-200 hover:bg-amber-500/10 hover:text-amber-400 transition-all"
+                >
+                  <HelpCircle className="h-4 w-4 text-amber-400" />
+                  <span>FAQ & Help</span>
+                </Link>
+                <Link
+                  to="/track"
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center gap-3 rounded-xl p-2.5 text-xs font-semibold text-zinc-200 hover:bg-amber-500/10 hover:text-amber-400 transition-all"
+                >
+                  <PackageCheck className="h-4 w-4 text-amber-400" />
+                  <span>Track Delivery</span>
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {navLink("/contact", "Contact")}
         </nav>
-        <div className="flex items-center gap-2">
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2.5">
           <div className="hidden sm:block"><ThemeToggle /></div>
-          <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-            <Link to="/auth"><LogIn className="mr-1 h-4 w-4" />Sign in</Link>
+          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex rounded-xl text-muted-foreground hover:text-foreground hover:bg-amber-500/10 text-xs font-bold">
+            <Link to="/auth"><LogIn className="mr-1.5 h-4 w-4 text-amber-500" />Sign In</Link>
           </Button>
-          <Button asChild size="sm" className="relative rounded-xl shadow-sm transition-all hover:opacity-95">
+          <Button asChild size="sm" className="relative rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-extrabold shadow-lg shadow-amber-500/20 transition-all hover:scale-102">
             <Link to="/cart">
-              <ShoppingCart className="mr-1 h-4 w-4" />
-              Cart
+              <ShoppingCart className="mr-1.5 h-4 w-4 fill-black" />
+              Order Now
               {count > 0 && (
                 <span
-                  className={`ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-background/95 px-1.5 text-[10px] font-bold text-primary transition-transform ${bump ? "scale-125" : "scale-100"}`}
+                  className={`ml-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1.5 text-[10px] font-extrabold text-amber-400 shadow-sm transition-transform ${bump ? "scale-125 ring-2 ring-amber-400" : "scale-100"}`}
                 >
                   {count}
                 </span>
               )}
             </Link>
           </Button>
+
+          {/* Mobile Menu Hamburger Toggle */}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="md:hidden p-2 text-foreground hover:text-amber-500 focus:outline-none"
+            aria-label="Toggle Navigation"
+          >
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
       </div>
+
+      {/* Sleek Mobile Dropdown Sheet */}
+      {mobileOpen && (
+        <div className="md:hidden border-t border-amber-500/20 bg-black/95 backdrop-blur-2xl px-6 py-6 transition-all animate-fade-in-up">
+          <div className="flex flex-col space-y-3">
+            {navLink("/", "Home")}
+            {navLink("/shop", "Products")}
+            {navLink("/catering", "Catering Services")}
+            {navLink("/about", "About Us")}
+            {navLink("/gallery", "Gallery")}
+            {navLink("/testimonials", "Testimonials")}
+            {navLink("/faq", "FAQ")}
+            {navLink("/contact", "Contact Us")}
+            {navLink("/track", "Track Order")}
+          </div>
+        </div>
+      )}
     </header>
   );
 }
 
 export function Footer() {
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      setSubscribed(true);
+      setEmail("");
+    }
+  };
+
   return (
-    <footer className="border-t border-border bg-card/30">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
-        <div className="grid gap-8 md:grid-cols-4">
-          <div className="md:col-span-2">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                <Sparkles className="h-4 w-4" strokeWidth={2.5} />
-              </div>
-              <span className="font-display text-lg font-bold tracking-tight">
-                Provision<span className="text-primary">·Shop</span>
-              </span>
+    <footer className="border-t-2 border-amber-500/30 bg-zinc-950 text-white font-sans relative z-10">
+      {/* 1. Gold Delivery & Contact Bar */}
+      <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 px-4 py-4 text-black shadow-lg">
+        <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-amber-400 shrink-0">
+              <Truck className="h-5 w-5" />
             </div>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              The curated pantry for modern living in Accra. Same-day delivery on meat, poultry, shito, grains and essentials.
-            </p>
+            <div>
+              <p className="font-extrabold text-sm uppercase tracking-wide text-black">NATIONWIDE DELIVERY</p>
+              <p className="text-xs font-semibold text-zinc-900">We deliver to your doorstep anywhere in Ghana.</p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">Payments</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground font-sans">
-              <li>Mobile Money · MTN, Telecel, AT</li>
-              <li>Paystack · Card</li>
-              <li>Cash on Delivery</li>
-            </ul>
+
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-amber-400 shrink-0">
+              <Phone className="h-5 w-5" />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-900">CALL / WHATSAPP</p>
+              <p className="text-sm font-extrabold text-black">+233 24 123 4567 | +233 50 123 4567</p>
+            </div>
           </div>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-primary">Coverage</p>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground font-sans">
-              <li>Accra · Same-day</li>
-              <li>East Legon · 30–60 min</li>
-              <li>Spintex · 30–60 min</li>
-            </ul>
+
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-amber-400 shrink-0">
+              <Instagram className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-900">FOLLOW US</p>
+              <p className="text-sm font-extrabold text-black">@barimabafoods</p>
+            </div>
           </div>
         </div>
-        <div className="mt-10 flex flex-col items-center justify-between gap-2 border-t border-border pt-6 text-xs text-muted-foreground sm:flex-row font-sans">
-          <p>© {new Date().getFullYear()} Provision Shop · Built for category leaders.</p>
-          <p>Accra, Ghana</p>
+      </div>
+
+      {/* 2. Main 4-Column Footer Content */}
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+        <div className="grid gap-10 md:grid-cols-12">
+          {/* Column 1: About Us */}
+          <div className="md:col-span-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black shadow-md">
+                <Crown className="h-6 w-6 fill-black" strokeWidth={2} />
+              </div>
+              <span className="font-display text-2xl font-extrabold tracking-tight text-white">
+                BARIMA BA <span className="text-amber-400">FOODS</span>
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm leading-relaxed text-zinc-200">
+              Barima Ba Foods is a Ghanaian food brand committed to delivering premium quality, authentic and delicious foods. We value quality, hygiene and customer satisfaction in everything we do.
+            </p>
+            <div className="pt-2">
+              <Button asChild size="sm" className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs px-5">
+                <Link to="/about">LEARN MORE</Link>
+              </Button>
+            </div>
+          </div>
+
+          {/* Column 2: Quick Links */}
+          <div className="md:col-span-2">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-amber-400 mb-4 border-b border-amber-500/20 pb-2">Quick Links</p>
+            <ul className="space-y-2 text-xs font-semibold text-zinc-200">
+              <li><Link to="/" className="hover:text-amber-400 transition-colors">Home</Link></li>
+              <li><Link to="/about" className="hover:text-amber-400 transition-colors">About Us</Link></li>
+              <li><Link to="/shop" className="hover:text-amber-400 transition-colors">Products</Link></li>
+              <li><Link to="/catering" className="hover:text-amber-400 transition-colors">Catering Services</Link></li>
+              <li><Link to="/gallery" className="hover:text-amber-400 transition-colors">Gallery</Link></li>
+              <li><Link to="/testimonials" className="hover:text-amber-400 transition-colors">Testimonials</Link></li>
+              <li><Link to="/faq" className="hover:text-amber-400 transition-colors">FAQ</Link></li>
+              <li><Link to="/contact" className="hover:text-amber-400 transition-colors">Contact Us</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 3: Customer Care */}
+          <div className="md:col-span-3">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-amber-400 mb-4 border-b border-amber-500/20 pb-2">Customer Care</p>
+            <ul className="space-y-2 text-xs font-semibold text-zinc-200">
+              <li><Link to="/track" className="hover:text-amber-400 transition-colors">Shipping & Delivery</Link></li>
+              <li><Link to="/faq" className="hover:text-amber-400 transition-colors">Returns & Refunds</Link></li>
+              <li><Link to="/faq" className="hover:text-amber-400 transition-colors">Terms & Conditions</Link></li>
+              <li><Link to="/faq" className="hover:text-amber-400 transition-colors">Privacy Policy</Link></li>
+            </ul>
+          </div>
+
+          {/* Column 4: Newsletter */}
+          <div className="md:col-span-3 space-y-3">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-amber-400 border-b border-amber-500/20 pb-2">Newsletter</p>
+            <p className="text-xs text-zinc-200 leading-relaxed">
+              Subscribe to get updates on new products, promotions and more.
+            </p>
+
+            {subscribed ? (
+              <p className="text-xs font-bold text-amber-400 bg-amber-500/10 p-3 rounded-xl border border-amber-500/30">
+                ✓ Thank you for subscribing to Barima Ba Foods!
+              </p>
+            ) : (
+              <form onSubmit={handleSubscribe} className="space-y-2">
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full rounded-xl border border-amber-500/30 bg-zinc-900 px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
+                />
+                <Button type="submit" size="sm" className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs">
+                  SUBSCRIBE
+                </Button>
+              </form>
+            )}
+          </div>
+        </div>
+
+        {/* 3. Bottom Legal Copyright Bar */}
+        <div className="mt-12 border-t border-amber-500/20 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500 text-black font-extrabold text-xs">
+              👑
+            </div>
+            <span className="font-display font-extrabold text-sm text-white">BARIMA BA FOODS</span>
+          </div>
+          <p className="text-xs font-medium text-zinc-300 text-center sm:text-left">
+            © {new Date().getFullYear()} Barima Ba Foods · Taste. Quality. Trust. All rights reserved.
+          </p>
+          <span className="text-xs font-extrabold text-amber-400 tracking-wider">Accra, Ghana</span>
         </div>
       </div>
     </footer>

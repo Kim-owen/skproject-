@@ -1,7 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Package, ShoppingBag, LogOut, Store, Menu } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, LogOut, Store, Menu, Film, Image as ImageIcon } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useState, type ReactNode } from "react";
 
@@ -14,6 +14,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
     { to: "/admin", label: "Dashboard", Icon: LayoutDashboard },
     { to: "/admin/orders", label: "Orders", Icon: ShoppingBag },
     { to: "/admin/products", label: "Products", Icon: Package },
+    { to: "/admin/hero", label: "Hero Video", Icon: Film },
+    { to: "/admin/media", label: "Site Images Hub", Icon: ImageIcon },
   ];
 
   const handleSignOut = async () => {

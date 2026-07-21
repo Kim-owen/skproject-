@@ -247,3 +247,36 @@ ON CONFLICT (slug) DO NOTHING;
 INSERT INTO public.delivery_zones (name, fee_ghs) VALUES
   ('East Legon',20),('Osu',15),('Airport / Cantonments',20),('Tema',35),('Madina',25),('Adenta',30),('Kaneshie',20),('Achimota',25)
 ON CONFLICT DO NOTHING;
+
+-- SITE SETTINGS (Dynamic Config for Hero Video, Announcements, etc.)
+CREATE TABLE IF NOT EXISTS public.site_settings (
+  key text PRIMARY KEY,
+  value jsonb NOT NULL,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+GRANT SELECT ON public.site_settings TO anon, authenticated;
+GRANT ALL ON public.site_settings TO service_role;
+GRANT INSERT, UPDATE, DELETE ON public.site_settings TO authenticated;
+ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "site_settings are public readable" ON public.site_settings FOR SELECT USING (true);
+CREATE POLICY "admins manage site_settings" ON public.site_settings FOR ALL TO authenticated
+  USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+-- SEED HERO MEDIA SETTINGS
+INSERT INTO public.site_settings (key, value) VALUES (
+  'hero_media',
+  jsonb_build_object(
+    'media_type', 'video',
+    'video_url', '/videos/shito-animi.mp4',
+    'poster_url', 'https://images.unsplash.com/photo-1599043513900-ed6fe01d3833?auto=format&fit=crop&q=80&w=800',
+    'badge_text', 'Same-day delivery across Accra',
+    'headline_main', 'Modern provisions,',
+    'headline_highlight', 'delivered fresh.',
+    'subheading', 'The curated pantry for modern Accra. Order premium meats, poultry, house-made shito, and household essentials online.',
+    'autoplay', true,
+    'muted', true,
+    'loop', true,
+    'overlay_text', 'Signature Shito Reel'
+  )
+) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+

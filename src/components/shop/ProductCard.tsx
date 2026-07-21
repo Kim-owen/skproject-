@@ -14,42 +14,49 @@ type Product = {
   stock_quantity: number;
 };
 
+export function getProductImage(name: string, url: string | null): string {
+  const n = name.toLowerCase();
+  if (n.includes("shito")) return "/images/product-shito-jars.png";
+  if (n.includes("beef")) return "/images/product-beef-chunks.png";
+  if (n.includes("chicken")) return "/images/product-chicken-chunks.png";
+  if (n.includes("green") || n.includes("chilli")) return "/images/product-green-chilli.png";
+  if (n.includes("gizzard")) return "/images/product-gizzard.png";
+  return url || "/images/product-shito-jars.png";
+}
+
 export function ProductCard({ product }: { product: Product }) {
   const { add } = useCart();
   const outOfStock = product.stock_quantity <= 0;
+  const displayImage = getProductImage(product.name, product.image_url);
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-3 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-      <Link to="/product/$slug" params={{ slug: product.slug }} className="relative block aspect-square overflow-hidden rounded-xl bg-muted border border-border/40">
-        {product.image_url ? (
-          <img
-            src={product.image_url}
-            alt={product.name}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-103"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground text-xs font-medium">No image</div>
-        )}
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/70 backdrop-blur-md p-3.5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-primary/40 hover:bg-card/90">
+      <Link to="/product/$slug" params={{ slug: product.slug }} className="relative block aspect-square overflow-hidden rounded-xl bg-muted/50 border border-border/40">
+        <img
+          src={displayImage}
+          alt={product.name}
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
         {!outOfStock && (
-          <span className="absolute left-2.5 top-2.5 rounded-md bg-background/90 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-primary border border-border/50 backdrop-blur-sm shadow-xs">
+          <span className="absolute left-2.5 top-2.5 rounded-lg bg-background/85 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-primary border border-primary/20 backdrop-blur-md shadow-xs">
             In stock
           </span>
         )}
       </Link>
       <div className="flex flex-1 flex-col pt-3.5">
-        <Link to="/product/$slug" params={{ slug: product.slug }} className="line-clamp-2 font-display text-sm font-semibold tracking-tight text-foreground hover:text-primary transition-colors min-h-[2.5rem] leading-snug">
+        <Link to="/product/$slug" params={{ slug: product.slug }} className="line-clamp-2 font-display text-sm font-bold tracking-tight text-foreground hover:text-primary transition-colors min-h-[2.5rem] leading-snug">
           {product.name}
         </Link>
         <div className="mt-1 flex items-baseline gap-1">
-          <span className="font-display text-base font-bold text-primary">{formatGHS(Number(product.price_ghs))}</span>
-          <span className="text-[10px] text-muted-foreground font-sans">/ {product.unit}</span>
+          <span className="font-display text-base font-extrabold text-primary">{formatGHS(Number(product.price_ghs))}</span>
+          <span className="text-[10px] text-muted-foreground font-sans font-medium">/ {product.unit}</span>
         </div>
         <div className="mt-3.5">
           <Button
             size="sm"
             variant="outline"
-            className="w-full rounded-lg border-border hover:bg-primary hover:text-primary-foreground text-xs font-semibold tracking-wide transition-all"
+            className="w-full rounded-xl border-border/80 bg-background/50 hover:bg-primary hover:text-primary-foreground hover:border-primary text-xs font-bold tracking-wide transition-all shadow-xs"
             disabled={outOfStock}
             onClick={() => {
               add({
