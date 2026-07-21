@@ -5,10 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { ShopLayout } from "@/components/shop/Layout";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/shop/ProductCard";
-import { ArrowRight, ArrowUpRight, Leaf, Shield, Flame, Truck, Heart, Award, Utensils, Phone, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Leaf, Shield, Flame, Truck, Heart, Award, Utensils, Phone, CheckCircle2, Volume2, VolumeX } from "lucide-react";
 import { formatGHS } from "@/lib/cart";
 import { getHeroSettings, DEFAULT_HERO_SETTINGS } from "@/lib/settings.functions";
-import { HeroMedia } from "@/components/shop/HeroMedia";
+import { useState, useRef } from "react";
 
 const featuredQuery = {
   queryKey: ["featured-products"],
@@ -34,7 +34,7 @@ export const Route = createFileRoute("/")({
 function HomePending() {
   return (
     <ShopLayout>
-      <section className="mx-auto max-w-7xl px-4 pt-10 sm:px-6 md:pt-16">
+      <section className="w-full px-4 pt-10 sm:px-6 md:pt-16">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:grid-rows-2 md:auto-rows-fr">
           <div className="md:col-span-2 md:row-span-2 h-[420px] animate-pulse rounded-[2rem] bg-card/60 md:h-full" />
           <div className="h-40 animate-pulse rounded-[2rem] bg-card/60" />
@@ -49,6 +49,8 @@ function HomePending() {
 function Home() {
   const { data: products } = useSuspenseQuery(featuredQuery);
   const fetchHeroSettings = useServerFn(getHeroSettings);
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const { data: heroSettings = DEFAULT_HERO_SETTINGS } = useQuery({
     queryKey: ["hero-settings"],
@@ -56,103 +58,120 @@ function Home() {
     staleTime: 60_000,
   });
 
-  const hero = products[0];
+  const toggleSound = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
 
   return (
     <ShopLayout>
-      {/* Hero Section with Full Cinematic Background Video */}
-      <section className="relative mx-auto max-w-7xl px-3 sm:px-6 pt-3 pb-8">
-        <div className="relative min-h-[75vh] sm:min-h-[82vh] w-full overflow-hidden rounded-[2.5rem] border border-amber-500/30 bg-black/60 shadow-2xl transition-all duration-700">
-          {/* Full-Coverage Background Ambient Video */}
-          {heroSettings.media_type === "video" && heroSettings.video_url ? (
-            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-              <video
-                src={heroSettings.video_url}
-                poster={heroSettings.poster_url}
-                autoPlay={true}
-                muted={true}
-                loop={true}
-                playsInline
-                className="h-full w-full object-cover opacity-65 sm:opacity-80 scale-105"
-              />
-            </div>
-          ) : (
-            <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-              <img
-                src={heroSettings.poster_url || "/images/hero-foods-spread.png"}
-                alt="Ambient Background"
-                className="h-full w-full object-cover opacity-60 scale-105"
-              />
-            </div>
-          )}
+      {/* Full-Width Frameless Edge-to-Edge Hero Section */}
+      <section className="relative w-full overflow-hidden bg-black min-h-[80vh] sm:min-h-[88vh]">
+        {/* Full-Width Background Ambient Video */}
+        {heroSettings.media_type === "video" && heroSettings.video_url ? (
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <video
+              ref={videoRef}
+              src={heroSettings.video_url}
+              poster={heroSettings.poster_url}
+              autoPlay={true}
+              muted={isMuted}
+              loop={true}
+              playsInline
+              className="h-full w-full object-cover opacity-70 sm:opacity-85 scale-105"
+            />
+          </div>
+        ) : (
+          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+            <img
+              src={heroSettings.poster_url || "/images/hero-foods-spread.png"}
+              alt="Ambient Background"
+              className="h-full w-full object-cover opacity-65 scale-105"
+            />
+          </div>
+        )}
 
-          {/* High-Contrast Dual Scrim Vignette Gradients */}
-          <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black/90 via-black/60 to-black/30 md:to-transparent" />
-          <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-black/95 via-black/20 to-black/60" />
+        {/* High-Contrast Dual Scrim Vignette Gradients */}
+        <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black/90 via-black/60 to-black/30 md:to-transparent" />
+        <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-black/95 via-black/30 to-black/60" />
 
-          {/* Hero Content Layer */}
-          <div className="relative z-10 flex flex-col justify-between p-6 sm:p-12 lg:p-16 min-h-[75vh] sm:min-h-[82vh]">
-            {/* Top Badge Row */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-black/70 px-4 py-1.5 text-xs font-extrabold tracking-widest uppercase text-amber-400 backdrop-blur-md shadow-md">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
-                </span>
-                <span>{heroSettings.badge_text || "Nationwide Express Delivery Across Ghana"}</span>
-              </div>
-
-              {/* Mobile Sound Notice Tag */}
-              <div className="hidden sm:inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-black/60 px-3 py-1 text-[11px] font-bold text-zinc-300 backdrop-blur-md">
-                <span>🎬 Authentic Barima Ba Shito Video</span>
-              </div>
+        {/* Hero Content Layer */}
+        <div className="relative z-10 mx-auto max-w-7xl flex flex-col justify-between p-6 sm:p-12 lg:p-16 min-h-[80vh] sm:min-h-[88vh]">
+          {/* Top Row with Shimmer Badge & Sound Mute/Unmute Control */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-black/80 px-4 py-1.5 text-xs font-extrabold tracking-widest uppercase text-amber-400 backdrop-blur-xl shadow-lg">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+              </span>
+              <span>{heroSettings.badge_text || "Nationwide Express Delivery Across Ghana"}</span>
             </div>
 
-            {/* Main Headline & Call to Actions */}
-            <div className="my-auto py-8 max-w-3xl">
-              <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08]">
-                {heroSettings.headline_main || "BARIMA BA FOODS"}
-                <span className="block mt-2 font-serif italic text-amber-400 drop-shadow-md">
-                  {heroSettings.headline_highlight || "Taste. Quality. Trust."}
-                </span>
-              </h1>
+            {/* Sound Mute/Unmute Toggle Button */}
+            <button
+              onClick={toggleSound}
+              className="flex items-center gap-2 rounded-full border border-amber-500/40 bg-black/80 px-4 py-2 text-xs font-extrabold uppercase tracking-wider text-amber-400 backdrop-blur-xl shadow-xl hover:scale-105 transition-all"
+            >
+              {isMuted ? (
+                <>
+                  <VolumeX className="h-4 w-4 text-amber-400" />
+                  <span>Tap to Unmute Sound 🔊</span>
+                </>
+              ) : (
+                <>
+                  <Volume2 className="h-4 w-4 text-amber-400 animate-pulse" />
+                  <span>Sound On 🎵 (Tap to Mute)</span>
+                </>
+              )}
+            </button>
+          </div>
 
-              <p className="mt-4 sm:mt-6 max-w-xl text-sm sm:text-lg leading-relaxed text-zinc-200 font-sans backdrop-blur-xs bg-black/20 p-2 sm:p-0 rounded-2xl">
-                {heroSettings.subheading || "Premium quality homemade Ghanaian foods made with passion, rich in flavor and crafted for your satisfaction."}
-              </p>
+          {/* Main Headline & Call to Actions */}
+          <div className="my-auto py-8 max-w-3xl">
+            <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08]">
+              {heroSettings.headline_main || "BARIMA BA FOODS"}
+              <span className="block mt-2 font-serif italic text-amber-400 drop-shadow-md">
+                {heroSettings.headline_highlight || "Taste. Quality. Trust."}
+              </span>
+            </h1>
 
-              {/* Action Buttons */}
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <Button asChild size="lg" className="rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-600 hover:to-amber-600 text-black px-8 py-6 text-sm sm:text-base font-extrabold shadow-xl shadow-amber-500/30 transition-all hover:scale-102">
-                  <Link to="/shop">
-                    ORDER NOW <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="rounded-2xl border-amber-500/40 bg-black/70 backdrop-blur-md px-8 py-6 text-sm sm:text-base font-extrabold text-amber-400 hover:bg-amber-500/20 hover:border-amber-400 transition-all">
-                  <Link to="/catering">CATERING SERVICES</Link>
-                </Button>
-              </div>
-            </div>
+            <p className="mt-4 sm:mt-6 max-w-xl text-sm sm:text-lg leading-relaxed text-zinc-200 font-sans backdrop-blur-xs bg-black/30 p-3 sm:p-0 rounded-2xl">
+              {heroSettings.subheading || "Premium quality homemade Ghanaian foods made with passion, rich in flavor and crafted for your satisfaction."}
+            </p>
 
-            {/* Bottom Highlights Ribbon (Over Video) */}
-            <div className="pt-4 border-t border-amber-500/20 flex flex-wrap items-center justify-between gap-4 text-xs font-extrabold uppercase tracking-widest text-amber-400">
-              <div className="flex items-center gap-2">
-                <span className="text-base">👑</span>
-                <span>AUTHENTIC GHANAIAN SHITO</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-base">🥩</span>
-                <span>TENDER BEEF & CHICKEN CHUNKS</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-base">🚚</span>
-                <span>FAST DOORSTEP DELIVERY</span>
-              </div>
+            {/* Action Buttons */}
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Button asChild size="lg" className="rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-600 hover:to-amber-600 text-black px-8 py-6 text-sm sm:text-base font-extrabold shadow-xl shadow-amber-500/30 transition-all hover:scale-102">
+                <Link to="/shop">
+                  ORDER NOW <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="rounded-2xl border-amber-500/40 bg-black/80 backdrop-blur-md px-8 py-6 text-sm sm:text-base font-extrabold text-amber-400 hover:bg-amber-500/20 hover:border-amber-400 transition-all">
+                <Link to="/catering">CATERING SERVICES</Link>
+              </Button>
             </div>
           </div>
 
-          <div className="pointer-events-none absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-background to-transparent" />
+          {/* Bottom Highlights Ribbon (Over Video) */}
+          <div className="pt-4 border-t border-amber-500/20 flex flex-wrap items-center justify-between gap-4 text-xs font-extrabold uppercase tracking-widest text-amber-400">
+            <div className="flex items-center gap-2">
+              <span className="text-base">👑</span>
+              <span>AUTHENTIC GHANAIAN SHITO</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-base">🥩</span>
+              <span>TENDER BEEF & CHICKEN CHUNKS</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-base">🚚</span>
+              <span>FAST DOORSTEP DELIVERY</span>
+            </div>
+          </div>
         </div>
+
+        <div className="pointer-events-none absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* 5-Column Trust Highlights Ribbon */}
