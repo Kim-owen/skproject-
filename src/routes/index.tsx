@@ -148,22 +148,6 @@ function Home() {
               </Button>
             </div>
           </div>
-
-          {/* Bottom Highlights Ribbon (Over Video) */}
-          <div className="pt-4 border-t border-amber-500/20 flex flex-wrap items-center justify-between gap-4 text-xs font-extrabold uppercase tracking-widest text-amber-400">
-            <div className="flex items-center gap-2">
-              <span className="text-base">👑</span>
-              <span>AUTHENTIC GHANAIAN SHITO</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-base">🥩</span>
-              <span>TENDER BEEF & CHICKEN CHUNKS</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-base">🚚</span>
-              <span>FAST DOORSTEP DELIVERY</span>
-            </div>
-          </div>
         </div>
 
         <div className="pointer-events-none absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-background to-transparent" />
