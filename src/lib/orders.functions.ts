@@ -313,3 +313,34 @@ export const updateUserProfileData = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const listCustomerOrders = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(z.object({
+    phone: z.string().optional(),
+    email: z.string().optional(),
+  }))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userId = context.userId;
+
+    // Get user profile first
+    const { data: profile } = await supabaseAdmin.from("profiles").select("phone").eq("id", userId).single();
+    const targetPhone = data.phone || profile?.phone;
+
+    let query = supabaseAdmin
+      .from("orders")
+      .select("id, order_number, status, payment_status, payment_method, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_id, product_name, quantity, unit, unit_price_ghs, line_total_ghs)")
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (targetPhone) {
+      query = query.eq("customer_phone", targetPhone);
+    } else if (data.email) {
+      query = query.eq("customer_email", data.email);
+    }
+
+    const { data: orders, error } = await query;
+    if (error) throw new Error(error.message);
+    return orders ?? [];
+  });

@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, LogIn, LogOut, User, Crown, Phone, Instagram, Menu, X, Truck, ChevronDown, Camera, Star, HelpCircle, PackageCheck, Utensils, Shield } from "lucide-react";
+import { ShoppingCart, ShoppingBag, LogIn, LogOut, User, Crown, Phone, Instagram, Menu, X, Truck, ChevronDown, Camera, Star, HelpCircle, PackageCheck, Utensils, Shield } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
@@ -224,6 +224,14 @@ export function Header() {
                   >
                     <User className="h-4 w-4 text-amber-400" />
                     <span>My Account & Wallet</span>
+                  </Link>
+                  <Link
+                    to="/orders"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2.5 rounded-xl p-2 text-xs font-bold text-zinc-200 hover:bg-amber-500/10 hover:text-amber-400 transition-all"
+                  >
+                    <ShoppingBag className="h-4 w-4 text-amber-400" />
+                    <span>My Order History</span>
                   </Link>
                   <Link
                     to="/track"
