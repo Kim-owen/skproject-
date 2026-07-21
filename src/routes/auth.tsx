@@ -172,21 +172,26 @@ function AuthPage() {
     if (data.user) {
       await supabase
         .from("profiles")
-        .upsert({ id: data.user.id, full_name: name, phone: phone }, { onConflict: "id" });
+        .upsert({ id: data.user.id, full_name: name, phone: phone, is_phone_verified: false }, { onConflict: "id" });
+      try {
+        await sendOtp({ data: { phone } });
+      } catch (smsErr) {
+        console.error("SMS OTP signup error:", smsErr);
+      }
     }
 
     if (data.session) {
-      toast.success("Account created & logged in!");
-      navigate({ to: "/checkout" });
+      toast.success("Account created! Verify your phone number to continue.");
+      navigate({ to: "/verify-otp", search: { phone } });
     } else {
       // Attempt immediate login so user is not blocked by unconfirmed email setting
       const loginRes = await supabase.auth.signInWithPassword({ email, password });
       if (loginRes.data.session) {
-        toast.success("Account created & logged in!");
-        navigate({ to: "/checkout" });
+        toast.success("Account created! Verify your phone number to continue.");
+        navigate({ to: "/verify-otp", search: { phone } });
       } else {
-        toast.success("Account created successfully! Please sign in with your password.");
-        setActiveTab("signin");
+        toast.success("Account created! Please verify your phone number.");
+        navigate({ to: "/verify-otp", search: { phone } });
       }
     }
   };
@@ -201,8 +206,8 @@ function AuthPage() {
     setOtpBusy(true);
     try {
       await sendOtp({ data: { phone } });
-      setOtpSent(true);
       toast.success(`Verification OTP sent to ${phone}`);
+      navigate({ to: "/verify-otp", search: { phone } });
     } catch (err: any) {
       toast.error(err.message || "Failed to send OTP code");
     } finally {

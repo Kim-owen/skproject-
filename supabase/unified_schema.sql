@@ -29,6 +29,10 @@ CREATE TABLE public.profiles (
   full_name text,
   phone text,
   wallet_balance_ghs numeric(10,2) NOT NULL DEFAULT 0.00,
+  delivery_address text,
+  ghana_post_gps text,
+  gps_coordinates text,
+  is_phone_verified boolean NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;

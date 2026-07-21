@@ -23,6 +23,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as TestimonialsRouteImport } from './routes/testimonials'
 import { Route as TrackRouteImport } from './routes/track'
+import { Route as VerifyOtpRouteImport } from './routes/verify-otp'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminHeroRouteImport } from './routes/admin/hero'
 import { Route as AdminMediaRouteImport } from './routes/admin/media'
@@ -103,6 +104,11 @@ const TrackRoute = TrackRouteImport.update({
   path: '/track',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyOtpRoute = VerifyOtpRouteImport.update({
+  id: '/verify-otp',
+  path: '/verify-otp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/shop': typeof ShopRoute
   '/testimonials': typeof TestimonialsRoute
   '/track': typeof TrackRoute
+  '/verify-otp': typeof VerifyOtpRoute
   '/admin/hero': typeof AdminHeroRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -190,6 +197,7 @@ export interface FileRoutesByTo {
   '/shop': typeof ShopRoute
   '/testimonials': typeof TestimonialsRoute
   '/track': typeof TrackRoute
+  '/verify-otp': typeof VerifyOtpRoute
   '/admin/hero': typeof AdminHeroRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -216,6 +224,7 @@ export interface FileRoutesById {
   '/shop': typeof ShopRoute
   '/testimonials': typeof TestimonialsRoute
   '/track': typeof TrackRoute
+  '/verify-otp': typeof VerifyOtpRoute
   '/admin/hero': typeof AdminHeroRoute
   '/admin/media': typeof AdminMediaRoute
   '/admin/orders': typeof AdminOrdersRoute
@@ -243,6 +252,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/testimonials'
     | '/track'
+    | '/verify-otp'
     | '/admin/hero'
     | '/admin/media'
     | '/admin/orders'
@@ -268,6 +278,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/testimonials'
     | '/track'
+    | '/verify-otp'
     | '/admin/hero'
     | '/admin/media'
     | '/admin/orders'
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/testimonials'
     | '/track'
+    | '/verify-otp'
     | '/admin/hero'
     | '/admin/media'
     | '/admin/orders'
@@ -319,6 +331,7 @@ export interface RootRouteChildren {
   ShopRoute: typeof ShopRoute
   TestimonialsRoute: typeof TestimonialsRoute
   TrackRoute: typeof TrackRoute
+  VerifyOtpRoute: typeof VerifyOtpRoute
   AdminHeroRoute: typeof AdminHeroRoute
   AdminMediaRoute: typeof AdminMediaRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
@@ -430,6 +443,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/verify-otp': {
+      id: '/verify-otp'
+      path: '/verify-otp'
+      fullPath: '/verify-otp'
+      preLoaderRoute: typeof VerifyOtpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/admin'
@@ -511,6 +531,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShopRoute: ShopRoute,
   TestimonialsRoute: TestimonialsRoute,
   TrackRoute: TrackRoute,
+  VerifyOtpRoute: VerifyOtpRoute,
   AdminHeroRoute: AdminHeroRoute,
   AdminMediaRoute: AdminMediaRoute,
   AdminOrdersRoute: AdminOrdersRoute,

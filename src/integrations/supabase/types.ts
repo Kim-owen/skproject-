@@ -280,6 +280,7 @@ export type Database = {
           ghana_post_gps: string | null
           gps_coordinates: string | null
           wallet_balance_ghs: number
+          is_phone_verified: boolean
         }
         Insert: {
           created_at?: string
@@ -290,6 +291,7 @@ export type Database = {
           ghana_post_gps?: string | null
           gps_coordinates?: string | null
           wallet_balance_ghs?: number
+          is_phone_verified?: boolean
         }
         Update: {
           created_at?: string
@@ -300,6 +302,7 @@ export type Database = {
           ghana_post_gps?: string | null
           gps_coordinates?: string | null
           wallet_balance_ghs?: number
+          is_phone_verified?: boolean
         }
         Relationships: []
       }
