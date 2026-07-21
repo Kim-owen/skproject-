@@ -153,12 +153,21 @@ function Checkout() {
     );
   }
 
+  const [orderScheduleType, setOrderScheduleType] = useState<"now" | "schedule" | "subscription">("now");
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [subscriptionFreq, setSubscriptionFreq] = useState<"weekly" | "biweekly" | "monthly">("weekly");
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!authUser) {
       toast.error("Please sign in or create an account to place your order.");
       navigate({ to: "/auth" });
+      return;
+    }
+
+    if (orderScheduleType === "schedule" && !scheduledDate) {
+      toast.error("Please select a scheduled delivery date and time.");
       return;
     }
 
@@ -177,6 +186,9 @@ function Checkout() {
           gps_coordinates: deliveryType === "delivery" && gpsCoordinates ? gpsCoordinates : undefined,
           payment_method: paymentMethod,
           notes: notes || undefined,
+          scheduled_delivery_date: orderScheduleType === "schedule" ? scheduledDate : undefined,
+          is_subscription: orderScheduleType === "subscription",
+          subscription_frequency: orderScheduleType === "subscription" ? subscriptionFreq : undefined,
           items: items.map((i) => ({ product_id: i.id, quantity: i.quantity })),
         },
       });
@@ -402,6 +414,99 @@ function Checkout() {
               <Label htmlFor="notes">Order notes (optional)</Label>
               <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} className="rounded-xl" />
             </div>
+          </section>
+
+          {/* Schedule & Recurring Meal Subscriptions */}
+          <section className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/5 via-zinc-950 to-card p-5 space-y-4 shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30 shrink-0">
+                📅
+              </div>
+              <div>
+                <h2 className="text-base font-extrabold text-foreground">Delivery Timing & Subscriptions</h2>
+                <p className="text-xs text-muted-foreground">Choose immediate delivery, schedule for a future date, or start a recurring subscription!</p>
+              </div>
+            </div>
+
+            <RadioGroup
+              value={orderScheduleType}
+              onValueChange={(v) => setOrderScheduleType(v as "now" | "schedule" | "subscription")}
+              className="grid gap-3 sm:grid-cols-3"
+            >
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/15 transition-all">
+                <RadioGroupItem value="now" className="mt-1" />
+                <div>
+                  <span className="font-extrabold text-xs text-foreground block">🚀 Deliver Now</span>
+                  <span className="text-[11px] text-muted-foreground block">Immediate kitchen prep & fast dispatch.</span>
+                </div>
+              </label>
+
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/15 transition-all">
+                <RadioGroupItem value="schedule" className="mt-1" />
+                <div>
+                  <span className="font-extrabold text-xs text-foreground block">⏰ Schedule Delivery</span>
+                  <span className="text-[11px] text-muted-foreground block">Choose exact date & time window.</span>
+                </div>
+              </label>
+
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/15 transition-all">
+                <RadioGroupItem value="subscription" className="mt-1" />
+                <div>
+                  <span className="font-extrabold text-xs text-amber-400 block">🔁 Recurring Subscription</span>
+                  <span className="text-[11px] text-muted-foreground block">Auto-repeats weekly or monthly.</span>
+                </div>
+              </label>
+            </RadioGroup>
+
+            {/* Scheduled Date Picker */}
+            {orderScheduleType === "schedule" && (
+              <div className="rounded-xl border border-amber-500/30 bg-card p-4 space-y-2 animate-fade-in-up">
+                <Label htmlFor="sched-date" className="text-xs font-bold text-amber-400">Select Future Date & Delivery Window *</Label>
+                <Input
+                  id="sched-date"
+                  type="datetime-local"
+                  required
+                  value={scheduledDate}
+                  onChange={(e) => setScheduledDate(e.target.value)}
+                  className="rounded-xl border-amber-500/40 text-sm font-semibold"
+                />
+                <span className="text-[11px] text-muted-foreground block">Our team will prepare and dispatch your food precisely for your scheduled slot.</span>
+              </div>
+            )}
+
+            {/* Subscription Frequency Options */}
+            {orderScheduleType === "subscription" && (
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-3 animate-fade-in-up">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400">Subscription Frequency</span>
+                  <span className="rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold px-2.5 py-0.5 border border-emerald-500/30">10% OFF AUTO-SAVINGS</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSubscriptionFreq("weekly")}
+                    className={`rounded-xl py-2 px-3 text-xs font-bold transition-all border ${subscriptionFreq === "weekly" ? "bg-amber-500 text-black border-amber-500 shadow-sm" : "bg-card text-foreground border-border"}`}
+                  >
+                    Every Week
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSubscriptionFreq("biweekly")}
+                    className={`rounded-xl py-2 px-3 text-xs font-bold transition-all border ${subscriptionFreq === "biweekly" ? "bg-amber-500 text-black border-amber-500 shadow-sm" : "bg-card text-foreground border-border"}`}
+                  >
+                    Every 2 Weeks
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSubscriptionFreq("monthly")}
+                    className={`rounded-xl py-2 px-3 text-xs font-bold transition-all border ${subscriptionFreq === "monthly" ? "bg-amber-500 text-black border-amber-500 shadow-sm" : "bg-card text-foreground border-border"}`}
+                  >
+                    Every Month
+                  </button>
+                </div>
+                <p className="text-[11px] text-zinc-300">Your subscription will automatically place orders on your selected schedule. Pause or cancel anytime in your profile dashboard.</p>
+              </div>
+            )}
           </section>
 
           {/* Interactive Map Location Pinning Modal */}

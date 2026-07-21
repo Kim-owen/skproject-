@@ -29,6 +29,7 @@ import {
   CreditCard,
   MapPin,
   CheckCircle2,
+  Calendar,
 } from "lucide-react";
 
 export const Route = createFileRoute("/profile")({
@@ -235,15 +236,18 @@ function ProfilePage() {
 
         {/* Profile Tabs Navigation */}
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 rounded-2xl bg-card p-1.5 border shadow-sm mb-8">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 rounded-2xl bg-card p-1.5 border shadow-sm mb-8 gap-1">
             <TabsTrigger value="overview" className="rounded-xl text-xs font-bold uppercase tracking-wider transition-all gap-2">
-              <User className="h-4 w-4" /> Overview & Wallet
+              <User className="h-4 w-4" /> Overview
             </TabsTrigger>
             <TabsTrigger value="orders" className="rounded-xl text-xs font-bold uppercase tracking-wider transition-all gap-2">
-              <ShoppingBag className="h-4 w-4" /> My Orders ({orders.length})
+              <ShoppingBag className="h-4 w-4" /> Orders ({orders.length})
+            </TabsTrigger>
+            <TabsTrigger value="subscriptions" className="rounded-xl text-xs font-bold uppercase tracking-wider transition-all gap-2">
+              📅 Subscriptions
             </TabsTrigger>
             <TabsTrigger value="settings" className="rounded-xl text-xs font-bold uppercase tracking-wider transition-all gap-2">
-              <ShieldCheck className="h-4 w-4" /> Profile Settings
+              <ShieldCheck className="h-4 w-4" /> Settings
             </TabsTrigger>
           </TabsList>
 
@@ -368,6 +372,89 @@ function ProfilePage() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* SUBSCRIPTIONS & SCHEDULES TAB */}
+          <TabsContent value="subscriptions" className="space-y-6">
+            <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-zinc-950 to-card p-6 md:p-8 shadow-xl space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/60 pb-6">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-extrabold px-2.5 py-0.5 border border-amber-500/30">
+                      GOURMET SUBSCRIPTION HUB
+                    </span>
+                  </div>
+                  <h2 className="font-display text-xl md:text-2xl font-bold text-foreground mt-1">
+                    Scheduled Orders & Meal Subscriptions
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Manage your recurring meal subscriptions, upcoming scheduled delivery slots, and auto-deliveries.
+                  </p>
+                </div>
+
+                <Button asChild className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs shrink-0 shadow-md">
+                  <Link to="/checkout">
+                    📅 Schedule New Order
+                  </Link>
+                </Button>
+              </div>
+
+              {/* Subscriptions & Scheduled Orders Filter */}
+              {orders.filter((o: any) => o.is_subscription || o.scheduled_delivery_date).length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center space-y-3">
+                  <Calendar className="mx-auto h-10 w-10 text-amber-500/40" />
+                  <h3 className="font-display text-base font-bold text-foreground">No active subscriptions or scheduled orders yet</h3>
+                  <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                    You can schedule any food or provision order for a future date or subscribe for weekly/monthly auto-deliveries with 10% auto-savings at checkout!
+                  </p>
+                  <Button asChild size="sm" className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs">
+                    <Link to="/shop">Explore Shop & Subscribe</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {orders.filter((o: any) => o.is_subscription || o.scheduled_delivery_date).map((o: any) => (
+                    <div key={o.id} className="rounded-2xl border border-amber-500/30 bg-card p-5 space-y-4 shadow-md">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-sm font-extrabold text-foreground">{o.order_number}</span>
+                        {o.is_subscription ? (
+                          <span className="rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-extrabold px-2.5 py-0.5 border border-amber-500/30">
+                            🔁 {o.subscription_frequency || "Weekly"} Subscription
+                          </span>
+                        ) : (
+                          <span className="rounded-full bg-blue-500/20 text-blue-400 text-[10px] font-extrabold px-2.5 py-0.5 border border-blue-500/30">
+                            ⏰ Scheduled Delivery
+                          </span>
+                        )}
+                      </div>
+
+                      {o.scheduled_delivery_date && (
+                        <div className="rounded-xl bg-amber-500/10 p-3 text-xs text-amber-300 font-medium">
+                          Target Delivery: <strong>{new Date(o.scheduled_delivery_date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</strong>
+                        </div>
+                      )}
+
+                      <div className="space-y-1 text-xs text-muted-foreground">
+                        <p>Total Amount: <strong className="text-foreground">{formatGHS(Number(o.total_ghs))}</strong></p>
+                        <p>Status: <span className="capitalize font-bold text-amber-400">{o.status.replace(/_/g, " ")}</span></p>
+                        {o.delivery_address && <p className="truncate">Address: {o.delivery_address}</p>}
+                      </div>
+
+                      <div className="flex items-center justify-between border-t pt-3">
+                        <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-bold">
+                          <Link to="/order/$orderNumber" params={{ orderNumber: o.order_number }}>
+                            View Details
+                          </Link>
+                        </Button>
+                        <span className="text-[10px] font-extrabold uppercase text-emerald-400 bg-emerald-500/15 px-2 py-1 rounded-lg">
+                          Active & Synced
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           {/* SETTINGS TAB */}

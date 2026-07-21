@@ -139,6 +139,9 @@ export type Database = {
           uber_tracking_url: string | null
           updated_at: string
           user_id: string | null
+          scheduled_delivery_date: string | null
+          is_subscription: boolean
+          subscription_frequency: string | null
         }
         Insert: {
           created_at?: string
@@ -168,6 +171,9 @@ export type Database = {
           uber_tracking_url?: string | null
           updated_at?: string
           user_id?: string | null
+          scheduled_delivery_date?: string | null
+          is_subscription?: boolean
+          subscription_frequency?: string | null
         }
         Update: {
           created_at?: string
@@ -197,6 +203,9 @@ export type Database = {
           uber_tracking_url?: string | null
           updated_at?: string
           user_id?: string | null
+          scheduled_delivery_date?: string | null
+          is_subscription?: boolean
+          subscription_frequency?: string | null
         }
         Relationships: [
           {

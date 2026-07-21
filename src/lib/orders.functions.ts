@@ -18,6 +18,9 @@ const createOrderInput = z.object({
   gps_coordinates: z.string().trim().max(60).optional().or(z.literal("")),
   payment_method: z.enum(["paystack", "cash_on_delivery", "wallet"]),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
+  scheduled_delivery_date: z.string().optional().nullable(),
+  is_subscription: z.boolean().optional(),
+  subscription_frequency: z.enum(["weekly", "biweekly", "monthly"]).optional().nullable(),
   items: z.array(itemSchema).min(1).max(50),
 });
 
@@ -186,6 +189,9 @@ export const createOrder = createServerFn({ method: "POST" })
         notes: data.notes || null,
         ghana_post_gps: data.ghana_post_gps || null,
         gps_coordinates: data.gps_coordinates || null,
+        scheduled_delivery_date: data.scheduled_delivery_date || null,
+        is_subscription: !!data.is_subscription,
+        subscription_frequency: data.subscription_frequency || null,
       })
       .select("id, order_number, total_ghs")
       .single();
@@ -283,7 +289,7 @@ export const getUserAccountDetails = createServerFn({ method: "GET" })
     if (profileRes.data?.phone) {
       const { data: userOrders } = await supabaseAdmin
         .from("orders")
-        .select("id, order_number, status, payment_status, payment_method, delivery_type, dispatch_partner, total_ghs, created_at, delivery_address, uber_tracking_url, rider_name, order_items(product_id, product_name, quantity, unit, unit_price_ghs)")
+        .select("id, order_number, status, payment_status, payment_method, delivery_type, dispatch_partner, total_ghs, created_at, delivery_address, uber_tracking_url, rider_name, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_id, product_name, quantity, unit, unit_price_ghs)")
         .eq("customer_phone", profileRes.data.phone)
         .order("created_at", { ascending: false })
         .limit(50);
@@ -336,7 +342,7 @@ export const listCustomerOrders = createServerFn({ method: "POST" })
 
     let query = supabaseAdmin
       .from("orders")
-      .select("id, order_number, status, payment_status, payment_method, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_id, product_name, quantity, unit, unit_price_ghs, line_total_ghs)")
+      .select("id, order_number, status, payment_status, payment_method, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, delivery_address, ghana_post_gps, gps_coordinates, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_id, product_name, quantity, unit, unit_price_ghs, line_total_ghs)")
       .order("created_at", { ascending: false })
       .limit(100);
 

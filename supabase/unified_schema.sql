@@ -156,6 +156,9 @@ CREATE TABLE public.orders (
   rider_vehicle text,
   uber_tracking_url text,
   estimated_delivery_time text,
+  scheduled_delivery_date timestamptz,
+  is_subscription boolean NOT NULL DEFAULT false,
+  subscription_frequency text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );

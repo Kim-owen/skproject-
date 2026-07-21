@@ -248,11 +248,16 @@ function CustomerOrdersPage() {
                 {/* Header Row: Order number, date, status */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
                   <div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-base font-extrabold text-foreground tracking-wide">{o.order_number}</span>
                       <span className={`rounded-lg border px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider ${getStatusBadgeClass(o.status)}`}>
                         {o.status.replace(/_/g, " ")}
                       </span>
+                      {o.is_subscription && (
+                        <span className="rounded-lg border px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/20 text-amber-400 border-amber-500/30">
+                          🔁 {o.subscription_frequency || "Weekly"} Subscription
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
                       <span><Calendar className="inline h-3.5 w-3.5 text-muted-foreground mr-1" />{new Date(o.created_at).toLocaleDateString()} at {new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -274,6 +279,12 @@ function CustomerOrdersPage() {
                 </div>
 
                 {/* Dispatch & Delivery Banner */}
+                {o.scheduled_delivery_date && (
+                  <div className="flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
+                    <span>⏰ Scheduled Delivery: <strong>{new Date(o.scheduled_delivery_date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</strong></span>
+                  </div>
+                )}
+
                 {o.uber_tracking_url ? (
                   <div className="flex flex-col sm:flex-row items-center justify-between rounded-2xl border border-purple-500/40 bg-gradient-to-r from-purple-950/40 via-zinc-900 to-black p-3.5 text-xs text-purple-300 gap-2">
                     <div className="flex items-center gap-2">
