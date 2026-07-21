@@ -74,7 +74,7 @@ export function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-amber-500/20 bg-background/95 backdrop-blur-xl transition-all shadow-md">
+    <header className="sticky top-0 z-50 w-full border-b border-amber-500/20 bg-background/95 backdrop-blur-xl transition-all shadow-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         {/* Brand Logo & Golden Crown Badge */}
         <Link to="/" className="group flex items-center gap-3">
@@ -182,7 +182,7 @@ export function Header() {
 
       {/* Premium Full-Screen Mobile Navigation Overlay (iOS & Android Optimized) */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden bg-zinc-950/98 backdrop-blur-2xl flex flex-col justify-between p-5 sm:p-7 overflow-y-auto animate-fade-in text-white">
+        <div className="fixed inset-0 top-0 left-0 z-[100] h-[100dvh] w-full md:hidden bg-zinc-950 p-5 sm:p-7 overflow-y-auto animate-fade-in text-white flex flex-col justify-between">
           <div>
             {/* Top Navigation Bar */}
             <div className="flex items-center justify-between border-b border-amber-500/20 pb-4 mb-6">
