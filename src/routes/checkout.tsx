@@ -218,9 +218,9 @@ function Checkout() {
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/40 via-zinc-900 to-black p-4 text-white shadow-md flex items-center justify-between">
+            <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/40 via-zinc-900 to-black p-4 text-white shadow-md flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
                   💳
                 </div>
                 <div>
@@ -228,6 +228,19 @@ function Checkout() {
                   <span className="text-xs text-zinc-300">Barima Ba Wallet Balance: <strong className="text-emerald-400 font-mono">{formatGHS(walletBalance)}</strong></span>
                 </div>
               </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  setAuthUser(null);
+                  toast.success("Signed out successfully");
+                }}
+                className="text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-500/15 rounded-xl border border-red-500/30 shrink-0"
+              >
+                Sign Out
+              </Button>
             </div>
           )}
 

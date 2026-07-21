@@ -1,18 +1,58 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { ShoppingCart, LogIn, Crown, Phone, Instagram, Menu, X, Truck, ChevronDown, Camera, Star, HelpCircle, PackageCheck, Utensils, Shield } from "lucide-react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { ShoppingCart, LogIn, LogOut, User, Crown, Phone, Instagram, Menu, X, Truck, ChevronDown, Camera, Star, HelpCircle, PackageCheck, Utensils, Shield } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export function Header() {
   const { count } = useCart();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
   const [bump, setBump] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [authUser, setAuthUser] = useState<any>(null);
+  const [userName, setUserName] = useState<string>("");
+
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const prev = useRef(count);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setAuthUser(data.user);
+        setUserName(data.user.user_metadata?.full_name || "");
+      }
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_, session) => {
+      if (session?.user) {
+        setAuthUser(session.user);
+        setUserName(session.user.user_metadata?.full_name || "");
+      } else {
+        setAuthUser(null);
+        setUserName("");
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setAuthUser(null);
+    setUserMenuOpen(false);
+    setMobileOpen(false);
+    toast.success("Signed out successfully");
+    navigate({ to: "/" });
+  };
 
   useEffect(() => {
     if (count !== prev.current && count > 0) {
@@ -28,6 +68,9 @@ export function Header() {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -156,9 +199,55 @@ export function Header() {
         {/* Action Buttons */}
         <div className="flex items-center gap-2.5">
           <div className="hidden sm:block"><ThemeToggle /></div>
-          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex rounded-xl text-muted-foreground hover:text-foreground hover:bg-amber-500/10 text-xs font-bold">
-            <Link to="/auth"><LogIn className="mr-1.5 h-4 w-4 text-amber-500" />Sign In</Link>
-          </Button>
+
+          {authUser ? (
+            <div className="relative hidden sm:block" ref={userMenuRef}>
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/15 px-3 py-1.5 text-xs font-extrabold text-amber-400 hover:bg-amber-500/25 transition-all shadow-sm"
+              >
+                <User className="h-3.5 w-3.5 text-amber-400" />
+                <span className="max-w-[110px] truncate">{userName || authUser.email?.split("@")[0]}</span>
+                <ChevronDown className={`h-3 w-3 text-amber-400 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-amber-500/30 bg-zinc-950/95 p-2.5 backdrop-blur-2xl shadow-2xl z-50 animate-fade-in-up">
+                  <div className="border-b border-zinc-800 pb-2 mb-2 px-2">
+                    <span className="block text-xs font-extrabold text-amber-400 truncate">{userName || "Barima Ba Customer"}</span>
+                    <span className="block text-[10px] text-zinc-400 truncate">{authUser.email}</span>
+                  </div>
+                  <Link
+                    to="/auth"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2.5 rounded-xl p-2 text-xs font-bold text-zinc-200 hover:bg-amber-500/10 hover:text-amber-400 transition-all"
+                  >
+                    <User className="h-4 w-4 text-amber-400" />
+                    <span>My Account & Wallet</span>
+                  </Link>
+                  <Link
+                    to="/track"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2.5 rounded-xl p-2 text-xs font-bold text-zinc-200 hover:bg-amber-500/10 hover:text-amber-400 transition-all"
+                  >
+                    <PackageCheck className="h-4 w-4 text-amber-400" />
+                    <span>Track My Delivery</span>
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-2.5 rounded-xl p-2 text-xs font-extrabold text-red-400 hover:bg-red-500/15 transition-all mt-1"
+                  >
+                    <LogOut className="h-4 w-4 text-red-400" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex rounded-xl text-muted-foreground hover:text-foreground hover:bg-amber-500/10 text-xs font-bold">
+              <Link to="/auth"><LogIn className="mr-1.5 h-4 w-4 text-amber-500" />Sign In</Link>
+            </Button>
+          )}
           <Button asChild size="sm" className="relative rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-extrabold shadow-lg shadow-amber-500/20 transition-all hover:scale-102">
             <Link to="/cart">
               <ShoppingCart className="mr-1.5 h-4 w-4 fill-black" />

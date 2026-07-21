@@ -13,6 +13,7 @@ import {
   Mail, 
   Lock, 
   User, 
+  LogOut,
   Phone,
   Smartphone,
   ArrowLeft, 
@@ -47,11 +48,40 @@ function AuthPage() {
   const sendOtp = useServerFn(sendPhoneOTP);
   const verifyOtp = useServerFn(verifyPhoneOTP);
 
+  const [sessionUser, setSessionUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [isAdminUser, setIsAdminUser] = useState(false);
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/" });
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setSessionUser(data.user);
+        supabase
+          .from("profiles")
+          .select("full_name, phone, wallet_balance_ghs")
+          .eq("id", data.user.id)
+          .single()
+          .then(({ data: prof }) => {
+            if (prof) setUserProfile(prof);
+          });
+        supabase
+          .rpc("has_role", { _user_id: data.user.id, _role: "admin" })
+          .then(({ data: isAdm }) => {
+            if (isAdm) setIsAdminUser(true);
+          });
+      }
     });
-  }, [navigate]);
+  }, []);
+
+  const handleSignOut = async () => {
+    setBusy(true);
+    await supabase.auth.signOut();
+    setSessionUser(null);
+    setUserProfile(null);
+    setIsAdminUser(false);
+    setBusy(false);
+    toast.success("Signed out of your account successfully.");
+  };
 
   const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -247,19 +277,90 @@ function AuthPage() {
 
         <div className="w-full max-w-md space-y-6 z-10">
           
-          {/* Card Container */}
-          <div className="rounded-3xl border border-border bg-card p-8 shadow-xl backdrop-blur-sm transition-all duration-300 hover:shadow-2xl">
-            
-            {/* Header branding */}
-            <div className="flex flex-col items-center text-center space-y-2 mb-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 mb-2 shadow-xs ring-4 ring-amber-500/5">
-                <ShoppingBag className="h-6 w-6" />
+          {sessionUser ? (
+            <div className="rounded-3xl border border-amber-500/40 bg-gradient-to-b from-zinc-900/90 via-black to-zinc-950 p-8 shadow-2xl backdrop-blur-xl space-y-6">
+              
+              {/* Signed In Header */}
+              <div className="flex flex-col items-center text-center space-y-3">
+                <div className="relative">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500 text-black font-extrabold text-2xl shadow-xl ring-4 ring-amber-500/20">
+                    {userProfile?.full_name ? userProfile.full_name[0].toUpperCase() : sessionUser.email[0].toUpperCase()}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-black text-xs font-bold ring-2 ring-black">
+                    ✓
+                  </div>
+                </div>
+
+                <div>
+                  <span className="inline-block rounded-full bg-amber-500/15 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-amber-400 border border-amber-500/30 mb-1">
+                    ACTIVE ACCOUNT
+                  </span>
+                  <h1 className="font-display text-2xl font-bold text-foreground">
+                    {userProfile?.full_name || sessionUser.user_metadata?.full_name || "Barima Ba Customer"}
+                  </h1>
+                  <p className="text-xs text-muted-foreground">{sessionUser.email}</p>
+                </div>
               </div>
-              <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Barima Ba Account</h1>
-              <p className="text-xs text-muted-foreground max-w-[280px]">
-                Sign in or register to manage orders, track deliveries, and access admin controls.
-              </p>
+
+              {/* Profile Details & Wallet Summary Card */}
+              <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-zinc-900 to-black p-4 space-y-3">
+                <div className="flex items-center justify-between text-xs border-b border-zinc-800 pb-2">
+                  <span className="text-zinc-400 font-medium">Mobile Phone:</span>
+                  <span className="font-bold font-mono text-amber-400">{userProfile?.phone || sessionUser.user_metadata?.phone || "Not set"}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-zinc-400 font-medium">Barima Ba Wallet:</span>
+                  <span className="font-bold font-mono text-emerald-400 text-sm">₵{Number(userProfile?.wallet_balance_ghs || 0).toFixed(2)} GHS</span>
+                </div>
+              </div>
+
+              {/* Navigation Action Buttons */}
+              <div className="space-y-2.5 pt-1">
+                <Button asChild size="lg" className="w-full rounded-2xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs shadow-lg shadow-amber-500/20 py-5">
+                  <Link to="/checkout">
+                    <span>Proceed to Order Checkout</span>
+                    <span className="ml-1 text-base">→</span>
+                  </Link>
+                </Button>
+
+                <Button asChild variant="outline" size="lg" className="w-full rounded-2xl border-zinc-800 bg-zinc-900/60 text-zinc-200 hover:bg-zinc-800 font-bold text-xs py-5">
+                  <Link to="/shop">Explore Products Catalog</Link>
+                </Button>
+
+                {isAdminUser && (
+                  <Button asChild variant="outline" size="lg" className="w-full rounded-2xl border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 font-extrabold text-xs py-5">
+                    <Link to="/admin">Open Store Admin Panel</Link>
+                  </Button>
+                )}
+              </div>
+
+              {/* Redesigned Sign Out Button */}
+              <div className="pt-3 border-t border-zinc-800">
+                <Button
+                  onClick={handleSignOut}
+                  disabled={busy}
+                  className="w-full rounded-2xl bg-red-500/15 border border-red-500/40 text-red-400 hover:bg-red-500/25 font-extrabold text-xs py-5 gap-2"
+                >
+                  <LogOut className="h-4 w-4 text-red-400" />
+                  <span>{busy ? "Signing out..." : "Sign Out of Account"}</span>
+                </Button>
+              </div>
+
             </div>
+          ) : (
+            /* Card Container for Unauthenticated Users */
+            <div className="rounded-3xl border border-border bg-card p-8 shadow-xl backdrop-blur-sm transition-all duration-300 hover:shadow-2xl">
+              
+              {/* Header branding */}
+              <div className="flex flex-col items-center text-center space-y-2 mb-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 mb-2 shadow-xs ring-4 ring-amber-500/5">
+                  <ShoppingBag className="h-6 w-6" />
+                </div>
+                <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Barima Ba Account</h1>
+                <p className="text-xs text-muted-foreground max-w-[280px]">
+                  Sign in or register to manage orders, track deliveries, and access admin controls.
+                </p>
+              </div>
 
             {/* Auth Error Banner */}
             {authError && (
@@ -483,6 +584,7 @@ function AuthPage() {
               </Button>
             </div>
           </div>
+          )}
 
           {/* Footer details */}
           <div className="flex flex-col items-center justify-center gap-3 text-center">
