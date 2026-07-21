@@ -9,11 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCart, formatGHS } from "@/lib/cart";
-import { createOrder } from "@/lib/orders.functions";
-import { useState, useMemo } from "react";
+import { createOrder, calculateUberEstimate } from "@/lib/orders.functions";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
-import { MapPin, Compass } from "lucide-react";
+import { MapPin, Compass, Navigation, ExternalLink, Calculator, Sparkles } from "lucide-react";
 
 const zonesQuery = {
   queryKey: ["zones"],
@@ -35,6 +36,7 @@ function Checkout() {
   const { items, subtotal, clear, count } = useCart();
   const navigate = useNavigate();
   const create = useServerFn(createOrder);
+  const getUberQuote = useServerFn(calculateUberEstimate);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -50,6 +52,31 @@ function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState<"paystack" | "cash_on_delivery">("paystack");
   const [submitting, setSubmitting] = useState(false);
 
+  // Uber Dynamic Map & Estimate State
+  const [mapModalOpen, setMapModalOpen] = useState(false);
+  const [uberEstimate, setUberEstimate] = useState<{
+    distance_km: number;
+    estimated_fee_ghs: number;
+    estimated_minutes: string;
+    dispatch_provider: string;
+  } | null>(null);
+
+  const fetchUberQuote = async (coordsStr: string) => {
+    try {
+      const parts = coordsStr.split(",");
+      if (parts.length === 2) {
+        const lat = parseFloat(parts[0].trim());
+        const lng = parseFloat(parts[1].trim());
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const res = await getUberQuote({ data: { lat, lng } });
+          setUberEstimate(res);
+        }
+      }
+    } catch (e) {
+      console.error("Uber quote failed:", e);
+    }
+  };
+
   const getGeolocation = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by your browser");
@@ -58,10 +85,11 @@ function Checkout() {
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const coords = `${pos.coords.latitude},${pos.coords.longitude}`;
+        const coords = `${pos.coords.latitude.toFixed(6)},${pos.coords.longitude.toFixed(6)}`;
         setGpsCoordinates(coords);
         setLocating(false);
         toast.success("Location coordinates pinned successfully!");
+        fetchUberQuote(coords);
       },
       (err) => {
         setLocating(false);
@@ -72,9 +100,13 @@ function Checkout() {
   };
 
   const deliveryFee = useMemo(() => {
-    if (deliveryType !== "delivery" || !zoneId) return 0;
+    if (deliveryType !== "delivery") return 0;
+    if (dispatchPartner === "uber" && uberEstimate) {
+      return uberEstimate.estimated_fee_ghs;
+    }
+    if (!zoneId) return 0;
     return Number(zones.find((z) => z.id === zoneId)?.fee_ghs ?? 0);
-  }, [deliveryType, zoneId, zones]);
+  }, [deliveryType, dispatchPartner, uberEstimate, zoneId, zones]);
   const total = subtotal + deliveryFee;
 
   if (count === 0) {
@@ -193,40 +225,167 @@ function Checkout() {
                 <div>
                   <Label>Delivery zone *</Label>
                   <Select value={zoneId} onValueChange={setZoneId}>
-                    <SelectTrigger><SelectValue placeholder="Choose your area" /></SelectTrigger>
-                    <SelectContent>
+                    <SelectTrigger className="rounded-xl"><SelectValue placeholder="Choose your area" /></SelectTrigger>
+                    <SelectContent className="rounded-xl">
                       {zones.map((z) => (
                         <SelectItem key={z.id} value={z.id}>{z.name} — {formatGHS(Number(z.fee_ghs))}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div>
                   <Label htmlFor="address">Delivery address *</Label>
-                  <Textarea id="address" required value={address} onChange={(e) => setAddress(e.target.value)} placeholder="House number, street, landmark…" />
+                  <Textarea id="address" required value={address} onChange={(e) => setAddress(e.target.value)} placeholder="House number, street name, nearest landmark..." className="rounded-xl" />
                 </div>
+
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <Label htmlFor="gps">Ghana Post GPS (optional)</Label>
-                    <Input id="gps" placeholder="GA-183-9032" value={ghanaPostGps} onChange={(e) => setGhanaPostGps(e.target.value.toUpperCase())} pattern="^[A-Z]{2}-[0-9]{3,4}-[0-9]{4}$" />
+                    <Input id="gps" placeholder="GA-183-9032" value={ghanaPostGps} onChange={(e) => setGhanaPostGps(e.target.value.toUpperCase())} pattern="^[A-Z]{2}-[0-9]{3,4}-[0-9]{4}$" className="rounded-xl" />
                   </div>
+
                   <div>
-                    <Label htmlFor="coords">GPS Coordinates (optional)</Label>
+                    <Label htmlFor="coords">GPS Location Pin & Uber Estimate</Label>
                     <div className="flex gap-2">
-                      <Input id="coords" placeholder="Lat, Lng" value={gpsCoordinates} onChange={(e) => setGpsCoordinates(e.target.value)} className="flex-1" />
-                      <Button type="button" variant="outline" onClick={getGeolocation} className="shrink-0" disabled={locating}>
-                        <Compass className={`h-4 w-4 ${locating ? "animate-spin" : ""}`} />
+                      <Input
+                        id="coords"
+                        placeholder="Lat, Lng"
+                        value={gpsCoordinates}
+                        onChange={(e) => {
+                          setGpsCoordinates(e.target.value);
+                          fetchUberQuote(e.target.value);
+                        }}
+                        className="flex-1 rounded-xl font-mono text-xs"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={getGeolocation}
+                        className="shrink-0 rounded-xl border-amber-500/40 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20"
+                        disabled={locating}
+                        title="Pin current GPS location"
+                      >
+                        <Compass className={`h-4 w-4 mr-1.5 ${locating ? "animate-spin" : ""}`} />
+                        <span>GPS Pin</span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setMapModalOpen(true)}
+                        className="shrink-0 rounded-xl font-bold text-xs"
+                      >
+                        <MapPin className="h-4 w-4 mr-1 text-amber-500" />
+                        <span>Map</span>
                       </Button>
                     </div>
                   </div>
                 </div>
+
+                {/* Dynamic Uber Pricing Estimate Badge */}
+                {dispatchPartner === "uber" && (
+                  <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-zinc-950 via-zinc-900 to-black p-4 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                        <Navigation className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-sm text-white">Uber Package Live Estimate</span>
+                          <span className="rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold px-2 py-0.5 border border-emerald-500/30">DYNAMIC FARE</span>
+                        </div>
+                        <p className="text-xs text-zinc-400">
+                          {uberEstimate ? `Distance: ${uberEstimate.distance_km} km · ETA: ${uberEstimate.estimated_minutes}` : "Pin GPS above or select zone for live price."}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-left sm:text-right">
+                      <span className="text-[10px] uppercase font-bold text-zinc-400">Uber Delivery Fee</span>
+                      <p className="font-mono text-lg font-extrabold text-amber-400">{formatGHS(deliveryFee)}</p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             <div className="mt-4">
               <Label htmlFor="notes">Order notes (optional)</Label>
-              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
+              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} className="rounded-xl" />
             </div>
           </section>
+
+          {/* Interactive Map Location Pinning Modal */}
+          <Dialog open={mapModalOpen} onOpenChange={setMapModalOpen}>
+            <DialogContent className="max-w-lg rounded-3xl border border-amber-500/30 bg-card p-6 shadow-2xl">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-lg font-extrabold text-foreground">
+                  <MapPin className="h-5 w-5 text-amber-500" />
+                  <span>Select Delivery Location on Accra Map</span>
+                </DialogTitle>
+                <p className="text-xs text-muted-foreground">
+                  Tap any area preset or pin your location to calculate real-time Uber delivery distance & fee.
+                </p>
+              </DialogHeader>
+
+              <div className="space-y-4 pt-2">
+                {/* Embedded Interactive Map Preview Box */}
+                <div className="relative h-48 w-full rounded-2xl overflow-hidden border border-amber-500/30 bg-zinc-900 shadow-inner flex items-center justify-center">
+                  <iframe
+                    title="Accra Delivery Map"
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=-0.2500%2C5.5500%2C-0.1000%2C5.7000&layer=mapnik&marker=${
+                      gpsCoordinates ? gpsCoordinates.replace(/\s+/g, "") : "5.6350,-0.1600"
+                    }`}
+                    className="h-full w-full border-0 opacity-85 hover:opacity-100 transition-opacity"
+                  />
+                  <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-amber-500/30 text-[11px] font-bold text-amber-400">
+                    📍 {gpsCoordinates ? `Pinned: ${gpsCoordinates}` : "Center: Accra Hub"}
+                  </div>
+                </div>
+
+                {/* Quick Ghana Location Pin Presets */}
+                <div>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Quick Accra Location Presets</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                    {[
+                      { name: "East Legon", coords: "5.6350,-0.1600" },
+                      { name: "Osu / Oxford St", coords: "5.5560,-0.1810" },
+                      { name: "Spintex Road", coords: "5.6200,-0.1050" },
+                      { name: "Airport Residential", coords: "5.6050,-0.1750" },
+                      { name: "Cantonments", coords: "5.5780,-0.1700" },
+                      { name: "Dansoman", coords: "5.5450,-0.2500" },
+                      { name: "Madina / Adenta", coords: "5.6800,-0.1650" },
+                      { name: "Tema Central", coords: "5.6690,-0.0160" },
+                    ].map((loc) => (
+                      <button
+                        key={loc.name}
+                        type="button"
+                        onClick={() => {
+                          setGpsCoordinates(loc.coords);
+                          setAddress((prev) => prev || `${loc.name}, Accra, Ghana`);
+                          fetchUberQuote(loc.coords);
+                          toast.success(`Pinned location: ${loc.name}`);
+                          setMapModalOpen(false);
+                        }}
+                        className="rounded-xl border border-border bg-secondary/60 p-2.5 text-xs font-semibold text-foreground hover:border-amber-500/50 hover:bg-amber-500/10 hover:text-amber-500 transition-all text-left truncate"
+                      >
+                        📍 {loc.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
+                  <Button type="button" variant="outline" onClick={getGeolocation} className="rounded-xl text-xs gap-1.5" disabled={locating}>
+                    <Compass className={`h-4 w-4 text-amber-500 ${locating ? "animate-spin" : ""}`} />
+                    <span>Auto-Detect GPS</span>
+                  </Button>
+                  <Button type="button" onClick={() => setMapModalOpen(false)} className="rounded-xl bg-amber-500 text-black font-extrabold text-xs">
+                    Confirm Location Pin
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           <section className="rounded-xl border bg-card p-5">
             <h2 className="text-lg font-semibold">Payment</h2>

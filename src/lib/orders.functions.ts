@@ -21,6 +21,46 @@ const createOrderInput = z.object({
   items: z.array(itemSchema).min(1).max(50),
 });
 
+// Barima Ba Kitchen Default Hub (Accra / East Legon)
+const STORE_LAT = 5.6350;
+const STORE_LNG = -0.1600;
+
+function calculateHaversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+export const calculateUberEstimate = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      lat: z.number(),
+      lng: z.number(),
+    })
+  )
+  .handler(async ({ data }) => {
+    const distKm = calculateHaversineDistance(STORE_LAT, STORE_LNG, data.lat, data.lng);
+    const roundedDist = Math.max(1, Math.round(distKm * 10) / 10);
+    
+    // Dynamic Uber Pricing Formula for Ghana: Base ₵12 GHS + ₵2.30 per km
+    const baseFee = 12;
+    const perKmRate = 2.3;
+    const estimatedFeeGhs = Math.round((baseFee + roundedDist * perKmRate) * 100) / 100;
+    const estimatedMins = Math.round(15 + roundedDist * 2.5);
+
+    return {
+      distance_km: roundedDist,
+      estimated_fee_ghs: estimatedFeeGhs,
+      estimated_minutes: `${estimatedMins} - ${estimatedMins + 10} mins`,
+      dispatch_provider: "Uber Package Dispatch",
+    };
+  });
+
 export async function sendSMSNotification(phone: string, message: string) {
   const apiKey = process.env.ARKESEL_API_KEY;
   console.log(`[SMS MOCK] To: ${phone} | Message: ${message}`);
