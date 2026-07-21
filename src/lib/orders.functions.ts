@@ -94,9 +94,12 @@ export async function sendSMSNotification(phone: string, message: string) {
   }
 }
 
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
 export const createOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .validator(createOrderInput)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const productIds = data.items.map((i) => i.product_id);

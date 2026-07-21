@@ -62,8 +62,16 @@ function AuthPage() {
       return toast.error("Sign-in failed. Please check credentials.");
     }
 
+    const userId = data.user?.id;
     toast.success("Welcome back! Signed in successfully.");
-    navigate({ to: "/admin" });
+    if (userId) {
+      const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+      if (isAdmin) {
+        navigate({ to: "/admin" });
+        return;
+      }
+    }
+    navigate({ to: "/checkout" });
   };
 
   const signUp = async (e: React.FormEvent) => {
@@ -100,7 +108,7 @@ function AuthPage() {
 
     if (data.session) {
       toast.success("Account created & logged in!");
-      navigate({ to: "/admin" });
+      navigate({ to: "/checkout" });
     } else if (data.user) {
       toast.success("Account created successfully! Now sign in with your password.");
       setActiveTab("signin");

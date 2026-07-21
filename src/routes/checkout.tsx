@@ -510,9 +510,17 @@ function Checkout() {
             <div className="flex justify-between"><dt>Delivery</dt><dd>{deliveryType === "pickup" ? "Free" : formatGHS(deliveryFee)}</dd></div>
             <div className="flex justify-between border-t pt-2 text-base font-semibold"><dt>Total</dt><dd>{formatGHS(total)}</dd></div>
           </dl>
-          <Button type="submit" size="lg" className="mt-6 w-full" disabled={submitting}>
-            {submitting ? "Placing order…" : paymentMethod === "paystack" ? "Pay now" : "Place order"}
-          </Button>
+          {!authUser ? (
+            <Button asChild size="lg" className="mt-6 w-full bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-lg shadow-amber-500/20">
+              <Link to="/auth">
+                Sign in / Create Account to Pay
+              </Link>
+            </Button>
+          ) : (
+            <Button type="submit" size="lg" className="mt-6 w-full" disabled={submitting}>
+              {submitting ? "Placing order…" : paymentMethod === "paystack" ? "Pay now" : "Place order"}
+            </Button>
+          )}
         </aside>
       </form>
     </ShopLayout>
