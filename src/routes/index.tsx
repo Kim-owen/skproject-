@@ -80,7 +80,7 @@ function Home() {
               muted={isMuted}
               loop={true}
               playsInline
-              className="h-full w-full object-cover opacity-70 sm:opacity-85 scale-105"
+              className="h-full w-full object-cover opacity-95 sm:opacity-100 brightness-105 contrast-105 scale-105 transition-opacity duration-700"
             />
           </div>
         ) : (
@@ -88,14 +88,14 @@ function Home() {
             <img
               src={heroSettings.poster_url || "/images/hero-foods-spread.png"}
               alt="Ambient Background"
-              className="h-full w-full object-cover opacity-65 scale-105"
+              className="h-full w-full object-cover opacity-90 sm:opacity-95 brightness-105 scale-105"
             />
           </div>
         )}
 
-        {/* High-Contrast Dual Scrim Vignette Gradients */}
-        <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black/90 via-black/60 to-black/30 md:to-transparent" />
-        <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-black/95 via-black/30 to-black/60" />
+        {/* High-Contrast Crystal-Clear Vignette Scrim Gradients */}
+        <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
+        <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
 
         {/* Hero Content Layer */}
         <div className="relative z-10 mx-auto max-w-7xl flex flex-col justify-between p-6 sm:p-12 lg:p-16 min-h-[80vh] sm:min-h-[88vh]">
@@ -125,14 +125,14 @@ function Home() {
 
           {/* Main Headline & Call to Actions */}
           <div className="my-auto py-8 max-w-3xl">
-            <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08]">
+            <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08] drop-shadow-lg">
               {heroSettings.headline_main || "BARIMA BA FOODS"}
-              <span className="block mt-2 font-serif italic text-amber-400 drop-shadow-md">
+              <span className="block mt-2 font-serif italic text-amber-400 drop-shadow-xl">
                 {heroSettings.headline_highlight || "Taste. Quality. Trust."}
               </span>
             </h1>
 
-            <p className="mt-4 sm:mt-6 max-w-xl text-sm sm:text-lg leading-relaxed text-zinc-200 font-sans backdrop-blur-xs bg-black/30 p-3 sm:p-0 rounded-2xl">
+            <p className="mt-4 sm:mt-6 max-w-xl text-sm sm:text-lg leading-relaxed text-zinc-100 font-sans backdrop-blur-md bg-black/40 p-4 rounded-2xl border border-white/10 shadow-2xl">
               {heroSettings.subheading || "Premium quality homemade Ghanaian foods made with passion, rich in flavor and crafted for your satisfaction."}
             </p>
 
