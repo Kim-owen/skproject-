@@ -76,10 +76,14 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-amber-500/20 bg-background/95 backdrop-blur-xl transition-all shadow-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        {/* Brand Logo & Golden Crown Badge */}
+        {/* Brand Logo & Custom Generated Barima Ba Emblem */}
         <Link to="/" className="group flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-black shadow-lg shadow-amber-500/25 transition-transform group-hover:scale-105">
-            <Crown className="h-5 w-5 fill-black" strokeWidth={2} />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-black border border-amber-500/40 p-1 shadow-lg shadow-amber-500/20 transition-transform group-hover:scale-105 overflow-hidden">
+            <img
+              src="/images/barima-ba-logo.png"
+              alt="Barima Ba Foods Logo"
+              className="h-full w-full object-cover rounded-lg"
+            />
           </div>
           <div className="flex flex-col">
             <span className="font-display text-xl font-extrabold tracking-tight text-foreground leading-none">
@@ -187,8 +191,12 @@ export function Header() {
             {/* Top Navigation Bar */}
             <div className="flex items-center justify-between border-b border-amber-500/20 pb-4 mb-6">
               <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-black font-extrabold shadow-lg shadow-amber-500/20">
-                  <Crown className="h-5 w-5 fill-black" strokeWidth={2} />
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-black border border-amber-500/40 p-1 shadow-lg shadow-amber-500/20 shrink-0 overflow-hidden">
+                  <img
+                    src="/images/barima-ba-logo.png"
+                    alt="Barima Ba Foods Logo"
+                    className="h-full w-full object-cover rounded-lg"
+                  />
                 </div>
                 <div className="flex flex-col">
                   <span className="font-display text-lg font-extrabold tracking-tight text-white leading-none">
@@ -423,8 +431,12 @@ export function Footer() {
           {/* Column 1: About Us */}
           <div className="md:col-span-4 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black shadow-md">
-                <Crown className="h-6 w-6 fill-black" strokeWidth={2} />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-black border border-amber-500/40 p-1 shadow-md overflow-hidden shrink-0">
+                <img
+                  src="/images/barima-ba-logo.png"
+                  alt="Barima Ba Foods Logo"
+                  className="h-full w-full object-cover rounded-lg"
+                />
               </div>
               <span className="font-display text-2xl font-extrabold tracking-tight text-white">
                 BARIMA BA <span className="text-amber-400">FOODS</span>
