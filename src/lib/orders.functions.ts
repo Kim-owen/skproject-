@@ -266,3 +266,50 @@ export const getOrderByNumber = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return order;
   });
+
+export const getUserAccountDetails = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userId = context.userId;
+
+    const [profileRes, txRes] = await Promise.all([
+      supabaseAdmin.from("profiles").select("id, full_name, phone, wallet_balance_ghs, created_at").eq("id", userId).single(),
+      supabaseAdmin.from("wallet_transactions").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(30),
+    ]);
+
+    // Fetch user orders based on profile phone
+    let orders: any[] = [];
+    if (profileRes.data?.phone) {
+      const { data: userOrders } = await supabaseAdmin
+        .from("orders")
+        .select("id, order_number, status, payment_status, payment_method, delivery_type, dispatch_partner, total_ghs, created_at, delivery_address, uber_tracking_url, rider_name, order_items(product_id, product_name, quantity, unit, unit_price_ghs)")
+        .eq("customer_phone", profileRes.data.phone)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      orders = userOrders ?? [];
+    }
+
+    return {
+      profile: profileRes.data,
+      transactions: txRes.data ?? [],
+      orders: orders,
+    };
+  });
+
+export const updateUserProfileData = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(z.object({
+    full_name: z.string().trim().min(2).max(100),
+    phone: z.string().trim().min(7).max(20),
+  }))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("profiles").upsert({
+      id: context.userId,
+      full_name: data.full_name,
+      phone: data.phone,
+    }, { onConflict: "id" });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

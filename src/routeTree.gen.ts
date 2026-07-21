@@ -18,6 +18,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as TestimonialsRouteImport } from './routes/testimonials'
 import { Route as TrackRouteImport } from './routes/track'
@@ -74,6 +75,11 @@ const FaqRoute = FaqRouteImport.update({
 const GalleryRoute = GalleryRouteImport.update({
   id: '/gallery',
   path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShopRoute = ShopRouteImport.update({
@@ -148,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/gallery': typeof GalleryRoute
+  '/profile': typeof ProfileRoute
   '/shop': typeof ShopRoute
   '/testimonials': typeof TestimonialsRoute
   '/track': typeof TrackRoute
@@ -171,6 +178,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/gallery': typeof GalleryRoute
+  '/profile': typeof ProfileRoute
   '/shop': typeof ShopRoute
   '/testimonials': typeof TestimonialsRoute
   '/track': typeof TrackRoute
@@ -195,6 +203,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/gallery': typeof GalleryRoute
+  '/profile': typeof ProfileRoute
   '/shop': typeof ShopRoute
   '/testimonials': typeof TestimonialsRoute
   '/track': typeof TrackRoute
@@ -220,6 +229,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/gallery'
+    | '/profile'
     | '/shop'
     | '/testimonials'
     | '/track'
@@ -243,6 +253,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/gallery'
+    | '/profile'
     | '/shop'
     | '/testimonials'
     | '/track'
@@ -266,6 +277,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/gallery'
+    | '/profile'
     | '/shop'
     | '/testimonials'
     | '/track'
@@ -290,6 +302,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
   GalleryRoute: typeof GalleryRoute
+  ProfileRoute: typeof ProfileRoute
   ShopRoute: typeof ShopRoute
   TestimonialsRoute: typeof TestimonialsRoute
   TrackRoute: typeof TrackRoute
@@ -367,6 +380,13 @@ declare module '@tanstack/react-router' {
       path: '/gallery'
       fullPath: '/gallery'
       preLoaderRoute: typeof GalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shop': {
@@ -466,6 +486,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
   GalleryRoute: GalleryRoute,
+  ProfileRoute: ProfileRoute,
   ShopRoute: ShopRoute,
   TestimonialsRoute: TestimonialsRoute,
   TrackRoute: TrackRoute,

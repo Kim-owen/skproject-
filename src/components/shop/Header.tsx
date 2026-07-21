@@ -218,7 +218,7 @@ export function Header() {
                     <span className="block text-[10px] text-zinc-400 truncate">{authUser.email}</span>
                   </div>
                   <Link
-                    to="/auth"
+                    to="/profile"
                     onClick={() => setUserMenuOpen(false)}
                     className="flex items-center gap-2.5 rounded-xl p-2 text-xs font-bold text-zinc-200 hover:bg-amber-500/10 hover:text-amber-400 transition-all"
                   >
