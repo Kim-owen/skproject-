@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ShoppingCart, LogIn, Crown, Phone, Instagram, Menu, X, Truck, ChevronDown, Camera, Star, HelpCircle, PackageCheck } from "lucide-react";
+import { ShoppingCart, LogIn, Crown, Phone, Instagram, Menu, X, Truck, ChevronDown, Camera, Star, HelpCircle, PackageCheck, Utensils, Shield } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
