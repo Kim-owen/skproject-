@@ -180,83 +180,187 @@ export function Header() {
         </div>
       </div>
 
-      {/* Pro Mobile Side-Drawer Menu (iOS & Android Optimized) */}
+      {/* Premium Full-Screen Mobile Navigation Overlay (iOS & Android Optimized) */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex justify-end">
-          {/* Backdrop Scrim */}
-          <div
-            onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 bg-black/85 backdrop-blur-xl transition-opacity animate-fade-in"
-          />
-
-          {/* Sliding Side Drawer Container */}
-          <div className="relative z-50 w-full sm:w-[90%] max-w-sm h-full border-l border-amber-500/30 bg-zinc-950 p-5 sm:p-6 text-white shadow-2xl flex flex-col justify-between overflow-y-auto animate-slide-in-right">
-            <div>
-              {/* Drawer Top Header Row */}
-              <div className="flex items-center justify-between border-b border-amber-500/20 pb-4 mb-5">
-                <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-2">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black font-extrabold shadow-md shrink-0">
-                    <Crown className="h-5 w-5 fill-black" strokeWidth={2} />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-display text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">
-                      BARIMA BA <span className="text-amber-400">FOODS</span>
-                    </span>
-                    <span className="text-[9px] font-serif italic text-amber-400/90 tracking-wider">
-                      Taste. Quality. Trust.
-                    </span>
-                  </div>
-                </Link>
-
-                <div className="flex items-center gap-2">
-                  <ThemeToggle />
-                  <button
-                    onClick={() => setMobileOpen(false)}
-                    className="rounded-xl border border-amber-500/30 bg-zinc-900 p-2 text-amber-400 hover:bg-amber-500/10 focus:outline-none"
-                    aria-label="Close Menu"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
+        <div className="fixed inset-0 z-50 md:hidden bg-zinc-950/98 backdrop-blur-2xl flex flex-col justify-between p-5 sm:p-7 overflow-y-auto animate-fade-in text-white">
+          <div>
+            {/* Top Navigation Bar */}
+            <div className="flex items-center justify-between border-b border-amber-500/20 pb-4 mb-6">
+              <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-black font-extrabold shadow-lg shadow-amber-500/20">
+                  <Crown className="h-5 w-5 fill-black" strokeWidth={2} />
                 </div>
-              </div>
+                <div className="flex flex-col">
+                  <span className="font-display text-lg font-extrabold tracking-tight text-white leading-none">
+                    BARIMA BA <span className="text-amber-400">FOODS</span>
+                  </span>
+                  <span className="text-[10px] font-serif italic text-amber-400/90 tracking-wider mt-0.5">
+                    Taste. Quality. Trust.
+                  </span>
+                </div>
+              </Link>
 
-              {/* Quick Order Now Button in Drawer Header */}
-              <div className="mb-5">
-                <Button asChild size="sm" className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-extrabold shadow-md">
-                  <Link to="/cart" onClick={() => setMobileOpen(false)}>
-                    <ShoppingCart className="mr-2 h-4 w-4 fill-black" />
-                    Order Now ({count})
-                  </Link>
-                </Button>
-              </div>
-
-              {/* Mobile Navigation Links */}
-              <div className="space-y-1">
-                {drawerNavLink("/", "Home")}
-                {drawerNavLink("/shop", "Products Catalog")}
-                {drawerNavLink("/catering", "Catering Services")}
-                {drawerNavLink("/about", "About Us")}
-                {drawerNavLink("/gallery", "Visual Gallery")}
-                {drawerNavLink("/testimonials", "Customer Reviews")}
-                {drawerNavLink("/faq", "FAQ & Help")}
-                {drawerNavLink("/contact", "Contact Us")}
-                {drawerNavLink("/track", "Track Order")}
+              <div className="flex items-center gap-3">
+                <div className="bg-zinc-900/90 rounded-xl p-1 border border-amber-500/30">
+                  <ThemeToggle />
+                </div>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-2 text-amber-400 hover:bg-amber-500/20 focus:outline-none transition-colors"
+                  aria-label="Close Menu"
+                >
+                  <X className="h-6 w-6" />
+                </button>
               </div>
             </div>
 
-            {/* Mobile Drawer Bottom Actions */}
-            <div className="pt-5 mt-6 border-t border-amber-500/20 space-y-2.5">
-              <a
-                href="https://wa.me/233241234567"
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-zinc-900/90 py-2.5 text-xs font-bold text-amber-400 hover:bg-amber-500/10 transition-colors"
+            {/* Primary Menu Categories */}
+            <div className="space-y-2 mb-6">
+              <div className="px-1 pb-1 text-[11px] font-extrabold uppercase tracking-widest text-amber-400/80">Main Navigation</div>
+
+              <Link
+                to="/"
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center justify-between rounded-2xl p-3.5 transition-all ${
+                  pathname === "/"
+                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-lg"
+                    : "bg-zinc-900/60 text-zinc-100 border border-zinc-800/80 hover:bg-zinc-800/80"
+                }`}
               >
-                <Phone className="h-4 w-4 text-amber-400" />
-                <span>Call / WhatsApp: +233 24 123 4567</span>
-              </a>
-              <p className="text-[10px] text-zinc-400 text-center font-medium">© {new Date().getFullYear()} Barima Ba Foods · Accra, Ghana</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400">
+                    <Crown className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-extrabold">Home</div>
+                    <div className="text-[11px] text-zinc-400">Welcome & Hero Showcase</div>
+                  </div>
+                </div>
+                <span className="text-amber-400 text-sm">→</span>
+              </Link>
+
+              <Link
+                to="/shop"
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center justify-between rounded-2xl p-3.5 transition-all ${
+                  pathname === "/shop"
+                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-lg"
+                    : "bg-zinc-900/60 text-zinc-100 border border-zinc-800/80 hover:bg-zinc-800/80"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400">
+                    <ShoppingCart className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-extrabold">Products Catalog</div>
+                    <div className="text-[11px] text-zinc-400">Shito Jars, Meats & Delicacies</div>
+                  </div>
+                </div>
+                <span className="text-amber-400 text-sm">→</span>
+              </Link>
+
+              <Link
+                to="/catering"
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center justify-between rounded-2xl p-3.5 transition-all ${
+                  pathname === "/catering"
+                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-lg"
+                    : "bg-zinc-900/60 text-zinc-100 border border-zinc-800/80 hover:bg-zinc-800/80"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400">
+                    <Utensils className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-extrabold">Catering Services</div>
+                    <div className="text-[11px] text-zinc-400">Events, Weddings & Parties</div>
+                  </div>
+                </div>
+                <span className="text-amber-400 text-sm">→</span>
+              </Link>
+
+              <Link
+                to="/about"
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center justify-between rounded-2xl p-3.5 transition-all ${
+                  pathname === "/about"
+                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-lg"
+                    : "bg-zinc-900/60 text-zinc-100 border border-zinc-800/80 hover:bg-zinc-800/80"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/15 text-amber-400">
+                    <Shield className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-extrabold">About Barima Ba</div>
+                    <div className="text-[11px] text-zinc-400">Our Story & Quality Guarantee</div>
+                  </div>
+                </div>
+                <span className="text-amber-400 text-sm">→</span>
+              </Link>
             </div>
+
+            {/* Explore Grid */}
+            <div className="mb-6">
+              <div className="px-1 pb-2 text-[11px] font-extrabold uppercase tracking-widest text-amber-400/80">Explore More</div>
+              <div className="grid grid-cols-2 gap-2.5">
+                <Link
+                  to="/gallery"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5 rounded-xl border border-zinc-800/80 bg-zinc-900/70 p-3 text-xs font-bold text-zinc-200 hover:border-amber-500/40 hover:text-amber-400 transition-all"
+                >
+                  <Camera className="h-4 w-4 text-amber-400 shrink-0" />
+                  <span>Gallery</span>
+                </Link>
+                <Link
+                  to="/testimonials"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5 rounded-xl border border-zinc-800/80 bg-zinc-900/70 p-3 text-xs font-bold text-zinc-200 hover:border-amber-500/40 hover:text-amber-400 transition-all"
+                >
+                  <Star className="h-4 w-4 text-amber-400 shrink-0" />
+                  <span>Reviews</span>
+                </Link>
+                <Link
+                  to="/faq"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5 rounded-xl border border-zinc-800/80 bg-zinc-900/70 p-3 text-xs font-bold text-zinc-200 hover:border-amber-500/40 hover:text-amber-400 transition-all"
+                >
+                  <HelpCircle className="h-4 w-4 text-amber-400 shrink-0" />
+                  <span>FAQ & Help</span>
+                </Link>
+                <Link
+                  to="/track"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-2.5 rounded-xl border border-zinc-800/80 bg-zinc-900/70 p-3 text-xs font-bold text-zinc-200 hover:border-amber-500/40 hover:text-amber-400 transition-all"
+                >
+                  <PackageCheck className="h-4 w-4 text-amber-400 shrink-0" />
+                  <span>Track Order</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Action Area */}
+          <div className="pt-4 border-t border-amber-500/20 space-y-3">
+            <Button asChild size="lg" className="w-full rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-black font-extrabold text-sm py-6 shadow-xl shadow-amber-500/25 hover:scale-102 transition-transform">
+              <Link to="/cart" onClick={() => setMobileOpen(false)}>
+                <ShoppingCart className="mr-2 h-5 w-5 fill-black" />
+                ORDER NOW ({count} ITEMS)
+              </Link>
+            </Button>
+
+            <a
+              href="https://wa.me/233241234567"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 rounded-2xl border border-amber-500/30 bg-zinc-900/90 py-3 text-xs font-extrabold text-amber-400 hover:bg-amber-500/10 transition-colors shadow-inner"
+            >
+              <Phone className="h-4 w-4 text-amber-400" />
+              <span>Call / WhatsApp: +233 24 123 4567</span>
+            </a>
           </div>
         </div>
       )}
