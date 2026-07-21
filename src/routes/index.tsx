@@ -60,84 +60,98 @@ function Home() {
 
   return (
     <ShopLayout>
-      {/* Hero Section with Cinematic Video & Gold Accent Copy */}
-      <section className="relative mx-auto max-w-7xl px-3 sm:px-6 pt-4 pb-8">
-        <div className="relative min-h-[85vh] w-full overflow-hidden rounded-[2.5rem] border border-amber-500/20 bg-black/40 backdrop-blur-md shadow-2xl transition-all duration-700">
-          {/* Background Ambient Video Layer */}
+      {/* Hero Section with Full Cinematic Background Video */}
+      <section className="relative mx-auto max-w-7xl px-3 sm:px-6 pt-3 pb-8">
+        <div className="relative min-h-[75vh] sm:min-h-[82vh] w-full overflow-hidden rounded-[2.5rem] border border-amber-500/30 bg-black/60 shadow-2xl transition-all duration-700">
+          {/* Full-Coverage Background Ambient Video */}
           {heroSettings.media_type === "video" && heroSettings.video_url ? (
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
               <video
                 src={heroSettings.video_url}
                 poster={heroSettings.poster_url}
-                autoPlay={heroSettings.autoplay}
+                autoPlay={true}
                 muted={true}
-                loop={heroSettings.loop}
+                loop={true}
                 playsInline
-                className="h-full w-full object-cover opacity-40 sm:opacity-55 scale-105 animate-slow-pan"
+                className="h-full w-full object-cover opacity-65 sm:opacity-80 scale-105"
               />
             </div>
           ) : (
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
               <img
-                src={heroSettings.poster_url}
+                src={heroSettings.poster_url || "/images/hero-foods-spread.png"}
                 alt="Ambient Background"
-                className="h-full w-full object-cover opacity-35 scale-105 blur-[1px]"
+                className="h-full w-full object-cover opacity-60 scale-105"
               />
             </div>
           )}
 
-          {/* Scrim Gradient Overlays for High Contrast */}
-          <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent" />
-          <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-black/85 via-transparent to-black/50" />
-          <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/15 via-transparent to-transparent" />
+          {/* High-Contrast Dual Scrim Vignette Gradients */}
+          <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-black/90 via-black/60 to-black/30 md:to-transparent" />
+          <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-black/95 via-black/20 to-black/60" />
 
-          {/* Hero Content Container */}
-          <div className="relative z-10 grid gap-10 lg:grid-cols-12 lg:items-center px-6 py-12 sm:px-12 lg:py-16 min-h-[85vh]">
-            <div className="flex flex-col justify-center lg:col-span-7">
-              {/* Shimmer Pill Badge */}
-              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-4 py-1.5 text-xs font-extrabold tracking-widest uppercase text-amber-400 shadow-sm backdrop-blur-md animate-fade-in-up">
+          {/* Hero Content Layer */}
+          <div className="relative z-10 flex flex-col justify-between p-6 sm:p-12 lg:p-16 min-h-[75vh] sm:min-h-[82vh]">
+            {/* Top Badge Row */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-black/70 px-4 py-1.5 text-xs font-extrabold tracking-widest uppercase text-amber-400 backdrop-blur-md shadow-md">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
                 </span>
-                <span>{heroSettings.badge_text || "Nationwide Delivery Across Ghana"}</span>
+                <span>{heroSettings.badge_text || "Nationwide Express Delivery Across Ghana"}</span>
               </div>
 
-              {/* Main Headline */}
-              <h1 className="mt-6 font-display text-5xl font-extrabold tracking-tight text-white md:text-7xl leading-[1.05] animate-fade-in-up delay-100">
+              {/* Mobile Sound Notice Tag */}
+              <div className="hidden sm:inline-flex items-center gap-2 rounded-full border border-amber-500/20 bg-black/60 px-3 py-1 text-[11px] font-bold text-zinc-300 backdrop-blur-md">
+                <span>🎬 Authentic Barima Ba Shito Video</span>
+              </div>
+            </div>
+
+            {/* Main Headline & Call to Actions */}
+            <div className="my-auto py-8 max-w-3xl">
+              <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white leading-[1.08]">
                 {heroSettings.headline_main || "BARIMA BA FOODS"}
-                <span className="block mt-1 font-serif italic text-amber-400 animate-shimmer">
+                <span className="block mt-2 font-serif italic text-amber-400 drop-shadow-md">
                   {heroSettings.headline_highlight || "Taste. Quality. Trust."}
                 </span>
               </h1>
 
-              {/* Subheading */}
-              <p className="mt-6 max-w-xl text-base sm:text-lg leading-relaxed text-zinc-300 animate-fade-in-up delay-200">
+              <p className="mt-4 sm:mt-6 max-w-xl text-sm sm:text-lg leading-relaxed text-zinc-200 font-sans backdrop-blur-xs bg-black/20 p-2 sm:p-0 rounded-2xl">
                 {heroSettings.subheading || "Premium quality homemade Ghanaian foods made with passion, rich in flavor and crafted for your satisfaction."}
               </p>
 
               {/* Action Buttons */}
-              <div className="mt-8 flex flex-wrap gap-4 animate-fade-in-up delay-300">
-                <Button asChild size="lg" className="rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black px-8 py-6 text-base font-extrabold shadow-xl shadow-amber-500/25 transition-all hover:scale-102">
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <Button asChild size="lg" className="rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-600 hover:to-amber-600 text-black px-8 py-6 text-sm sm:text-base font-extrabold shadow-xl shadow-amber-500/30 transition-all hover:scale-102">
                   <Link to="/shop">
-                    SHOP NOW <ArrowRight className="ml-2 h-5 w-5" />
+                    ORDER NOW <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="rounded-2xl border-amber-500/40 bg-black/60 backdrop-blur-md px-8 py-6 text-base font-bold text-amber-400 hover:bg-amber-500/10 hover:border-amber-400 transition-all">
-                  <Link to="/shop">OUR SERVICES</Link>
+                <Button asChild size="lg" variant="outline" className="rounded-2xl border-amber-500/40 bg-black/70 backdrop-blur-md px-8 py-6 text-sm sm:text-base font-extrabold text-amber-400 hover:bg-amber-500/20 hover:border-amber-400 transition-all">
+                  <Link to="/catering">CATERING SERVICES</Link>
                 </Button>
               </div>
             </div>
 
-            {/* Right Column: Hero Video Component Showcase */}
-            <div className="relative lg:col-span-5 animate-fade-in-up delay-200">
-              <div className="relative transform transition-all duration-500 hover:scale-[1.01]">
-                <HeroMedia settings={heroSettings} />
+            {/* Bottom Highlights Ribbon (Over Video) */}
+            <div className="pt-4 border-t border-amber-500/20 flex flex-wrap items-center justify-between gap-4 text-xs font-extrabold uppercase tracking-widest text-amber-400">
+              <div className="flex items-center gap-2">
+                <span className="text-base">👑</span>
+                <span>AUTHENTIC GHANAIAN SHITO</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-base">🥩</span>
+                <span>TENDER BEEF & CHICKEN CHUNKS</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-base">🚚</span>
+                <span>FAST DOORSTEP DELIVERY</span>
               </div>
             </div>
           </div>
 
-          <div className="pointer-events-none absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-background to-transparent" />
+          <div className="pointer-events-none absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-background to-transparent" />
         </div>
       </section>
 
