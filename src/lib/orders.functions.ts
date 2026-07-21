@@ -11,6 +11,7 @@ const createOrderInput = z.object({
   customer_phone: z.string().trim().min(7).max(20),
   customer_email: z.string().trim().email().max(255).optional().or(z.literal("")),
   delivery_type: z.enum(["delivery", "pickup"]),
+  dispatch_partner: z.enum(["uber", "in_house", "pickup"]).optional(),
   delivery_address: z.string().trim().max(500).optional().or(z.literal("")),
   delivery_zone_id: z.string().uuid().optional().nullable(),
   ghana_post_gps: z.string().trim().max(15).optional().or(z.literal("")),
@@ -102,6 +103,7 @@ export const createOrder = createServerFn({ method: "POST" })
         customer_phone: data.customer_phone,
         customer_email: data.customer_email || null,
         delivery_type: data.delivery_type,
+        dispatch_partner: data.dispatch_partner || (data.delivery_type === "pickup" ? "pickup" : "uber"),
         delivery_address: data.delivery_address || null,
         delivery_zone_id: data.delivery_zone_id || null,
         delivery_fee_ghs: deliveryFee,
@@ -122,7 +124,8 @@ export const createOrder = createServerFn({ method: "POST" })
     if (iErr) throw new Error(iErr.message);
 
     // Trigger SMS async
-    const smsMessage = `Hello ${data.customer_name.split(" ")[0]}! Your order ${order.order_number} has been received. Total: ₵${total.toFixed(2)}. We will notify you when it's dispatched.`;
+    const dispatchMethodText = data.dispatch_partner === "uber" ? "Uber Package Dispatch" : "Barima Ba Rider";
+    const smsMessage = `Hello ${data.customer_name.split(" ")[0]}! Your order ${order.order_number} has been received (${dispatchMethodText}). Total: ₵${total.toFixed(2)}. Track your food live on our site.`;
     sendSMSNotification(data.customer_phone, smsMessage).catch(console.error);
 
     if (data.payment_method === "paystack") {
@@ -184,7 +187,7 @@ export const getOrderByNumber = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order, error } = await supabaseAdmin
       .from("orders")
-      .select("id, order_number, status, payment_status, payment_method, delivery_type, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)")
+      .select("id, order_number, status, payment_status, payment_method, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)")
       .eq("order_number", data.order_number.trim().toUpperCase())
       .maybeSingle();
     if (error) throw new Error(error.message);

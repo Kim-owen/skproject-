@@ -120,6 +120,8 @@ export type Database = {
           delivery_fee_ghs: number
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           delivery_zone_id: string | null
+          dispatch_partner: string | null
+          estimated_delivery_time: string | null
           ghana_post_gps: string | null
           gps_coordinates: string | null
           id: string
@@ -128,9 +130,13 @@ export type Database = {
           payment_method: Database["public"]["Enums"]["payment_method"]
           payment_reference: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
+          rider_name: string | null
+          rider_phone: string | null
+          rider_vehicle: string | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal_ghs: number
           total_ghs: number
+          uber_tracking_url: string | null
           updated_at: string
           user_id: string | null
         }
@@ -143,6 +149,8 @@ export type Database = {
           delivery_fee_ghs?: number
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           delivery_zone_id?: string | null
+          dispatch_partner?: string | null
+          estimated_delivery_time?: string | null
           ghana_post_gps?: string | null
           gps_coordinates?: string | null
           id?: string
@@ -151,9 +159,13 @@ export type Database = {
           payment_method: Database["public"]["Enums"]["payment_method"]
           payment_reference?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          rider_name?: string | null
+          rider_phone?: string | null
+          rider_vehicle?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal_ghs: number
           total_ghs: number
+          uber_tracking_url?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -166,6 +178,8 @@ export type Database = {
           delivery_fee_ghs?: number
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           delivery_zone_id?: string | null
+          dispatch_partner?: string | null
+          estimated_delivery_time?: string | null
           ghana_post_gps?: string | null
           gps_coordinates?: string | null
           id?: string
@@ -174,9 +188,13 @@ export type Database = {
           payment_method?: Database["public"]["Enums"]["payment_method"]
           payment_reference?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          rider_name?: string | null
+          rider_phone?: string | null
+          rider_vehicle?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal_ghs?: number
           total_ghs?: number
+          uber_tracking_url?: string | null
           updated_at?: string
           user_id?: string | null
         }

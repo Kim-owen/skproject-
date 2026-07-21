@@ -130,6 +130,12 @@ CREATE TABLE public.orders (
   notes text,
   ghana_post_gps text,
   gps_coordinates text,
+  dispatch_partner text DEFAULT 'uber',
+  rider_name text,
+  rider_phone text,
+  rider_vehicle text,
+  uber_tracking_url text,
+  estimated_delivery_time text,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );

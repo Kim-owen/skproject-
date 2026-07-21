@@ -40,6 +40,7 @@ function Checkout() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [deliveryType, setDeliveryType] = useState<"delivery" | "pickup">("delivery");
+  const [dispatchPartner, setDispatchPartner] = useState<"uber" | "in_house" | "pickup">("uber");
   const [zoneId, setZoneId] = useState<string>("");
   const [address, setAddress] = useState("");
   const [ghanaPostGps, setGhanaPostGps] = useState("");
@@ -97,6 +98,7 @@ function Checkout() {
           customer_phone: phone,
           customer_email: email || undefined,
           delivery_type: deliveryType,
+          dispatch_partner: deliveryType === "pickup" ? "pickup" : dispatchPartner,
           delivery_address: deliveryType === "delivery" ? address : undefined,
           delivery_zone_id: deliveryType === "delivery" ? zoneId : undefined,
           ghana_post_gps: deliveryType === "delivery" && ghanaPostGps ? ghanaPostGps : undefined,
@@ -136,13 +138,54 @@ function Checkout() {
           </section>
 
           <section className="rounded-xl border bg-card p-5">
-            <h2 className="text-lg font-semibold">Delivery</h2>
-            <RadioGroup value={deliveryType} onValueChange={(v) => setDeliveryType(v as "delivery" | "pickup")} className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
-                <RadioGroupItem value="delivery" /><span><span className="block font-medium">Deliver to me</span><span className="block text-xs text-muted-foreground">Same-day across Accra</span></span>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Delivery & Dispatch Method</h2>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/30">
+                🚗 Powered by Uber Dispatch
+              </span>
+            </div>
+            
+            <RadioGroup
+              value={deliveryType === "pickup" ? "pickup" : dispatchPartner}
+              onValueChange={(v) => {
+                if (v === "pickup") {
+                  setDeliveryType("pickup");
+                  setDispatchPartner("pickup");
+                } else {
+                  setDeliveryType("delivery");
+                  setDispatchPartner(v as "uber" | "in_house");
+                }
+              }}
+              className="mt-4 grid gap-3 sm:grid-cols-3"
+            >
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10 transition-all">
+                <RadioGroupItem value="uber" className="mt-1" />
+                <div>
+                  <div className="flex items-center gap-1.5 font-bold text-foreground">
+                    <span>🚗 Uber Package</span>
+                  </div>
+                  <span className="block text-xs text-muted-foreground mt-0.5">Fastest doorstep delivery via Uber Courier (20–40 mins)</span>
+                </div>
               </label>
-              <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-4 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
-                <RadioGroupItem value="pickup" /><span><span className="block font-medium">Pickup at shop</span><span className="block text-xs text-muted-foreground">Free · Ready in 1 hour</span></span>
+
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10 transition-all">
+                <RadioGroupItem value="in_house" className="mt-1" />
+                <div>
+                  <div className="flex items-center gap-1.5 font-bold text-foreground">
+                    <span>🏍️ Barima Ba Rider</span>
+                  </div>
+                  <span className="block text-xs text-muted-foreground mt-0.5">Standard in-house dispatch across Ghana</span>
+                </div>
+              </label>
+
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10 transition-all">
+                <RadioGroupItem value="pickup" className="mt-1" />
+                <div>
+                  <div className="flex items-center gap-1.5 font-bold text-foreground">
+                    <span>🛍️ Branch Pickup</span>
+                  </div>
+                  <span className="block text-xs text-muted-foreground mt-0.5">Free · Collect hot food at shop in 1 hour</span>
+                </div>
               </label>
             </RadioGroup>
             {deliveryType === "delivery" && (

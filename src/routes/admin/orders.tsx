@@ -1,16 +1,18 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listAdminOrders, updateOrderStatus } from "@/lib/admin.functions";
+import { listAdminOrders, updateOrderStatus, updateOrderDispatchDetails } from "@/lib/admin.functions";
 import { AdminShell } from "@/components/shop/AdminShell";
 import { useAdminGuard } from "@/lib/useAdminGuard";
 import { formatGHS } from "@/lib/cart";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
-import { Search, Calendar, CreditCard, User, Tag, ShoppingBag, Eye } from "lucide-react";
+import { Search, Calendar, User, Tag, ShoppingBag, Eye, Truck, Phone, Navigation } from "lucide-react";
 
 const STATUSES = ["pending", "confirmed", "packed", "out_for_delivery", "delivered", "cancelled"] as const;
 
@@ -23,6 +25,7 @@ function AdminOrdersPage() {
   const guard = useAdminGuard();
   const fetcher = useServerFn(listAdminOrders);
   const update = useServerFn(updateOrderStatus);
+  const updateDispatch = useServerFn(updateOrderDispatchDetails);
   const qc = useQueryClient();
   
   const { data: orders, isLoading } = useQuery({ 
@@ -34,6 +37,57 @@ function AdminOrdersPage() {
 
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | typeof STATUSES[number]>("all");
+
+  // Dispatch Modal State
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [dispatchModalOpen, setDispatchModalOpen] = useState(false);
+  const [dispatchPartner, setDispatchPartner] = useState("uber");
+  const [riderName, setRiderName] = useState("");
+  const [riderPhone, setRiderPhone] = useState("");
+  const [riderVehicle, setRiderVehicle] = useState("");
+  const [uberTrackingUrl, setUberTrackingUrl] = useState("");
+  const [estimatedTime, setEstimatedTime] = useState("");
+  const [markOutForDelivery, setMarkOutForDelivery] = useState(true);
+  const [savingDispatch, setSavingDispatch] = useState(false);
+
+  const openDispatchModal = (o: any) => {
+    setSelectedOrder(o);
+    setDispatchPartner(o.dispatch_partner || "uber");
+    setRiderName(o.rider_name || "");
+    setRiderPhone(o.rider_phone || "");
+    setRiderVehicle(o.rider_vehicle || "");
+    setUberTrackingUrl(o.uber_tracking_url || "");
+    setEstimatedTime(o.estimated_delivery_time || "25 - 35 mins");
+    setMarkOutForDelivery(o.status !== "delivered" && o.status !== "out_for_delivery");
+    setDispatchModalOpen(true);
+  };
+
+  const handleSaveDispatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedOrder) return;
+    setSavingDispatch(true);
+    try {
+      await updateDispatch({
+        data: {
+          order_id: selectedOrder.id,
+          dispatch_partner: dispatchPartner,
+          rider_name: riderName,
+          rider_phone: riderPhone,
+          rider_vehicle: riderVehicle,
+          uber_tracking_url: uberTrackingUrl,
+          estimated_delivery_time: estimatedTime,
+          update_status_to_out_for_delivery: markOutForDelivery,
+        },
+      });
+      toast.success("Dispatch details updated & SMS sent to customer!");
+      setDispatchModalOpen(false);
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update dispatch details");
+    } finally {
+      setSavingDispatch(false);
+    }
+  };
 
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
@@ -223,13 +277,25 @@ function AdminOrdersPage() {
                       </Select>
                     </td>
 
-                    {/* View Details Link */}
+                    {/* View Details & Dispatch Link */}
                     <td className="px-5 py-4.5 text-right">
-                      <Button asChild variant="ghost" size="icon" className="rounded-lg hover:bg-secondary">
-                        <Link to="/order/$orderNumber" params={{ orderNumber: o.order_number }} title="Track Details">
-                          <Eye className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
-                        </Link>
-                      </Button>
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openDispatchModal(o)}
+                          className="rounded-xl border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 font-bold text-xs gap-1.5"
+                        >
+                          <Truck className="h-3.5 w-3.5" />
+                          <span>Dispatch</span>
+                        </Button>
+                        <Button asChild variant="ghost" size="icon" className="rounded-lg hover:bg-secondary">
+                          <Link to="/order/$orderNumber" params={{ orderNumber: o.order_number }} title="Track Details">
+                            <Eye className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                          </Link>
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -254,6 +320,115 @@ function AdminOrdersPage() {
             </table>
           </div>
         </div>
+
+        {/* Dispatch Modal */}
+        <Dialog open={dispatchModalOpen} onOpenChange={setDispatchModalOpen}>
+          <DialogContent className="max-w-md rounded-2xl border border-amber-500/30 bg-card p-6 shadow-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-lg font-extrabold text-foreground">
+                <Truck className="h-5 w-5 text-amber-500" />
+                <span>Dispatch Rider Manager</span>
+              </DialogTitle>
+              <p className="text-xs text-muted-foreground">
+                Assign an Uber Package or Barima Ba rider to order <span className="font-mono font-bold text-amber-500">{selectedOrder?.order_number}</span>.
+              </p>
+            </DialogHeader>
+
+            <form onSubmit={handleSaveDispatch} className="mt-4 space-y-4">
+              <div>
+                <Label htmlFor="dispatchPartner" className="text-xs font-bold uppercase tracking-wider">Dispatch Service Partner</Label>
+                <Select value={dispatchPartner} onValueChange={setDispatchPartner}>
+                  <SelectTrigger id="dispatchPartner" className="mt-1 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="uber">🚗 Uber Package / Dispatch</SelectItem>
+                    <SelectItem value="in_house">🏍️ Barima Ba In-House Rider</SelectItem>
+                    <SelectItem value="bolt">⚡ Bolt Food / Dispatch</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="riderName" className="text-xs font-semibold">Rider Name</Label>
+                  <Input
+                    id="riderName"
+                    placeholder="e.g. Kofi Mensah"
+                    value={riderName}
+                    onChange={(e) => setRiderName(e.target.value)}
+                    className="mt-1 rounded-xl"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="riderPhone" className="text-xs font-semibold">Rider Phone</Label>
+                  <Input
+                    id="riderPhone"
+                    placeholder="024 000 0000"
+                    value={riderPhone}
+                    onChange={(e) => setRiderPhone(e.target.value)}
+                    className="mt-1 rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="riderVehicle" className="text-xs font-semibold">Vehicle / Bike Details</Label>
+                <Input
+                  id="riderVehicle"
+                  placeholder="e.g. Honda Ace Motorbike (M-24-GH)"
+                  value={riderVehicle}
+                  onChange={(e) => setRiderVehicle(e.target.value)}
+                  className="mt-1 rounded-xl"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="uberTrackingUrl" className="text-xs font-semibold">Uber Live Tracking Link (optional)</Label>
+                <Input
+                  id="uberTrackingUrl"
+                  placeholder="https://m.uber.com/looking/..."
+                  value={uberTrackingUrl}
+                  onChange={(e) => setUberTrackingUrl(e.target.value)}
+                  className="mt-1 rounded-xl font-mono text-xs"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="estimatedTime" className="text-xs font-semibold">Estimated Arrival Time</Label>
+                <Input
+                  id="estimatedTime"
+                  placeholder="e.g. 20 - 35 mins"
+                  value={estimatedTime}
+                  onChange={(e) => setEstimatedTime(e.target.value)}
+                  className="mt-1 rounded-xl"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="markOutForDelivery"
+                  checked={markOutForDelivery}
+                  onChange={(e) => setMarkOutForDelivery(e.target.checked)}
+                  className="rounded border-amber-500/40 text-amber-500 focus:ring-amber-500"
+                />
+                <Label htmlFor="markOutForDelivery" className="text-xs font-medium cursor-pointer">
+                  Update order status to <span className="font-bold text-amber-500 uppercase">Out for Delivery</span> & Send SMS alert
+                </Label>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3">
+                <Button type="button" variant="outline" onClick={() => setDispatchModalOpen(false)} className="rounded-xl">
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={savingDispatch} className="rounded-xl bg-amber-500 text-black font-extrabold hover:bg-amber-600">
+                  {savingDispatch ? "Saving..." : "Save & Notify Customer"}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminShell>
   );
