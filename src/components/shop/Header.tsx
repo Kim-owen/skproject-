@@ -182,44 +182,56 @@ export function Header() {
 
       {/* Pro Mobile Side-Drawer Menu (iOS & Android Optimized) */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 md:hidden flex justify-end">
           {/* Backdrop Scrim */}
           <div
             onClick={() => setMobileOpen(false)}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity animate-fade-in"
+            className="fixed inset-0 bg-black/85 backdrop-blur-xl transition-opacity animate-fade-in"
           />
 
-          {/* Sliding Side Drawer */}
-          <div className="fixed inset-y-0 right-0 z-50 w-[85%] max-w-sm border-l border-amber-500/30 bg-zinc-950 p-6 text-white shadow-2xl flex flex-col justify-between overflow-y-auto animate-slide-in-right">
+          {/* Sliding Side Drawer Container */}
+          <div className="relative z-50 w-full sm:w-[90%] max-w-sm h-full border-l border-amber-500/30 bg-zinc-950 p-5 sm:p-6 text-white shadow-2xl flex flex-col justify-between overflow-y-auto animate-slide-in-right">
             <div>
-              {/* Drawer Top Bar */}
-              <div className="flex items-center justify-between border-b border-amber-500/20 pb-5 mb-6">
-                <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500 text-black font-extrabold shadow-md">
+              {/* Drawer Top Header Row */}
+              <div className="flex items-center justify-between border-b border-amber-500/20 pb-4 mb-5">
+                <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-2">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black font-extrabold shadow-md shrink-0">
                     <Crown className="h-5 w-5 fill-black" strokeWidth={2} />
                   </div>
-                  <span className="font-display text-lg font-extrabold tracking-tight">
-                    BARIMA BA <span className="text-amber-400">FOODS</span>
-                  </span>
-                </div>
+                  <div className="flex flex-col">
+                    <span className="font-display text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">
+                      BARIMA BA <span className="text-amber-400">FOODS</span>
+                    </span>
+                    <span className="text-[9px] font-serif italic text-amber-400/90 tracking-wider">
+                      Taste. Quality. Trust.
+                    </span>
+                  </div>
+                </Link>
 
-                <button
-                  onClick={() => setMobileOpen(false)}
-                  className="rounded-xl border border-amber-500/30 p-2 text-zinc-400 hover:text-amber-400 focus:outline-none"
-                  aria-label="Close Menu"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <ThemeToggle />
+                  <button
+                    onClick={() => setMobileOpen(false)}
+                    className="rounded-xl border border-amber-500/30 bg-zinc-900 p-2 text-amber-400 hover:bg-amber-500/10 focus:outline-none"
+                    aria-label="Close Menu"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
               </div>
 
-              {/* Mobile Appearance Theme Switcher */}
-              <div className="flex items-center justify-between rounded-2xl border border-amber-500/20 bg-zinc-900/80 p-3.5 mb-6 shadow-inner">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-400">Appearance Theme</span>
-                <ThemeToggle />
+              {/* Quick Order Now Button in Drawer Header */}
+              <div className="mb-5">
+                <Button asChild size="sm" className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-extrabold shadow-md">
+                  <Link to="/cart" onClick={() => setMobileOpen(false)}>
+                    <ShoppingCart className="mr-2 h-4 w-4 fill-black" />
+                    Order Now ({count})
+                  </Link>
+                </Button>
               </div>
 
               {/* Mobile Navigation Links */}
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 {drawerNavLink("/", "Home")}
                 {drawerNavLink("/shop", "Products Catalog")}
                 {drawerNavLink("/catering", "Catering Services")}
@@ -233,23 +245,17 @@ export function Header() {
             </div>
 
             {/* Mobile Drawer Bottom Actions */}
-            <div className="pt-6 mt-6 border-t border-amber-500/20 space-y-3">
-              <Button asChild size="lg" className="w-full rounded-2xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-sm py-6 shadow-lg shadow-amber-500/25">
-                <Link to="/cart" onClick={() => setMobileOpen(false)}>
-                  <ShoppingCart className="mr-2 h-4 w-4 fill-black" />
-                  Order Now ({count})
-                </Link>
-              </Button>
-
+            <div className="pt-5 mt-6 border-t border-amber-500/20 space-y-2.5">
               <a
                 href="https://wa.me/233241234567"
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-center gap-2 rounded-2xl border border-amber-500/30 bg-zinc-900 py-3 text-xs font-bold text-amber-400 hover:bg-amber-500/10 transition-colors"
+                className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-zinc-900/90 py-2.5 text-xs font-bold text-amber-400 hover:bg-amber-500/10 transition-colors"
               >
                 <Phone className="h-4 w-4 text-amber-400" />
                 <span>Call / WhatsApp: +233 24 123 4567</span>
               </a>
+              <p className="text-[10px] text-zinc-400 text-center font-medium">© {new Date().getFullYear()} Barima Ba Foods · Accra, Ghana</p>
             </div>
           </div>
         </div>
