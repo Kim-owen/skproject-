@@ -34,6 +34,18 @@ export function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Prevent scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   const navLink = (to: string, label: string) => (
     <Link
       to={to}
@@ -46,13 +58,23 @@ export function Header() {
     </Link>
   );
 
-  return (
-    <header className="sticky top-0 z-40 w-full border-b border-amber-500/20 bg-background/90 backdrop-blur-xl transition-all shadow-md">
-      {/* Top Pro Announcement Bar */}
-      <div className="bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 px-4 py-1 text-center text-[11px] font-extrabold uppercase tracking-widest text-black">
-        <span>⚡ Nationwide Express Delivery Across Ghana · Call / WhatsApp: +233 24 123 4567</span>
-      </div>
+  const drawerNavLink = (to: string, label: string) => (
+    <Link
+      to={to}
+      onClick={() => setMobileOpen(false)}
+      className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm font-bold tracking-wide transition-all ${
+        pathname === to
+          ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
+          : "text-zinc-200 hover:bg-zinc-900 hover:text-amber-400"
+      }`}
+    >
+      <span>{label}</span>
+      <span className="text-amber-400/60">→</span>
+    </Link>
+  );
 
+  return (
+    <header className="sticky top-0 z-40 w-full border-b border-amber-500/20 bg-background/95 backdrop-blur-xl transition-all shadow-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
         {/* Brand Logo & Golden Crown Badge */}
         <Link to="/" className="group flex items-center gap-3">
@@ -150,27 +172,85 @@ export function Header() {
           {/* Mobile Menu Hamburger Toggle */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 text-foreground hover:text-amber-500 focus:outline-none"
+            className="md:hidden p-2 text-foreground hover:text-amber-500 focus:outline-none rounded-xl border border-amber-500/20 bg-background/50"
             aria-label="Toggle Navigation"
           >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileOpen ? <X className="h-6 w-6 text-amber-400" /> : <Menu className="h-6 w-6 text-foreground" />}
           </button>
         </div>
       </div>
 
-      {/* Sleek Mobile Dropdown Sheet */}
+      {/* Pro Mobile Side-Drawer Menu (iOS & Android Optimized) */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-amber-500/20 bg-black/95 backdrop-blur-2xl px-6 py-6 transition-all animate-fade-in-up">
-          <div className="flex flex-col space-y-3">
-            {navLink("/", "Home")}
-            {navLink("/shop", "Products")}
-            {navLink("/catering", "Catering Services")}
-            {navLink("/about", "About Us")}
-            {navLink("/gallery", "Gallery")}
-            {navLink("/testimonials", "Testimonials")}
-            {navLink("/faq", "FAQ")}
-            {navLink("/contact", "Contact Us")}
-            {navLink("/track", "Track Order")}
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop Scrim */}
+          <div
+            onClick={() => setMobileOpen(false)}
+            className="fixed inset-0 bg-black/80 backdrop-blur-md transition-opacity animate-fade-in"
+          />
+
+          {/* Sliding Side Drawer */}
+          <div className="fixed inset-y-0 right-0 z-50 w-[85%] max-w-sm border-l border-amber-500/30 bg-zinc-950 p-6 text-white shadow-2xl flex flex-col justify-between overflow-y-auto animate-slide-in-right">
+            <div>
+              {/* Drawer Top Bar */}
+              <div className="flex items-center justify-between border-b border-amber-500/20 pb-5 mb-6">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500 text-black font-extrabold shadow-md">
+                    <Crown className="h-5 w-5 fill-black" strokeWidth={2} />
+                  </div>
+                  <span className="font-display text-lg font-extrabold tracking-tight">
+                    BARIMA BA <span className="text-amber-400">FOODS</span>
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-xl border border-amber-500/30 p-2 text-zinc-400 hover:text-amber-400 focus:outline-none"
+                  aria-label="Close Menu"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Mobile Appearance Theme Switcher */}
+              <div className="flex items-center justify-between rounded-2xl border border-amber-500/20 bg-zinc-900/80 p-3.5 mb-6 shadow-inner">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-400">Appearance Theme</span>
+                <ThemeToggle />
+              </div>
+
+              {/* Mobile Navigation Links */}
+              <div className="space-y-1.5">
+                {drawerNavLink("/", "Home")}
+                {drawerNavLink("/shop", "Products Catalog")}
+                {drawerNavLink("/catering", "Catering Services")}
+                {drawerNavLink("/about", "About Us")}
+                {drawerNavLink("/gallery", "Visual Gallery")}
+                {drawerNavLink("/testimonials", "Customer Reviews")}
+                {drawerNavLink("/faq", "FAQ & Help")}
+                {drawerNavLink("/contact", "Contact Us")}
+                {drawerNavLink("/track", "Track Order")}
+              </div>
+            </div>
+
+            {/* Mobile Drawer Bottom Actions */}
+            <div className="pt-6 mt-6 border-t border-amber-500/20 space-y-3">
+              <Button asChild size="lg" className="w-full rounded-2xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-sm py-6 shadow-lg shadow-amber-500/25">
+                <Link to="/cart" onClick={() => setMobileOpen(false)}>
+                  <ShoppingCart className="mr-2 h-4 w-4 fill-black" />
+                  Order Now ({count})
+                </Link>
+              </Button>
+
+              <a
+                href="https://wa.me/233241234567"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 rounded-2xl border border-amber-500/30 bg-zinc-900 py-3 text-xs font-bold text-amber-400 hover:bg-amber-500/10 transition-colors"
+              >
+                <Phone className="h-4 w-4 text-amber-400" />
+                <span>Call / WhatsApp: +233 24 123 4567</span>
+              </a>
+            </div>
           </div>
         </div>
       )}
