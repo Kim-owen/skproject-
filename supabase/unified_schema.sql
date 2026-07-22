@@ -58,14 +58,33 @@ CREATE POLICY "read own wallet tx" ON public.wallet_transactions FOR SELECT TO a
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  assigned_role text := 'customer';
 BEGIN
-  INSERT INTO public.profiles (id, full_name, phone)
-  VALUES (NEW.id, NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'phone')
-  ON CONFLICT (id) DO NOTHING;
+  IF NEW.email = 'sunumanfred14@gmail.com' THEN
+    assigned_role := 'admin';
+  END IF;
+
+  INSERT INTO public.profiles (id, full_name, phone, is_phone_verified)
+  VALUES (
+    NEW.id, 
+    COALESCE(NEW.raw_user_meta_data->>'full_name', ''), 
+    COALESCE(NEW.raw_user_meta_data->>'phone', ''),
+    (NEW.email = 'sunumanfred14@gmail.com')
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name,
+    phone = EXCLUDED.phone;
 
   INSERT INTO public.user_roles (user_id, role)
-  VALUES (NEW.id, 'customer')
+  VALUES (NEW.id, assigned_role)
   ON CONFLICT (user_id, role) DO NOTHING;
+
+  IF assigned_role = 'admin' THEN
+    INSERT INTO public.user_roles (user_id, role)
+    VALUES (NEW.id, 'customer')
+    ON CONFLICT (user_id, role) DO NOTHING;
+  END IF;
 
   RETURN NEW;
 END;
