@@ -19,12 +19,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setTheme = (t: Theme) => {
     setThemeState(t);
     document.documentElement.classList.toggle("dark", t === "dark");
-    try { localStorage.setItem(KEY, t); } catch {}
+    try {
+      localStorage.setItem(KEY, t);
+    } catch {}
   };
 
   const toggle = () => setTheme(theme === "dark" ? "light" : "dark");
 
-  return <ThemeContext.Provider value={{ theme, toggle, setTheme }}>{children}</ThemeContext.Provider>;
+  return (
+    <ThemeContext.Provider value={{ theme, toggle, setTheme }}>{children}</ThemeContext.Provider>
+  );
 }
 
 export function useTheme() {

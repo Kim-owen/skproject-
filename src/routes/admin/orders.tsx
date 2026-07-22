@@ -1,20 +1,47 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listAdminOrders, updateOrderStatus, updateOrderDispatchDetails } from "@/lib/admin.functions";
+import {
+  listAdminOrders,
+  updateOrderStatus,
+  updateOrderDispatchDetails,
+} from "@/lib/admin.functions";
 import { AdminShell } from "@/components/shop/AdminShell";
 import { useAdminGuard } from "@/lib/useAdminGuard";
 import { formatGHS } from "@/lib/cart";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
-import { Search, Calendar, User, Tag, ShoppingBag, Eye, Truck, Phone, Navigation } from "lucide-react";
+import {
+  Search,
+  Calendar,
+  User,
+  Tag,
+  ShoppingBag,
+  Eye,
+  Truck,
+  Phone,
+  Navigation,
+} from "lucide-react";
 
-const STATUSES = ["pending", "confirmed", "packed", "out_for_delivery", "delivered", "cancelled"] as const;
+const STATUSES = [
+  "pending",
+  "confirmed",
+  "packed",
+  "out_for_delivery",
+  "delivered",
+  "cancelled",
+] as const;
 
 export const Route = createFileRoute("/admin/orders")({
   head: () => ({ meta: [{ title: "Admin — Orders" }, { name: "robots", content: "noindex" }] }),
@@ -27,16 +54,16 @@ function AdminOrdersPage() {
   const update = useServerFn(updateOrderStatus);
   const updateDispatch = useServerFn(updateOrderDispatchDetails);
   const qc = useQueryClient();
-  
-  const { data: orders, isLoading } = useQuery({ 
-    queryKey: ["admin-orders"], 
-    queryFn: () => fetcher(), 
+
+  const { data: orders, isLoading } = useQuery({
+    queryKey: ["admin-orders"],
+    queryFn: () => fetcher(),
     enabled: guard === "ok",
     refetchInterval: 15_000,
   });
 
   const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState<"all" | typeof STATUSES[number]>("all");
+  const [activeTab, setActiveTab] = useState<"all" | (typeof STATUSES)[number]>("all");
 
   // Dispatch Modal State
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -93,9 +120,10 @@ function AdminOrdersPage() {
     if (!orders) return [];
     return orders.filter((o) => {
       const matchesTab = activeTab === "all" || o.status === activeTab;
-      
+
       const query = search.toLowerCase().trim();
-      const matchesSearch = !query || 
+      const matchesSearch =
+        !query ||
         o.order_number.toLowerCase().includes(query) ||
         o.customer_name.toLowerCase().includes(query) ||
         o.customer_phone.toLowerCase().includes(query);
@@ -147,7 +175,9 @@ function AdminOrdersPage() {
         {/* Header Block */}
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">Orders</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Manage and track customer checkout orders, payments, and delivery fulfillment.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Manage and track customer checkout orders, payments, and delivery fulfillment.
+          </p>
         </div>
 
         {/* Filter and Search Bar */}
@@ -155,15 +185,17 @@ function AdminOrdersPage() {
           {/* Tabs */}
           <div className="flex flex-wrap gap-1.5 border-b pb-1">
             {(["all", ...STATUSES] as const).map((tab) => {
-              const count = orders ? orders.filter((o) => tab === "all" || o.status === tab).length : 0;
+              const count = orders
+                ? orders.filter((o) => tab === "all" || o.status === tab).length
+                : 0;
               const active = activeTab === tab;
               return (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`rounded-lg px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-all border ${
-                    active 
-                      ? "bg-primary text-primary-foreground border-primary shadow-xs" 
+                    active
+                      ? "bg-primary text-primary-foreground border-primary shadow-xs"
                       : "text-muted-foreground hover:bg-secondary hover:text-foreground border-transparent"
                   }`}
                 >
@@ -200,105 +232,143 @@ function AdminOrdersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
-                {isLoading ? (
-                  [1, 2, 3].map((i) => (
-                    <tr key={i} className="animate-pulse">
-                      <td colSpan={6} className="px-5 py-8 bg-card/40">
-                        <div className="h-4 w-full bg-muted rounded" />
-                      </td>
-                    </tr>
-                  ))
-                ) : filteredOrders.map((o) => (
-                  <tr key={o.id} className="hover:bg-muted/30 transition-colors">
-                    {/* Order Identifier */}
-                    <td className="px-5 py-4.5">
-                      <div className="flex items-center gap-2">
-                        <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="font-mono text-xs font-bold text-foreground">{o.order_number}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(o.created_at).toLocaleDateString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
-                      </div>
-                    </td>
+                {isLoading
+                  ? [1, 2, 3].map((i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td colSpan={6} className="px-5 py-8 bg-card/40">
+                          <div className="h-4 w-full bg-muted rounded" />
+                        </td>
+                      </tr>
+                    ))
+                  : filteredOrders.map((o) => (
+                      <tr key={o.id} className="hover:bg-muted/30 transition-colors">
+                        {/* Order Identifier */}
+                        <td className="px-5 py-4.5">
+                          <div className="flex items-center gap-2">
+                            <Tag className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <span className="font-mono text-xs font-bold text-foreground">
+                              {o.order_number}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(o.created_at).toLocaleDateString([], {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </div>
+                        </td>
 
-                    {/* Customer */}
-                    <td className="px-5 py-4.5">
-                      <div className="flex items-center gap-1.5 font-semibold text-foreground">
-                        <User className="h-3.5 w-3.5 text-muted-foreground" />
-                        {o.customer_name}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1 font-sans">{o.customer_phone}</div>
-                    </td>
+                        {/* Customer */}
+                        <td className="px-5 py-4.5">
+                          <div className="flex items-center gap-1.5 font-semibold text-foreground">
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                            {o.customer_name}
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1 font-sans">
+                            {o.customer_phone}
+                          </div>
+                        </td>
 
-                    {/* Fulfillment logistics */}
-                    <td className="px-5 py-4.5">
-                      <div className="text-xs font-semibold capitalize text-foreground">{o.delivery_type}</div>
-                      <div className="text-[11px] text-muted-foreground mt-0.5 font-sans">Accra Delivery Zones</div>
-                    </td>
+                        {/* Fulfillment logistics */}
+                        <td className="px-5 py-4.5">
+                          <div className="text-xs font-semibold capitalize text-foreground">
+                            {o.delivery_type}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground mt-0.5 font-sans">
+                            Accra Delivery Zones
+                          </div>
+                        </td>
 
-                    {/* Price and Payment method */}
-                    <td className="px-5 py-4.5">
-                      <div className="font-display text-sm font-bold text-foreground">{formatGHS(Number(o.total_ghs))}</div>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">{o.payment_method.replace(/_/g, " ")}</span>
-                        <span className={`rounded-md px-1.5 py-0.5 text-[9px] font-bold capitalize ${getPaymentBadge(o.payment_status)}`}>
-                          {o.payment_status}
-                        </span>
-                      </div>
-                    </td>
+                        {/* Price and Payment method */}
+                        <td className="px-5 py-4.5">
+                          <div className="font-display text-sm font-bold text-foreground">
+                            {formatGHS(Number(o.total_ghs))}
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wide">
+                              {o.payment_method.replace(/_/g, " ")}
+                            </span>
+                            <span
+                              className={`rounded-md px-1.5 py-0.5 text-[9px] font-bold capitalize ${getPaymentBadge(o.payment_status)}`}
+                            >
+                              {o.payment_status}
+                            </span>
+                          </div>
+                        </td>
 
-                    {/* Dynamic dropdown status selector */}
-                    <td className="px-5 py-4.5">
-                      <Select
-                        value={o.status}
-                        onValueChange={async (v) => {
-                          const originalStatus = o.status;
-                          try {
-                            await update({ data: { order_id: o.id, status: v as typeof STATUSES[number] } });
-                            toast.success("Order status updated successfully");
-                            qc.invalidateQueries({ queryKey: ["admin-orders"] });
-                            qc.invalidateQueries({ queryKey: ["admin-stats"] });
-                          } catch (e) {
-                            toast.error(e instanceof Error ? e.message : "Failed to update order status");
-                          }
-                        }}
-                      >
-                        <SelectTrigger className={`h-8.5 w-38 rounded-xl font-semibold border ${getStatusColor(o.status)}`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl border-border bg-card">
-                          {STATUSES.map((s) => (
-                            <SelectItem key={s} value={s} className="capitalize text-xs font-semibold tracking-wide">
-                              {s.replace(/_/g, " ")}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </td>
+                        {/* Dynamic dropdown status selector */}
+                        <td className="px-5 py-4.5">
+                          <Select
+                            value={o.status}
+                            onValueChange={async (v) => {
+                              const originalStatus = o.status;
+                              try {
+                                await update({
+                                  data: { order_id: o.id, status: v as (typeof STATUSES)[number] },
+                                });
+                                toast.success("Order status updated successfully");
+                                qc.invalidateQueries({ queryKey: ["admin-orders"] });
+                                qc.invalidateQueries({ queryKey: ["admin-stats"] });
+                              } catch (e) {
+                                toast.error(
+                                  e instanceof Error ? e.message : "Failed to update order status",
+                                );
+                              }
+                            }}
+                          >
+                            <SelectTrigger
+                              className={`h-8.5 w-38 rounded-xl font-semibold border ${getStatusColor(o.status)}`}
+                            >
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-border bg-card">
+                              {STATUSES.map((s) => (
+                                <SelectItem
+                                  key={s}
+                                  value={s}
+                                  className="capitalize text-xs font-semibold tracking-wide"
+                                >
+                                  {s.replace(/_/g, " ")}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </td>
 
-                    {/* View Details & Dispatch Link */}
-                    <td className="px-5 py-4.5 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openDispatchModal(o)}
-                          className="rounded-xl border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 font-bold text-xs gap-1.5"
-                        >
-                          <Truck className="h-3.5 w-3.5" />
-                          <span>Dispatch</span>
-                        </Button>
-                        <Button asChild variant="ghost" size="icon" className="rounded-lg hover:bg-secondary">
-                          <Link to="/order/$orderNumber" params={{ orderNumber: o.order_number }} title="Track Details">
-                            <Eye className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                        {/* View Details & Dispatch Link */}
+                        <td className="px-5 py-4.5 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openDispatchModal(o)}
+                              className="rounded-xl border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 font-bold text-xs gap-1.5"
+                            >
+                              <Truck className="h-3.5 w-3.5" />
+                              <span>Dispatch</span>
+                            </Button>
+                            <Button
+                              asChild
+                              variant="ghost"
+                              size="icon"
+                              className="rounded-lg hover:bg-secondary"
+                            >
+                              <Link
+                                to="/order/$orderNumber"
+                                params={{ orderNumber: o.order_number }}
+                                title="Track Details"
+                              >
+                                <Eye className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
+                              </Link>
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
 
                 {/* Empty State */}
                 {!isLoading && filteredOrders.length === 0 && (
@@ -308,9 +378,12 @@ function AdminOrdersPage() {
                         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary mb-4">
                           <ShoppingBag className="h-5 w-5" />
                         </div>
-                        <h4 className="font-display text-base font-bold text-foreground">No orders found</h4>
+                        <h4 className="font-display text-base font-bold text-foreground">
+                          No orders found
+                        </h4>
                         <p className="text-xs text-muted-foreground max-w-xs mt-1">
-                          No customer transactions matched your criteria. Try adjusting your query or status filter.
+                          No customer transactions matched your criteria. Try adjusting your query
+                          or status filter.
                         </p>
                       </div>
                     </td>
@@ -330,13 +403,22 @@ function AdminOrdersPage() {
                 <span>Dispatch Rider Manager</span>
               </DialogTitle>
               <p className="text-xs text-muted-foreground">
-                Assign an Uber Package or Barima Ba rider to order <span className="font-mono font-bold text-amber-500">{selectedOrder?.order_number}</span>.
+                Assign an Uber Package or Barima Ba rider to order{" "}
+                <span className="font-mono font-bold text-amber-500">
+                  {selectedOrder?.order_number}
+                </span>
+                .
               </p>
             </DialogHeader>
 
             <form onSubmit={handleSaveDispatch} className="mt-4 space-y-4">
               <div>
-                <Label htmlFor="dispatchPartner" className="text-xs font-bold uppercase tracking-wider">Dispatch Service Partner</Label>
+                <Label
+                  htmlFor="dispatchPartner"
+                  className="text-xs font-bold uppercase tracking-wider"
+                >
+                  Dispatch Service Partner
+                </Label>
                 <Select value={dispatchPartner} onValueChange={setDispatchPartner}>
                   <SelectTrigger id="dispatchPartner" className="mt-1 rounded-xl">
                     <SelectValue />
@@ -351,7 +433,9 @@ function AdminOrdersPage() {
 
               <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <Label htmlFor="riderName" className="text-xs font-semibold">Rider Name</Label>
+                  <Label htmlFor="riderName" className="text-xs font-semibold">
+                    Rider Name
+                  </Label>
                   <Input
                     id="riderName"
                     placeholder="e.g. Kofi Mensah"
@@ -361,7 +445,9 @@ function AdminOrdersPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="riderPhone" className="text-xs font-semibold">Rider Phone</Label>
+                  <Label htmlFor="riderPhone" className="text-xs font-semibold">
+                    Rider Phone
+                  </Label>
                   <Input
                     id="riderPhone"
                     placeholder="024 000 0000"
@@ -373,7 +459,9 @@ function AdminOrdersPage() {
               </div>
 
               <div>
-                <Label htmlFor="riderVehicle" className="text-xs font-semibold">Vehicle / Bike Details</Label>
+                <Label htmlFor="riderVehicle" className="text-xs font-semibold">
+                  Vehicle / Bike Details
+                </Label>
                 <Input
                   id="riderVehicle"
                   placeholder="e.g. Honda Ace Motorbike (M-24-GH)"
@@ -384,7 +472,9 @@ function AdminOrdersPage() {
               </div>
 
               <div>
-                <Label htmlFor="uberTrackingUrl" className="text-xs font-semibold">Uber Live Tracking Link (optional)</Label>
+                <Label htmlFor="uberTrackingUrl" className="text-xs font-semibold">
+                  Uber Live Tracking Link (optional)
+                </Label>
                 <Input
                   id="uberTrackingUrl"
                   placeholder="https://m.uber.com/looking/..."
@@ -395,7 +485,9 @@ function AdminOrdersPage() {
               </div>
 
               <div>
-                <Label htmlFor="estimatedTime" className="text-xs font-semibold">Estimated Arrival Time</Label>
+                <Label htmlFor="estimatedTime" className="text-xs font-semibold">
+                  Estimated Arrival Time
+                </Label>
                 <Input
                   id="estimatedTime"
                   placeholder="e.g. 20 - 35 mins"
@@ -414,15 +506,26 @@ function AdminOrdersPage() {
                   className="rounded border-amber-500/40 text-amber-500 focus:ring-amber-500"
                 />
                 <Label htmlFor="markOutForDelivery" className="text-xs font-medium cursor-pointer">
-                  Update order status to <span className="font-bold text-amber-500 uppercase">Out for Delivery</span> & Send SMS alert
+                  Update order status to{" "}
+                  <span className="font-bold text-amber-500 uppercase">Out for Delivery</span> &
+                  Send SMS alert
                 </Label>
               </div>
 
               <div className="flex justify-end gap-3 pt-3">
-                <Button type="button" variant="outline" onClick={() => setDispatchModalOpen(false)} className="rounded-xl">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setDispatchModalOpen(false)}
+                  className="rounded-xl"
+                >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={savingDispatch} className="rounded-xl bg-amber-500 text-black font-extrabold hover:bg-amber-600">
+                <Button
+                  type="submit"
+                  disabled={savingDispatch}
+                  className="rounded-xl bg-amber-500 text-black font-extrabold hover:bg-amber-600"
+                >
                   {savingDispatch ? "Saving..." : "Save & Notify Customer"}
                 </Button>
               </div>

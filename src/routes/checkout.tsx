@@ -8,7 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCart, formatGHS } from "@/lib/cart";
 import { createOrder, calculateUberEstimate } from "@/lib/orders.functions";
@@ -19,7 +25,11 @@ import { MapPin, Compass, Navigation, ExternalLink, Calculator, Sparkles } from 
 const zonesQuery = {
   queryKey: ["zones"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("delivery_zones").select("id, name, fee_ghs").eq("is_active", true).order("name");
+    const { data, error } = await supabase
+      .from("delivery_zones")
+      .select("id, name, fee_ghs")
+      .eq("is_active", true)
+      .order("name");
     if (error) throw error;
     return data ?? [];
   },
@@ -49,7 +59,9 @@ function Checkout() {
   const [gpsCoordinates, setGpsCoordinates] = useState("");
   const [locating, setLocating] = useState(false);
   const [notes, setNotes] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "cash_on_delivery" | "wallet">("paystack");
+  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "cash_on_delivery" | "wallet">(
+    "paystack",
+  );
   const [submitting, setSubmitting] = useState(false);
 
   // User Auth & Wallet State
@@ -65,7 +77,9 @@ function Checkout() {
         // Fetch wallet balance and saved location profile
         supabase
           .from("profiles")
-          .select("wallet_balance_ghs, phone, full_name, delivery_address, ghana_post_gps, gps_coordinates")
+          .select(
+            "wallet_balance_ghs, phone, full_name, delivery_address, ghana_post_gps, gps_coordinates",
+          )
           .eq("id", data.user.id)
           .single()
           .then(({ data: profile }) => {
@@ -128,7 +142,7 @@ function Checkout() {
         setLocating(false);
         toast.error("Could not retrieve location. Please allow location permissions.");
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 10000 },
     );
   };
 
@@ -140,6 +154,13 @@ function Checkout() {
     if (!zoneId) return 0;
     return Number(zones.find((z) => z.id === zoneId)?.fee_ghs ?? 0);
   }, [deliveryType, dispatchPartner, uberEstimate, zoneId, zones]);
+  const [orderScheduleType, setOrderScheduleType] = useState<"now" | "schedule" | "subscription">(
+    "now",
+  );
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [subscriptionFreq, setSubscriptionFreq] = useState<"weekly" | "biweekly" | "monthly">(
+    "weekly",
+  );
   const total = subtotal + deliveryFee;
 
   if (count === 0) {
@@ -147,15 +168,13 @@ function Checkout() {
       <ShopLayout>
         <div className="mx-auto max-w-md px-4 py-24 text-center">
           <p className="text-muted-foreground">Your cart is empty.</p>
-          <Button asChild className="mt-6"><Link to="/shop">Start shopping</Link></Button>
+          <Button asChild className="mt-6">
+            <Link to="/shop">Start shopping</Link>
+          </Button>
         </div>
       </ShopLayout>
     );
   }
-
-  const [orderScheduleType, setOrderScheduleType] = useState<"now" | "schedule" | "subscription">("now");
-  const [scheduledDate, setScheduledDate] = useState("");
-  const [subscriptionFreq, setSubscriptionFreq] = useState<"weekly" | "biweekly" | "monthly">("weekly");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,12 +202,14 @@ function Checkout() {
           delivery_address: deliveryType === "delivery" ? address : undefined,
           delivery_zone_id: deliveryType === "delivery" ? zoneId : undefined,
           ghana_post_gps: deliveryType === "delivery" && ghanaPostGps ? ghanaPostGps : undefined,
-          gps_coordinates: deliveryType === "delivery" && gpsCoordinates ? gpsCoordinates : undefined,
+          gps_coordinates:
+            deliveryType === "delivery" && gpsCoordinates ? gpsCoordinates : undefined,
           payment_method: paymentMethod,
           notes: notes || undefined,
           scheduled_delivery_date: orderScheduleType === "schedule" ? scheduledDate : undefined,
           is_subscription: orderScheduleType === "subscription",
-          subscription_frequency: orderScheduleType === "subscription" ? subscriptionFreq : undefined,
+          subscription_frequency:
+            orderScheduleType === "subscription" ? subscriptionFreq : undefined,
           items: items.map((i) => ({ product_id: i.id, quantity: i.quantity })),
         },
       });
@@ -210,9 +231,11 @@ function Checkout() {
 
   return (
     <ShopLayout>
-      <form onSubmit={submit} className="mx-auto grid max-w-5xl gap-8 px-4 py-10 md:grid-cols-[1fr,340px]">
+      <form
+        onSubmit={submit}
+        className="mx-auto grid max-w-5xl gap-8 px-4 py-10 md:grid-cols-[1fr,340px]"
+      >
         <div className="space-y-6">
-
           {/* Account Auth & Wallet Status Callout */}
           {!authUser ? (
             <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-500/20 via-zinc-900 to-black p-5 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -223,14 +246,23 @@ function Checkout() {
                 <div>
                   <h3 className="font-extrabold text-sm text-amber-400 uppercase tracking-wide flex items-center gap-2">
                     <span>Account Required For Checkout</span>
-                    <span className="rounded-full bg-amber-500/20 text-amber-300 text-[10px] px-2 py-0.5 border border-amber-500/30">PLEASE SIGN IN</span>
+                    <span className="rounded-full bg-amber-500/20 text-amber-300 text-[10px] px-2 py-0.5 border border-amber-500/30">
+                      PLEASE SIGN IN
+                    </span>
                   </h3>
-                  <p className="text-xs text-zinc-300 mt-0.5">You must be signed in to complete payment, use your wallet balance, and track order status.</p>
+                  <p className="text-xs text-zinc-300 mt-0.5">
+                    You must be signed in to complete payment, use your wallet balance, and track
+                    order status.
+                  </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-                <Button asChild size="lg" className="w-full sm:w-auto rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs shadow-lg shadow-amber-500/20">
+                <Button
+                  asChild
+                  size="lg"
+                  className="w-full sm:w-auto rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs shadow-lg shadow-amber-500/20"
+                >
                   <Link to="/auth">Sign In / Register Now</Link>
                 </Button>
               </div>
@@ -242,8 +274,15 @@ function Checkout() {
                   💳
                 </div>
                 <div>
-                  <span className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider block">Logged in as {name || authUser.email}</span>
-                  <span className="text-xs text-zinc-300">Barima Ba Wallet Balance: <strong className="text-emerald-400 font-mono">{formatGHS(walletBalance)}</strong></span>
+                  <span className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider block">
+                    Logged in as {name || authUser.email}
+                  </span>
+                  <span className="text-xs text-zinc-300">
+                    Barima Ba Wallet Balance:{" "}
+                    <strong className="text-emerald-400 font-mono">
+                      {formatGHS(walletBalance)}
+                    </strong>
+                  </span>
                 </div>
               </div>
               <Button
@@ -265,9 +304,30 @@ function Checkout() {
           <section className="rounded-xl border bg-card p-5">
             <h2 className="text-lg font-semibold">Contact details</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <div><Label htmlFor="name">Full name *</Label><Input id="name" required value={name} onChange={(e) => setName(e.target.value)} /></div>
-              <div><Label htmlFor="phone">Phone (Mobile Money) *</Label><Input id="phone" required type="tel" placeholder="024 000 0000" value={phone} onChange={(e) => setPhone(e.target.value)} /></div>
-              <div className="sm:col-span-2"><Label htmlFor="email">Email (optional)</Label><Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+              <div>
+                <Label htmlFor="name">Full name *</Label>
+                <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
+              </div>
+              <div>
+                <Label htmlFor="phone">Phone (Mobile Money) *</Label>
+                <Input
+                  id="phone"
+                  required
+                  type="tel"
+                  placeholder="024 000 0000"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Label htmlFor="email">Email (optional)</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
             </div>
           </section>
 
@@ -278,7 +338,7 @@ function Checkout() {
                 🚗 Powered by Uber Dispatch
               </span>
             </div>
-            
+
             <RadioGroup
               value={deliveryType === "pickup" ? "pickup" : dispatchPartner}
               onValueChange={(v) => {
@@ -298,7 +358,9 @@ function Checkout() {
                   <div className="flex items-center gap-1.5 font-bold text-foreground">
                     <span>🚗 Uber Package</span>
                   </div>
-                  <span className="block text-xs text-muted-foreground mt-0.5">Fastest doorstep delivery via Uber Courier (20–40 mins)</span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">
+                    Fastest doorstep delivery via Uber Courier (20–40 mins)
+                  </span>
                 </div>
               </label>
 
@@ -308,7 +370,9 @@ function Checkout() {
                   <div className="flex items-center gap-1.5 font-bold text-foreground">
                     <span>🏍️ Barima Ba Rider</span>
                   </div>
-                  <span className="block text-xs text-muted-foreground mt-0.5">Standard in-house dispatch across Ghana</span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">
+                    Standard in-house dispatch across Ghana
+                  </span>
                 </div>
               </label>
 
@@ -318,7 +382,9 @@ function Checkout() {
                   <div className="flex items-center gap-1.5 font-bold text-foreground">
                     <span>🛍️ Branch Pickup</span>
                   </div>
-                  <span className="block text-xs text-muted-foreground mt-0.5">Free · Collect hot food at shop in 1 hour</span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">
+                    Free · Collect hot food at shop in 1 hour
+                  </span>
                 </div>
               </label>
             </RadioGroup>
@@ -327,10 +393,14 @@ function Checkout() {
                 <div>
                   <Label>Delivery zone *</Label>
                   <Select value={zoneId} onValueChange={setZoneId}>
-                    <SelectTrigger className="rounded-xl"><SelectValue placeholder="Choose your area" /></SelectTrigger>
+                    <SelectTrigger className="rounded-xl">
+                      <SelectValue placeholder="Choose your area" />
+                    </SelectTrigger>
                     <SelectContent className="rounded-xl">
                       {zones.map((z) => (
-                        <SelectItem key={z.id} value={z.id}>{z.name} — {formatGHS(Number(z.fee_ghs))}</SelectItem>
+                        <SelectItem key={z.id} value={z.id}>
+                          {z.name} — {formatGHS(Number(z.fee_ghs))}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -338,13 +408,27 @@ function Checkout() {
 
                 <div>
                   <Label htmlFor="address">Delivery address *</Label>
-                  <Textarea id="address" required value={address} onChange={(e) => setAddress(e.target.value)} placeholder="House number, street name, nearest landmark..." className="rounded-xl" />
+                  <Textarea
+                    id="address"
+                    required
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="House number, street name, nearest landmark..."
+                    className="rounded-xl"
+                  />
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <Label htmlFor="gps">Ghana Post GPS (optional)</Label>
-                    <Input id="gps" placeholder="GA-183-9032" value={ghanaPostGps} onChange={(e) => setGhanaPostGps(e.target.value.toUpperCase())} pattern="^[A-Z]{2}-[0-9]{3,4}-[0-9]{4}$" className="rounded-xl" />
+                    <Input
+                      id="gps"
+                      placeholder="GA-183-9032"
+                      value={ghanaPostGps}
+                      onChange={(e) => setGhanaPostGps(e.target.value.toUpperCase())}
+                      pattern="^[A-Z]{2}-[0-9]{3,4}-[0-9]{4}$"
+                      className="rounded-xl"
+                    />
                   </div>
 
                   <div>
@@ -393,18 +477,28 @@ function Checkout() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-extrabold text-sm text-white">Uber Package Live Estimate</span>
-                          <span className="rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold px-2 py-0.5 border border-emerald-500/30">DYNAMIC FARE</span>
+                          <span className="font-extrabold text-sm text-white">
+                            Uber Package Live Estimate
+                          </span>
+                          <span className="rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold px-2 py-0.5 border border-emerald-500/30">
+                            DYNAMIC FARE
+                          </span>
                         </div>
                         <p className="text-xs text-zinc-400">
-                          {uberEstimate ? `Distance: ${uberEstimate.distance_km} km · ETA: ${uberEstimate.estimated_minutes}` : "Pin GPS above or select zone for live price."}
+                          {uberEstimate
+                            ? `Distance: ${uberEstimate.distance_km} km · ETA: ${uberEstimate.estimated_minutes}`
+                            : "Pin GPS above or select zone for live price."}
                         </p>
                       </div>
                     </div>
 
                     <div className="text-left sm:text-right">
-                      <span className="text-[10px] uppercase font-bold text-zinc-400">Uber Delivery Fee</span>
-                      <p className="font-mono text-lg font-extrabold text-amber-400">{formatGHS(deliveryFee)}</p>
+                      <span className="text-[10px] uppercase font-bold text-zinc-400">
+                        Uber Delivery Fee
+                      </span>
+                      <p className="font-mono text-lg font-extrabold text-amber-400">
+                        {formatGHS(deliveryFee)}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -412,7 +506,12 @@ function Checkout() {
             )}
             <div className="mt-4">
               <Label htmlFor="notes">Order notes (optional)</Label>
-              <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} className="rounded-xl" />
+              <Textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="rounded-xl"
+              />
             </div>
           </section>
 
@@ -423,8 +522,13 @@ function Checkout() {
                 📅
               </div>
               <div>
-                <h2 className="text-base font-extrabold text-foreground">Delivery Timing & Subscriptions</h2>
-                <p className="text-xs text-muted-foreground">Choose immediate delivery, schedule for a future date, or start a recurring subscription!</p>
+                <h2 className="text-base font-extrabold text-foreground">
+                  Delivery Timing & Subscriptions
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Choose immediate delivery, schedule for a future date, or start a recurring
+                  subscription!
+                </p>
               </div>
             </div>
 
@@ -436,24 +540,36 @@ function Checkout() {
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/15 transition-all">
                 <RadioGroupItem value="now" className="mt-1" />
                 <div>
-                  <span className="font-extrabold text-xs text-foreground block">🚀 Deliver Now</span>
-                  <span className="text-[11px] text-muted-foreground block">Immediate kitchen prep & fast dispatch.</span>
+                  <span className="font-extrabold text-xs text-foreground block">
+                    🚀 Deliver Now
+                  </span>
+                  <span className="text-[11px] text-muted-foreground block">
+                    Immediate kitchen prep & fast dispatch.
+                  </span>
                 </div>
               </label>
 
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/15 transition-all">
                 <RadioGroupItem value="schedule" className="mt-1" />
                 <div>
-                  <span className="font-extrabold text-xs text-foreground block">⏰ Schedule Delivery</span>
-                  <span className="text-[11px] text-muted-foreground block">Choose exact date & time window.</span>
+                  <span className="font-extrabold text-xs text-foreground block">
+                    ⏰ Schedule Delivery
+                  </span>
+                  <span className="text-[11px] text-muted-foreground block">
+                    Choose exact date & time window.
+                  </span>
                 </div>
               </label>
 
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/15 transition-all">
                 <RadioGroupItem value="subscription" className="mt-1" />
                 <div>
-                  <span className="font-extrabold text-xs text-amber-400 block">🔁 Recurring Subscription</span>
-                  <span className="text-[11px] text-muted-foreground block">Auto-repeats weekly or monthly.</span>
+                  <span className="font-extrabold text-xs text-amber-400 block">
+                    🔁 Recurring Subscription
+                  </span>
+                  <span className="text-[11px] text-muted-foreground block">
+                    Auto-repeats weekly or monthly.
+                  </span>
                 </div>
               </label>
             </RadioGroup>
@@ -461,7 +577,9 @@ function Checkout() {
             {/* Scheduled Date Picker */}
             {orderScheduleType === "schedule" && (
               <div className="rounded-xl border border-amber-500/30 bg-card p-4 space-y-2 animate-fade-in-up">
-                <Label htmlFor="sched-date" className="text-xs font-bold text-amber-400">Select Future Date & Delivery Window *</Label>
+                <Label htmlFor="sched-date" className="text-xs font-bold text-amber-400">
+                  Select Future Date & Delivery Window *
+                </Label>
                 <Input
                   id="sched-date"
                   type="datetime-local"
@@ -470,7 +588,9 @@ function Checkout() {
                   onChange={(e) => setScheduledDate(e.target.value)}
                   className="rounded-xl border-amber-500/40 text-sm font-semibold"
                 />
-                <span className="text-[11px] text-muted-foreground block">Our team will prepare and dispatch your food precisely for your scheduled slot.</span>
+                <span className="text-[11px] text-muted-foreground block">
+                  Our team will prepare and dispatch your food precisely for your scheduled slot.
+                </span>
               </div>
             )}
 
@@ -478,8 +598,12 @@ function Checkout() {
             {orderScheduleType === "subscription" && (
               <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 space-y-3 animate-fade-in-up">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400">Subscription Frequency</span>
-                  <span className="rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold px-2.5 py-0.5 border border-emerald-500/30">10% OFF AUTO-SAVINGS</span>
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-amber-400">
+                    Subscription Frequency
+                  </span>
+                  <span className="rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold px-2.5 py-0.5 border border-emerald-500/30">
+                    10% OFF AUTO-SAVINGS
+                  </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <button
@@ -504,7 +628,10 @@ function Checkout() {
                     Every Month
                   </button>
                 </div>
-                <p className="text-[11px] text-zinc-300">Your subscription will automatically place orders on your selected schedule. Pause or cancel anytime in your profile dashboard.</p>
+                <p className="text-[11px] text-zinc-300">
+                  Your subscription will automatically place orders on your selected schedule. Pause
+                  or cancel anytime in your profile dashboard.
+                </p>
               </div>
             )}
           </section>
@@ -518,7 +645,8 @@ function Checkout() {
                   <span>Select Delivery Location on Accra Map</span>
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground">
-                  Tap any area preset or pin your location to calculate real-time Uber delivery distance & fee.
+                  Tap any area preset or pin your location to calculate real-time Uber delivery
+                  distance & fee.
                 </p>
               </DialogHeader>
 
@@ -539,7 +667,9 @@ function Checkout() {
 
                 {/* Quick Ghana Location Pin Presets */}
                 <div>
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Quick Accra Location Presets</Label>
+                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Quick Accra Location Presets
+                  </Label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
                     {[
                       { name: "East Legon", coords: "5.6350,-0.1600" },
@@ -570,11 +700,23 @@ function Checkout() {
                 </div>
 
                 <div className="flex justify-between items-center pt-2">
-                  <Button type="button" variant="outline" onClick={getGeolocation} className="rounded-xl text-xs gap-1.5" disabled={locating}>
-                    <Compass className={`h-4 w-4 text-amber-500 ${locating ? "animate-spin" : ""}`} />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={getGeolocation}
+                    className="rounded-xl text-xs gap-1.5"
+                    disabled={locating}
+                  >
+                    <Compass
+                      className={`h-4 w-4 text-amber-500 ${locating ? "animate-spin" : ""}`}
+                    />
                     <span>Auto-Detect GPS</span>
                   </Button>
-                  <Button type="button" onClick={() => setMapModalOpen(false)} className="rounded-xl bg-amber-500 text-black font-extrabold text-xs">
+                  <Button
+                    type="button"
+                    onClick={() => setMapModalOpen(false)}
+                    className="rounded-xl bg-amber-500 text-black font-extrabold text-xs"
+                  >
                     Confirm Location Pin
                   </Button>
                 </div>
@@ -584,12 +726,20 @@ function Checkout() {
 
           <section className="rounded-xl border bg-card p-5">
             <h2 className="text-lg font-semibold">Payment Method</h2>
-            <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as "paystack" | "cash_on_delivery" | "wallet")} className="mt-4 grid gap-3 sm:grid-cols-3">
+            <RadioGroup
+              value={paymentMethod}
+              onValueChange={(v) =>
+                setPaymentMethod(v as "paystack" | "cash_on_delivery" | "wallet")
+              }
+              className="mt-4 grid gap-3 sm:grid-cols-3"
+            >
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10 transition-all">
                 <RadioGroupItem value="paystack" className="mt-1" />
                 <div>
                   <span className="block font-bold text-foreground">Pay online</span>
-                  <span className="block text-xs text-muted-foreground mt-0.5">Mobile Money · Visa / Card</span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">
+                    Mobile Money · Visa / Card
+                  </span>
                 </div>
               </label>
 
@@ -597,14 +747,24 @@ function Checkout() {
                 <RadioGroupItem value="cash_on_delivery" className="mt-1" />
                 <div>
                   <span className="block font-bold text-foreground">Cash on delivery</span>
-                  <span className="block text-xs text-muted-foreground mt-0.5">Pay cash to driver</span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">
+                    Pay cash to driver
+                  </span>
                 </div>
               </label>
 
-              <label className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
-                walletBalance >= total ? "has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10" : "opacity-60 bg-muted/30"
-              }`}>
-                <RadioGroupItem value="wallet" className="mt-1" disabled={!authUser || walletBalance < total} />
+              <label
+                className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
+                  walletBalance >= total
+                    ? "has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10"
+                    : "opacity-60 bg-muted/30"
+                }`}
+              >
+                <RadioGroupItem
+                  value="wallet"
+                  className="mt-1"
+                  disabled={!authUser || walletBalance < total}
+                />
                 <div>
                   <div className="flex items-center gap-1.5 font-bold text-foreground">
                     <span>💳 Barima Ba Wallet</span>
@@ -623,26 +783,43 @@ function Checkout() {
           <ul className="mt-3 space-y-2 text-sm">
             {items.map((i) => (
               <li key={i.id} className="flex justify-between">
-                <span className="text-muted-foreground">{i.quantity} × {i.name}</span>
+                <span className="text-muted-foreground">
+                  {i.quantity} × {i.name}
+                </span>
                 <span>{formatGHS(i.price_ghs * i.quantity)}</span>
               </li>
             ))}
           </ul>
           <hr className="my-4" />
           <dl className="space-y-2 text-sm">
-            <div className="flex justify-between"><dt>Subtotal</dt><dd>{formatGHS(subtotal)}</dd></div>
-            <div className="flex justify-between"><dt>Delivery</dt><dd>{deliveryType === "pickup" ? "Free" : formatGHS(deliveryFee)}</dd></div>
-            <div className="flex justify-between border-t pt-2 text-base font-semibold"><dt>Total</dt><dd>{formatGHS(total)}</dd></div>
+            <div className="flex justify-between">
+              <dt>Subtotal</dt>
+              <dd>{formatGHS(subtotal)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt>Delivery</dt>
+              <dd>{deliveryType === "pickup" ? "Free" : formatGHS(deliveryFee)}</dd>
+            </div>
+            <div className="flex justify-between border-t pt-2 text-base font-semibold">
+              <dt>Total</dt>
+              <dd>{formatGHS(total)}</dd>
+            </div>
           </dl>
           {!authUser ? (
-            <Button asChild size="lg" className="mt-6 w-full bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-lg shadow-amber-500/20">
-              <Link to="/auth">
-                Sign in / Create Account to Pay
-              </Link>
+            <Button
+              asChild
+              size="lg"
+              className="mt-6 w-full bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-lg shadow-amber-500/20"
+            >
+              <Link to="/auth">Sign in / Create Account to Pay</Link>
             </Button>
           ) : (
             <Button type="submit" size="lg" className="mt-6 w-full" disabled={submitting}>
-              {submitting ? "Placing order…" : paymentMethod === "paystack" ? "Pay now" : "Place order"}
+              {submitting
+                ? "Placing order…"
+                : paymentMethod === "paystack"
+                  ? "Pay now"
+                  : "Place order"}
             </Button>
           )}
         </aside>

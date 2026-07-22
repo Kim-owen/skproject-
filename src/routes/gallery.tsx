@@ -51,7 +51,10 @@ function GalleryPage() {
 
   const categories = ["All", "Shito", "Meats", "Sauces", "Catering"];
 
-  const filtered = activeTab === "All" ? GALLERY_ITEMS : GALLERY_ITEMS.filter((item) => item.category === activeTab);
+  const filtered =
+    activeTab === "All"
+      ? GALLERY_ITEMS
+      : GALLERY_ITEMS.filter((item) => item.category === activeTab);
 
   return (
     <ShopLayout>
@@ -68,7 +71,8 @@ function GalleryPage() {
           </h1>
 
           <p className="mt-4 text-base sm:text-lg text-zinc-300 max-w-xl mx-auto">
-            Take a peak inside our kitchen, product packaging, and live catering events across Accra.
+            Take a peak inside our kitchen, product packaging, and live catering events across
+            Accra.
           </p>
 
           {/* Category Filter Tabs */}
@@ -99,7 +103,11 @@ function GalleryPage() {
               className="group overflow-hidden rounded-3xl border border-amber-500/20 bg-black/50 backdrop-blur-md shadow-xl transition-all duration-300 hover:scale-[1.02] hover:border-amber-500/50"
             >
               <div className="relative h-64 overflow-hidden">
-                <img src={item.img} alt={item.title} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                <img
+                  src={item.img}
+                  alt={item.title}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
                 <span className="absolute top-4 left-4 rounded-full bg-amber-500/90 px-3 py-1 text-[10px] font-extrabold text-black uppercase tracking-wider">
                   {item.category}

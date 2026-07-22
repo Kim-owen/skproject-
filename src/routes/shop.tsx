@@ -17,7 +17,11 @@ const dataQuery = {
   queryFn: async () => {
     const [{ data: categories }, { data: products }] = await Promise.all([
       supabase.from("categories").select("id, name, slug").order("sort_order"),
-      supabase.from("products").select("id, name, slug, unit, price_ghs, image_url, stock_quantity, category_id").eq("is_active", true).order("name"),
+      supabase
+        .from("products")
+        .select("id, name, slug, unit, price_ghs, image_url, stock_quantity, category_id")
+        .eq("is_active", true)
+        .order("name"),
     ]);
     return { categories: categories ?? [], products: products ?? [] };
   },
@@ -25,7 +29,15 @@ const dataQuery = {
 
 export const Route = createFileRoute("/shop")({
   validateSearch: (s: Record<string, unknown>) => searchSchema.parse(s),
-  head: () => ({ meta: [{ title: "Shop — Provision Shop" }, { name: "description", content: "Browse fresh meat, chicken, shito and household essentials." }] }),
+  head: () => ({
+    meta: [
+      { title: "Shop — Provision Shop" },
+      {
+        name: "description",
+        content: "Browse fresh meat, chicken, shito and household essentials.",
+      },
+    ],
+  }),
   loader: ({ context }) => context.queryClient.ensureQueryData(dataQuery),
   pendingMs: 0,
   pendingComponent: ShopPending,
@@ -37,11 +49,17 @@ function ShopPending() {
   return (
     <ShopLayout>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">Shop provisions</h1>
+        <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">
+          Shop provisions
+        </h1>
         <p className="mt-2 text-muted-foreground">Loading the freshest selection…</p>
         <div className="mt-6 h-10 w-full max-w-xl animate-pulse rounded-md bg-muted" />
-        <div className="mt-6"><CategoryPillsSkeleton /></div>
-        <div className="mt-8"><ProductGridSkeleton count={8} /></div>
+        <div className="mt-6">
+          <CategoryPillsSkeleton />
+        </div>
+        <div className="mt-8">
+          <ProductGridSkeleton count={8} />
+        </div>
       </div>
     </ShopLayout>
   );
@@ -56,7 +74,9 @@ function ShopError({ reset }: { error: Error; reset: () => void }) {
         </div>
         <h2 className="mt-6 font-display text-2xl font-bold">Couldn't load the shop</h2>
         <p className="mt-2 text-sm text-muted-foreground">Check your connection and try again.</p>
-        <Button onClick={reset} className="mt-6 rounded-xl">Try again</Button>
+        <Button onClick={reset} className="mt-6 rounded-xl">
+          Try again
+        </Button>
       </div>
     </ShopLayout>
   );
@@ -84,36 +104,58 @@ function Shop() {
   return (
     <ShopLayout>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">Shop provisions</h1>
-        <p className="mt-2 text-muted-foreground">Everything you need for the kitchen and the home.</p>
+        <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">
+          Shop provisions
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          Everything you need for the kitchen and the home.
+        </p>
 
         <form
           className="mt-6 flex gap-2"
           onSubmit={(e) => {
             e.preventDefault();
-            navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, q: search || undefined }) });
+            navigate({
+              search: (prev: Record<string, unknown>) => ({ ...prev, q: search || undefined }),
+            });
           }}
         >
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Search products…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+            <Input
+              placeholder="Search products…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
           </div>
           <Button type="submit">Search</Button>
         </form>
 
         <div className="mt-6 flex flex-wrap gap-2">
-          <Link to="/shop" search={{}} className={`rounded-full border px-3 py-1 text-sm ${!cat ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
+          <Link
+            to="/shop"
+            search={{}}
+            className={`rounded-full border px-3 py-1 text-sm ${!cat ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+          >
             All
           </Link>
           {data.categories.map((c) => (
-            <Link key={c.id} to="/shop" search={{ cat: c.slug }} className={`rounded-full border px-3 py-1 text-sm ${cat === c.slug ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
+            <Link
+              key={c.id}
+              to="/shop"
+              search={{ cat: c.slug }}
+              className={`rounded-full border px-3 py-1 text-sm ${cat === c.slug ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+            >
               {c.name}
             </Link>
           ))}
         </div>
 
         <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {filtered.map((p) => <ProductCard key={p.id} product={p} />)}
+          {filtered.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
         </div>
         {filtered.length === 0 && (
           <div className="mt-16 flex flex-col items-center rounded-3xl border border-dashed border-white/10 bg-card/40 py-16 text-center">
@@ -125,7 +167,9 @@ function Shop() {
               Try a different search term or clear filters to see the whole catalogue.
             </p>
             <Button asChild variant="outline" className="mt-6 rounded-xl">
-              <Link to="/shop" search={{}}>Clear filters</Link>
+              <Link to="/shop" search={{}}>
+                Clear filters
+              </Link>
             </Button>
           </div>
         )}

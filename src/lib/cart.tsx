@@ -42,14 +42,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const add: CartContextValue["add"] = (item, qty = 1) => {
     setItems((prev) => {
       const found = prev.find((i) => i.id === item.id);
-      if (found) return prev.map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + qty } : i));
+      if (found)
+        return prev.map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + qty } : i));
       return [...prev, { ...item, quantity: qty }];
     });
   };
   const remove = (id: string) => setItems((prev) => prev.filter((i) => i.id !== id));
   const setQty = (id: string, qty: number) =>
     setItems((prev) =>
-      qty <= 0 ? prev.filter((i) => i.id !== id) : prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)),
+      qty <= 0
+        ? prev.filter((i) => i.id !== id)
+        : prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)),
     );
   const clear = () => setItems([]);
   const subtotal = items.reduce((sum, i) => sum + i.price_ghs * i.quantity, 0);

@@ -52,7 +52,8 @@ function FAQPage() {
           </h1>
 
           <p className="mt-4 text-base sm:text-lg text-zinc-300 max-w-xl mx-auto">
-            Everything you need to know about our products, shelf life, delivery, and catering services.
+            Everything you need to know about our products, shelf life, delivery, and catering
+            services.
           </p>
         </div>
       </section>
@@ -71,8 +72,12 @@ function FAQPage() {
                   onClick={() => setOpenIndex(isOpen ? null : idx)}
                   className="w-full flex items-center justify-between p-6 text-left focus:outline-none"
                 >
-                  <span className="font-display font-extrabold text-base sm:text-lg text-amber-300 pr-4">{faq.q}</span>
-                  <ChevronDown className={`h-5 w-5 text-amber-400 transition-transform duration-300 shrink-0 ${isOpen ? "rotate-180" : "rotate-0"}`} />
+                  <span className="font-display font-extrabold text-base sm:text-lg text-amber-300 pr-4">
+                    {faq.q}
+                  </span>
+                  <ChevronDown
+                    className={`h-5 w-5 text-amber-400 transition-transform duration-300 shrink-0 ${isOpen ? "rotate-180" : "rotate-0"}`}
+                  />
                 </button>
 
                 {isOpen && (

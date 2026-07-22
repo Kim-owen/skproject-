@@ -4,17 +4,38 @@ import { useServerFn } from "@tanstack/react-start";
 import { getOrderByNumber } from "@/lib/orders.functions";
 import { ShopLayout } from "@/components/shop/Layout";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Package, Truck, Clock, Phone, MessageSquare, ExternalLink, MapPin, ChefHat, Sparkles } from "lucide-react";
+import {
+  CheckCircle2,
+  Package,
+  Truck,
+  Clock,
+  Phone,
+  MessageSquare,
+  ExternalLink,
+  MapPin,
+  ChefHat,
+  Sparkles,
+} from "lucide-react";
 import { formatGHS } from "@/lib/cart";
 
-const orderQuery = (fetcher: (args: { data: { order_number: string } }) => Promise<Awaited<ReturnType<typeof getOrderByNumber>>>, orderNumber: string) => ({
+const orderQuery = (
+  fetcher: (args: {
+    data: { order_number: string };
+  }) => Promise<Awaited<ReturnType<typeof getOrderByNumber>>>,
+  orderNumber: string,
+) => ({
   queryKey: ["order", orderNumber],
   queryFn: () => fetcher({ data: { order_number: orderNumber } }),
   refetchInterval: 10_000,
 });
 
 export const Route = createFileRoute("/order/$orderNumber")({
-  head: ({ params }) => ({ meta: [{ title: `Order ${params.orderNumber} — Barima Ba Foods` }, { name: "robots", content: "noindex" }] }),
+  head: ({ params }) => ({
+    meta: [
+      { title: `Order ${params.orderNumber} — Barima Ba Foods` },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: OrderPage,
 });
 
@@ -22,7 +43,11 @@ const STATUS_STEPS = [
   { key: "pending", label: "Order Received", desc: "Your order is logged in our system" },
   { key: "confirmed", label: "Kitchen Cooking", desc: "Fresh Ghanaian spices & meals cooking" },
   { key: "packed", label: "Packed & Sealed", desc: "Sealed hot & ready for dispatch" },
-  { key: "out_for_delivery", label: "Out for Delivery", desc: "Dispatch rider en route to your location" },
+  {
+    key: "out_for_delivery",
+    label: "Out for Delivery",
+    desc: "Dispatch rider en route to your location",
+  },
   { key: "delivered", label: "Delivered", desc: "Enjoy your authentic Barima Ba meal!" },
 ] as const;
 
@@ -34,11 +59,15 @@ function OrderPage() {
 
   const currentStep = STATUS_STEPS.findIndex((s) => s.key === order.status);
   const isUber = order.dispatch_partner === "uber";
-  const partnerLabel = isUber ? "Uber Package Dispatch" : order.dispatch_partner === "bolt" ? "Bolt Dispatch" : "Barima Ba Rider";
+  const partnerLabel = isUber
+    ? "Uber Package Dispatch"
+    : order.dispatch_partner === "bolt"
+      ? "Bolt Dispatch"
+      : "Barima Ba Rider";
 
   const getPhoneClean = (ph?: string | null) => {
     if (!ph) return "";
-    let clean = ph.trim().replace(/\s+/g, "");
+    const clean = ph.trim().replace(/\s+/g, "");
     if (clean.startsWith("0")) return `233${clean.slice(1)}`;
     return clean.replace(/\+/g, "");
   };
@@ -60,14 +89,23 @@ function OrderPage() {
             Thank you, <span className="text-amber-400">{order.customer_name.split(" ")[0]}</span>!
           </h1>
           <p className="mt-1.5 text-xs sm:text-sm text-zinc-300 font-sans">
-            Order Reference: <span className="font-mono font-extrabold text-amber-400">{order.order_number}</span>
+            Order Reference:{" "}
+            <span className="font-mono font-extrabold text-amber-400">{order.order_number}</span>
           </p>
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
-            <span className={`px-3 py-1 rounded-full font-extrabold uppercase tracking-wider border ${
-              order.payment_status === "paid" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40" : "bg-amber-500/20 text-amber-400 border-amber-500/40"
-            }`}>
-              {order.payment_status === "paid" ? "✓ Paid Online" : order.payment_method === "cash_on_delivery" ? "Cash on Delivery" : "Payment Pending"}
+            <span
+              className={`px-3 py-1 rounded-full font-extrabold uppercase tracking-wider border ${
+                order.payment_status === "paid"
+                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                  : "bg-amber-500/20 text-amber-400 border-amber-500/40"
+              }`}
+            >
+              {order.payment_status === "paid"
+                ? "✓ Paid Online"
+                : order.payment_method === "cash_on_delivery"
+                  ? "Cash on Delivery"
+                  : "Payment Pending"}
             </span>
 
             <span className="px-3 py-1 rounded-full bg-zinc-800 text-zinc-200 border border-zinc-700 font-bold">
@@ -116,16 +154,28 @@ function OrderPage() {
             {/* Rider Information */}
             <div className="grid gap-4 sm:grid-cols-2 bg-zinc-900/80 rounded-2xl p-4 border border-zinc-800">
               <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400">Assigned Driver</span>
-                <p className="text-sm font-extrabold text-white mt-0.5">{order.rider_name || "Assigning nearby rider..."}</p>
-                <p className="text-xs text-zinc-400 mt-0.5">{order.rider_vehicle || "Vehicle details pending"}</p>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400">
+                  Assigned Driver
+                </span>
+                <p className="text-sm font-extrabold text-white mt-0.5">
+                  {order.rider_name || "Assigning nearby rider..."}
+                </p>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  {order.rider_vehicle || "Vehicle details pending"}
+                </p>
               </div>
 
               <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400">Delivery Address Pin</span>
-                <p className="text-xs font-semibold text-zinc-200 mt-0.5 line-clamp-2">{order.delivery_address || "Pickup at shop"}</p>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400">
+                  Delivery Address Pin
+                </span>
+                <p className="text-xs font-semibold text-zinc-200 mt-0.5 line-clamp-2">
+                  {order.delivery_address || "Pickup at shop"}
+                </p>
                 {order.ghana_post_gps && (
-                  <p className="text-[11px] font-mono text-amber-400 font-bold mt-0.5">GPS: {order.ghana_post_gps}</p>
+                  <p className="text-[11px] font-mono text-amber-400 font-bold mt-0.5">
+                    GPS: {order.ghana_post_gps}
+                  </p>
                 )}
               </div>
             </div>
@@ -183,16 +233,25 @@ function OrderPage() {
 
               return (
                 <li key={step.key} className="ml-6 flex items-start justify-between">
-                  <span className={`absolute -left-3.5 flex h-7 w-7 items-center justify-center rounded-full border transition-all ${
-                    isCompleted
-                      ? "bg-amber-500 text-black border-amber-400 shadow-md shadow-amber-500/30"
-                      : "bg-zinc-900 text-zinc-600 border-zinc-800"
-                  }`}>
+                  <span
+                    className={`absolute -left-3.5 flex h-7 w-7 items-center justify-center rounded-full border transition-all ${
+                      isCompleted
+                        ? "bg-amber-500 text-black border-amber-400 shadow-md shadow-amber-500/30"
+                        : "bg-zinc-900 text-zinc-600 border-zinc-800"
+                    }`}
+                  >
                     {isCompleted ? "✓" : idx + 1}
                   </span>
                   <div>
-                    <h3 className={`text-sm font-extrabold ${isCurrent ? "text-amber-500" : isCompleted ? "text-foreground" : "text-muted-foreground"}`}>
-                      {step.label} {isCurrent && <span className="text-[10px] bg-amber-500/15 text-amber-500 px-2 py-0.5 rounded-full border border-amber-500/30 ml-2">IN PROGRESS</span>}
+                    <h3
+                      className={`text-sm font-extrabold ${isCurrent ? "text-amber-500" : isCompleted ? "text-foreground" : "text-muted-foreground"}`}
+                    >
+                      {step.label}{" "}
+                      {isCurrent && (
+                        <span className="text-[10px] bg-amber-500/15 text-amber-500 px-2 py-0.5 rounded-full border border-amber-500/30 ml-2">
+                          IN PROGRESS
+                        </span>
+                      )}
                     </h3>
                     <p className="text-xs text-muted-foreground mt-0.5">{step.desc}</p>
                   </div>
@@ -209,23 +268,42 @@ function OrderPage() {
             {order.order_items.map((i, idx) => (
               <li key={idx} className="pt-3 first:pt-0 flex justify-between items-center">
                 <div>
-                  <span className="font-extrabold text-foreground">{i.quantity} × {i.product_name}</span>
+                  <span className="font-extrabold text-foreground">
+                    {i.quantity} × {i.product_name}
+                  </span>
                   <span className="block text-xs text-muted-foreground">{i.unit}</span>
                 </div>
-                <span className="font-mono font-bold text-foreground">{formatGHS(Number(i.line_total_ghs))}</span>
+                <span className="font-mono font-bold text-foreground">
+                  {formatGHS(Number(i.line_total_ghs))}
+                </span>
               </li>
             ))}
           </ul>
 
           <dl className="mt-6 space-y-2 border-t pt-4 text-sm">
-            <div className="flex justify-between text-muted-foreground"><dt>Subtotal</dt><dd>{formatGHS(Number(order.subtotal_ghs))}</dd></div>
-            <div className="flex justify-between text-muted-foreground"><dt>Delivery ({partnerLabel})</dt><dd>{formatGHS(Number(order.delivery_fee_ghs))}</dd></div>
-            <div className="flex justify-between border-t pt-3 text-base font-extrabold text-foreground"><dt>Total Amount</dt><dd className="text-amber-500 font-mono text-lg">{formatGHS(Number(order.total_ghs))}</dd></div>
+            <div className="flex justify-between text-muted-foreground">
+              <dt>Subtotal</dt>
+              <dd>{formatGHS(Number(order.subtotal_ghs))}</dd>
+            </div>
+            <div className="flex justify-between text-muted-foreground">
+              <dt>Delivery ({partnerLabel})</dt>
+              <dd>{formatGHS(Number(order.delivery_fee_ghs))}</dd>
+            </div>
+            <div className="flex justify-between border-t pt-3 text-base font-extrabold text-foreground">
+              <dt>Total Amount</dt>
+              <dd className="text-amber-500 font-mono text-lg">
+                {formatGHS(Number(order.total_ghs))}
+              </dd>
+            </div>
           </dl>
         </div>
 
         <div className="flex justify-center pt-2">
-          <Button asChild variant="outline" className="rounded-2xl border-amber-500/40 hover:bg-amber-500/10 text-amber-500 font-bold px-8 py-6">
+          <Button
+            asChild
+            variant="outline"
+            className="rounded-2xl border-amber-500/40 hover:bg-amber-500/10 text-amber-500 font-bold px-8 py-6"
+          >
             <Link to="/shop">Continue Shopping</Link>
           </Button>
         </div>

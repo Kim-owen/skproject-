@@ -10,10 +10,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useState } from "react";
-import { Image as ImageIcon, Upload, Check, RefreshCw, Sparkles, Layers, ShieldCheck } from "lucide-react";
+import {
+  Image as ImageIcon,
+  Upload,
+  Check,
+  RefreshCw,
+  Sparkles,
+  Layers,
+  ShieldCheck,
+} from "lucide-react";
 
 export const Route = createFileRoute("/admin/media")({
-  head: () => ({ meta: [{ title: "Admin — Site Media & Images Hub" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Admin — Site Media & Images Hub" }, { name: "robots", content: "noindex" }],
+  }),
   component: AdminMediaPage,
 });
 
@@ -30,7 +40,9 @@ function AdminMediaPage() {
   });
   const products = mediaData?.products ?? [];
 
-  const [activeTab, setActiveTab] = useState<"products" | "hero_bg" | "catering_gallery">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "hero_bg" | "catering_gallery">(
+    "products",
+  );
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [customUrls, setCustomUrls] = useState<Record<string, string>>({});
   const [bgImageUrl, setBgImageUrl] = useState("/images/spicy-african-bg.png");
@@ -42,7 +54,9 @@ function AdminMediaPage() {
       const ext = file.name.split(".").pop();
       const path = `products/${productId}-${Date.now()}.${ext}`;
 
-      const { error: uploadError } = await supabase.storage.from("media").upload(path, file, { upsert: true });
+      const { error: uploadError } = await supabase.storage
+        .from("media")
+        .upload(path, file, { upsert: true });
       if (uploadError) throw uploadError;
 
       const { data: publicData } = supabase.storage.from("media").getPublicUrl(path);
@@ -132,7 +146,8 @@ function AdminMediaPage() {
               Replace & Manage All Site Images
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Update product photos, background textures, hero media posters, and catering showcase images in 1-click.
+              Update product photos, background textures, hero media posters, and catering showcase
+              images in 1-click.
             </p>
           </div>
 
@@ -141,7 +156,9 @@ function AdminMediaPage() {
             <button
               onClick={() => setActiveTab("products")}
               className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                activeTab === "products" ? "bg-amber-500 text-black shadow-md" : "text-muted-foreground hover:text-foreground"
+                activeTab === "products"
+                  ? "bg-amber-500 text-black shadow-md"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Product Photos ({products.length})
@@ -149,7 +166,9 @@ function AdminMediaPage() {
             <button
               onClick={() => setActiveTab("hero_bg")}
               className={`rounded-xl px-4 py-2 text-xs font-bold transition-all ${
-                activeTab === "hero_bg" ? "bg-amber-500 text-black shadow-md" : "text-muted-foreground hover:text-foreground"
+                activeTab === "hero_bg"
+                  ? "bg-amber-500 text-black shadow-md"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Background & Hero
@@ -179,12 +198,18 @@ function AdminMediaPage() {
                     </span>
                   </div>
 
-                  <h3 className="font-display font-extrabold text-base text-foreground">{p.name}</h3>
-                  <p className="text-xs text-amber-500 font-semibold mt-0.5">GHS {Number(p.price_ghs).toFixed(2)} / {p.unit}</p>
+                  <h3 className="font-display font-extrabold text-base text-foreground">
+                    {p.name}
+                  </h3>
+                  <p className="text-xs text-amber-500 font-semibold mt-0.5">
+                    GHS {Number(p.price_ghs).toFixed(2)} / {p.unit}
+                  </p>
 
                   {/* Option A: Direct File Upload */}
                   <div className="mt-4 space-y-2">
-                    <Label className="text-[11px] font-bold uppercase text-muted-foreground">Upload New Image File</Label>
+                    <Label className="text-[11px] font-bold uppercase text-muted-foreground">
+                      Upload New Image File
+                    </Label>
                     <div className="flex items-center gap-2">
                       <Input
                         type="file"
@@ -201,7 +226,9 @@ function AdminMediaPage() {
 
                   {/* Option B: Enter Image URL */}
                   <div className="mt-3 space-y-2">
-                    <Label className="text-[11px] font-bold uppercase text-muted-foreground">Or Enter Custom Image URL</Label>
+                    <Label className="text-[11px] font-bold uppercase text-muted-foreground">
+                      Or Enter Custom Image URL
+                    </Label>
                     <div className="flex gap-2">
                       <Input
                         type="text"
@@ -216,7 +243,11 @@ function AdminMediaPage() {
                         onClick={() => handleSaveProductUrl(p)}
                         className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs"
                       >
-                        {uploadingId === p.id ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : "Save"}
+                        {uploadingId === p.id ? (
+                          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          "Save"
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -233,8 +264,12 @@ function AdminMediaPage() {
               <div className="flex items-center gap-3 border-b border-border pb-4">
                 <Layers className="h-6 w-6 text-amber-500" />
                 <div>
-                  <h3 className="font-display font-extrabold text-lg text-foreground">Spicy African Background Backdrop</h3>
-                  <p className="text-xs text-muted-foreground">Current site-wide fixed backdrop texture image</p>
+                  <h3 className="font-display font-extrabold text-lg text-foreground">
+                    Spicy African Background Backdrop
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Current site-wide fixed backdrop texture image
+                  </p>
                 </div>
               </div>
 
@@ -243,7 +278,9 @@ function AdminMediaPage() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase text-amber-400">Backdrop Image URL</Label>
+                <Label className="text-xs font-bold uppercase text-amber-400">
+                  Backdrop Image URL
+                </Label>
                 <Input
                   type="text"
                   value={bgImageUrl}
@@ -264,16 +301,24 @@ function AdminMediaPage() {
               <div className="flex items-center gap-3 border-b border-border pb-4">
                 <Sparkles className="h-6 w-6 text-amber-500" />
                 <div>
-                  <h3 className="font-display font-extrabold text-lg text-foreground">Hero Video & Poster Controls</h3>
-                  <p className="text-xs text-muted-foreground">Manage Hero Video MP4 & Poster background</p>
+                  <h3 className="font-display font-extrabold text-lg text-foreground">
+                    Hero Video & Poster Controls
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Manage Hero Video MP4 & Poster background
+                  </p>
                 </div>
               </div>
 
               <p className="text-xs leading-relaxed text-muted-foreground">
-                To manage hero background video files, poster thumbnails, main headlines, and overlay copy, visit the dedicated Hero Control Dashboard.
+                To manage hero background video files, poster thumbnails, main headlines, and
+                overlay copy, visit the dedicated Hero Control Dashboard.
               </p>
 
-              <Button asChild className="w-full rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold">
+              <Button
+                asChild
+                className="w-full rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold"
+              >
                 <a href="/admin/hero">Go to Hero Control Dashboard →</a>
               </Button>
             </div>

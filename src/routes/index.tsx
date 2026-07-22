@@ -6,7 +6,21 @@ import { ShopLayout } from "@/components/shop/Layout";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { ProductSlideshow } from "@/components/shop/ProductSlideshow";
-import { ArrowRight, ArrowUpRight, Leaf, Shield, Flame, Truck, Heart, Award, Utensils, Phone, CheckCircle2, Volume2, VolumeX } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Leaf,
+  Shield,
+  Flame,
+  Truck,
+  Heart,
+  Award,
+  Utensils,
+  Phone,
+  CheckCircle2,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { formatGHS } from "@/lib/cart";
 import { getHeroSettings, DEFAULT_HERO_SETTINGS } from "@/lib/settings.functions";
 import { useState, useRef } from "react";
@@ -134,17 +148,27 @@ function Home() {
             </h1>
 
             <p className="mt-4 sm:mt-6 max-w-xl text-sm sm:text-lg leading-relaxed text-zinc-100 font-sans backdrop-blur-md bg-black/40 p-4 rounded-2xl border border-white/10 shadow-2xl">
-              {heroSettings.subheading || "Premium quality homemade Ghanaian foods made with passion, rich in flavor and crafted for your satisfaction."}
+              {heroSettings.subheading ||
+                "Premium quality homemade Ghanaian foods made with passion, rich in flavor and crafted for your satisfaction."}
             </p>
 
             {/* Action Buttons */}
             <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Button asChild size="lg" className="rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-600 hover:to-amber-600 text-black px-8 py-6 text-sm sm:text-base font-extrabold shadow-xl shadow-amber-500/30 transition-all hover:scale-102">
+              <Button
+                asChild
+                size="lg"
+                className="rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-600 hover:to-amber-600 text-black px-8 py-6 text-sm sm:text-base font-extrabold shadow-xl shadow-amber-500/30 transition-all hover:scale-102"
+              >
                 <Link to="/shop">
                   ORDER NOW <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="rounded-2xl border-amber-500/40 bg-black/80 backdrop-blur-md px-8 py-6 text-sm sm:text-base font-extrabold text-amber-400 hover:bg-amber-500/20 hover:border-amber-400 transition-all">
+              <Button
+                asChild
+                size="lg"
+                variant="outline"
+                className="rounded-2xl border-amber-500/40 bg-black/80 backdrop-blur-md px-8 py-6 text-sm sm:text-base font-extrabold text-amber-400 hover:bg-amber-500/20 hover:border-amber-400 transition-all"
+              >
                 <Link to="/catering">CATERING SERVICES</Link>
               </Button>
             </div>
@@ -164,7 +188,10 @@ function Home() {
             { icon: Truck, title: "NATIONWIDE DELIVERY", desc: "Fast across Ghana" },
             { icon: Heart, title: "CUSTOMER SATISFACTION", desc: "Guaranteed satisfaction" },
           ].map((item) => (
-            <div key={item.title} className="flex flex-col items-center p-3 rounded-2xl border border-amber-500/10 bg-amber-500/5 hover:border-amber-500/30 transition-all">
+            <div
+              key={item.title}
+              className="flex flex-col items-center p-3 rounded-2xl border border-amber-500/10 bg-amber-500/5 hover:border-amber-500/30 transition-all"
+            >
               <item.icon className="h-6 w-6 text-amber-400 mb-2" />
               <h4 className="font-extrabold text-xs tracking-wider text-amber-300">{item.title}</h4>
               <p className="text-[11px] text-zinc-400 mt-1 leading-tight">{item.desc}</p>
@@ -184,10 +211,12 @@ function Home() {
             <span>Handcrafted Ghanaian Delicacies</span>
           </div>
           <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl leading-tight">
-            FLAVORFUL. FRESH. <span className="text-amber-500 font-serif italic">MADE FOR YOU.</span>
+            FLAVORFUL. FRESH.{" "}
+            <span className="text-amber-500 font-serif italic">MADE FOR YOU.</span>
           </h2>
           <p className="mt-3 text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Explore our range of authentic homemade products prepared with passion and premium ingredients across Ghana.
+            Explore our range of authentic homemade products prepared with passion and premium
+            ingredients across Ghana.
           </p>
         </div>
 
@@ -196,7 +225,11 @@ function Home() {
 
         {/* View Full Catalog Button */}
         <div className="mt-8 text-center">
-          <Button asChild size="lg" className="rounded-2xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-sm px-8 py-6 shadow-xl shadow-amber-500/20 hover:scale-105 transition-all">
+          <Button
+            asChild
+            size="lg"
+            className="rounded-2xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-sm px-8 py-6 shadow-xl shadow-amber-500/20 hover:scale-105 transition-all"
+          >
             <Link to="/shop">
               EXPLORE FULL PRODUCTS CATALOG <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
@@ -209,34 +242,58 @@ function Home() {
         <div className="overflow-hidden rounded-[2.5rem] border border-amber-500/30 bg-black/60 backdrop-blur-xl shadow-2xl p-8 sm:p-12">
           <div className="grid gap-10 md:grid-cols-12 md:items-center">
             <div className="md:col-span-6 flex flex-col justify-center">
-              <span className="text-xs font-extrabold uppercase tracking-widest text-amber-400">OUR CATERING SERVICES</span>
+              <span className="text-xs font-extrabold uppercase tracking-widest text-amber-400">
+                OUR CATERING SERVICES
+              </span>
               <h3 className="mt-3 font-display text-3xl sm:text-4xl font-extrabold text-white leading-tight">
                 DELICIOUS FOOD FOR EVERY OCCASION
               </h3>
               <p className="mt-4 text-sm leading-relaxed text-zinc-300">
-                From small gatherings to big events, we provide tasty, hygienic and beautifully presented meals that make your events unforgettable.
+                From small gatherings to big events, we provide tasty, hygienic and beautifully
+                presented meals that make your events unforgettable.
               </p>
               <ul className="mt-6 space-y-3">
-                {["Weddings", "Parties & Celebrations", "Corporate Events", "Funerals & More"].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-sm font-semibold text-amber-300">
-                    <CheckCircle2 className="h-5 w-5 text-amber-400 shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
+                {["Weddings", "Parties & Celebrations", "Corporate Events", "Funerals & More"].map(
+                  (item) => (
+                    <li
+                      key={item}
+                      className="flex items-center gap-3 text-sm font-semibold text-amber-300"
+                    >
+                      <CheckCircle2 className="h-5 w-5 text-amber-400 shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ),
+                )}
               </ul>
               <div className="mt-8">
-                <Button asChild size="lg" className="rounded-2xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-lg shadow-amber-500/25">
+                <Button
+                  asChild
+                  size="lg"
+                  className="rounded-2xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-lg shadow-amber-500/25"
+                >
                   <Link to="/shop">
                     <Utensils className="mr-2 h-5 w-5" /> BOOK OUR CATERING
                   </Link>
                 </Button>
               </div>
             </div>
-            
+
             <div className="md:col-span-6 grid grid-cols-2 gap-4">
-              <img src="/images/spicy-african-bg.png" alt="Catering Spread" className="rounded-2xl object-cover h-44 w-full border border-amber-500/20 shadow-md" />
-              <img src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=600" alt="Ghanaian Cuisine" className="rounded-2xl object-cover h-44 w-full border border-amber-500/20 shadow-md" />
-              <img src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=600" alt="Grilled Meat" className="col-span-2 rounded-2xl object-cover h-52 w-full border border-amber-500/20 shadow-md" />
+              <img
+                src="/images/spicy-african-bg.png"
+                alt="Catering Spread"
+                className="rounded-2xl object-cover h-44 w-full border border-amber-500/20 shadow-md"
+              />
+              <img
+                src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=600"
+                alt="Ghanaian Cuisine"
+                className="rounded-2xl object-cover h-44 w-full border border-amber-500/20 shadow-md"
+              />
+              <img
+                src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=600"
+                alt="Grilled Meat"
+                className="col-span-2 rounded-2xl object-cover h-52 w-full border border-amber-500/20 shadow-md"
+              />
             </div>
           </div>
         </div>
@@ -246,10 +303,26 @@ function Home() {
       <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 rounded-3xl border border-amber-500/20 bg-black/50 p-6 backdrop-blur-md text-center">
           {[
-            { icon: Award, title: "EXPERTLY MADE", desc: "Prepared by experts with years of experience." },
-            { icon: Shield, title: "QUALITY INGREDIENTS", desc: "We use only the best ingredients." },
-            { icon: Heart, title: "MADE WITH LOVE", desc: "Every product is crafted with passion." },
-            { icon: CheckCircle2, title: "TRUSTED BY MANY", desc: "Customers love us & keep coming back." },
+            {
+              icon: Award,
+              title: "EXPERTLY MADE",
+              desc: "Prepared by experts with years of experience.",
+            },
+            {
+              icon: Shield,
+              title: "QUALITY INGREDIENTS",
+              desc: "We use only the best ingredients.",
+            },
+            {
+              icon: Heart,
+              title: "MADE WITH LOVE",
+              desc: "Every product is crafted with passion.",
+            },
+            {
+              icon: CheckCircle2,
+              title: "TRUSTED BY MANY",
+              desc: "Customers love us & keep coming back.",
+            },
           ].map((v) => (
             <div key={v.title} className="flex flex-col items-center p-3">
               <v.icon className="h-7 w-7 text-amber-400 mb-2" />
@@ -266,15 +339,21 @@ function Home() {
           <div className="flex items-center gap-4">
             <Truck className="h-10 w-10 shrink-0" />
             <div>
-              <h4 className="font-extrabold text-lg uppercase tracking-wide">NATIONWIDE DELIVERY</h4>
-              <p className="text-xs font-semibold">We deliver to your doorstep anywhere in Ghana.</p>
+              <h4 className="font-extrabold text-lg uppercase tracking-wide">
+                NATIONWIDE DELIVERY
+              </h4>
+              <p className="text-xs font-semibold">
+                We deliver to your doorstep anywhere in Ghana.
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3 bg-black/90 px-6 py-3 rounded-2xl text-amber-400 shadow-md">
             <Phone className="h-5 w-5" />
             <div className="text-left">
               <p className="text-[10px] uppercase font-bold text-zinc-400">CALL / WHATSAPP</p>
-              <p className="text-sm font-extrabold text-white">+233 24 123 4567 | +233 50 123 4567</p>
+              <p className="text-sm font-extrabold text-white">
+                +233 24 123 4567 | +233 50 123 4567
+              </p>
             </div>
           </div>
         </div>

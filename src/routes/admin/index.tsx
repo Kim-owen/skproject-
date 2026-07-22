@@ -74,17 +74,15 @@ function AdminDashboard() {
   }
 
   // Process sales trend data from the 10 most recent orders (newest first, so we reverse it for the chart timeline)
-  const chartData = [...data.recentOrders]
-    .reverse()
-    .map((order, idx) => ({
-      name: `Order ${idx + 1}`,
-      amount: Number(order.total_ghs),
-      date: new Date(order.created_at).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-      status: order.status,
-    }));
+  const chartData = [...data.recentOrders].reverse().map((order, idx) => ({
+    name: `Order ${idx + 1}`,
+    amount: Number(order.total_ghs),
+    date: new Date(order.created_at).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    }),
+    status: order.status,
+  }));
 
   const kpis = [
     {
@@ -136,8 +134,12 @@ function AdminDashboard() {
         {/* Header Block */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-            <p className="mt-1 text-sm text-muted-foreground">Real-time analytical overview of your grocery store operations.</p>
+            <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
+              Dashboard
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Real-time analytical overview of your grocery store operations.
+            </p>
           </div>
           <div className="flex gap-2.5">
             <Button asChild variant="outline" className="rounded-xl font-semibold">
@@ -152,15 +154,22 @@ function AdminDashboard() {
         {/* KPI Grid */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {kpis.map((kpi) => (
-            <div key={kpi.label} className="rounded-2xl border border-border bg-card p-6 shadow-xs flex flex-col justify-between">
+            <div
+              key={kpi.label}
+              className="rounded-2xl border border-border bg-card p-6 shadow-xs flex flex-col justify-between"
+            >
               <div className="flex items-start justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{kpi.label}</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  {kpi.label}
+                </span>
                 <div className={`rounded-lg p-2 ${kpi.color}`}>
                   <kpi.icon className="h-4.5 w-4.5" />
                 </div>
               </div>
               <div className="mt-4">
-                <p className="font-display text-3xl font-bold tracking-tight text-foreground">{kpi.value}</p>
+                <p className="font-display text-3xl font-bold tracking-tight text-foreground">
+                  {kpi.value}
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">{kpi.subtext}</p>
               </div>
             </div>
@@ -174,7 +183,9 @@ function AdminDashboard() {
               <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" /> Sales Trend
               </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Value of the 10 most recent transactions.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Value of the 10 most recent transactions.
+              </p>
             </div>
             <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-lg">
               Live Feed
@@ -190,7 +201,11 @@ function AdminDashboard() {
                     <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="var(--color-border)"
+                />
                 <XAxis
                   dataKey="name"
                   tickLine={false}
@@ -233,7 +248,10 @@ function AdminDashboard() {
                 <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
                   <Activity className="h-4.5 w-4.5 text-primary" /> Recent Activity
                 </h3>
-                <Link to="/admin/orders" className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5">
+                <Link
+                  to="/admin/orders"
+                  className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5"
+                >
                   View all <ArrowUpRight className="h-3 w-3" />
                 </Link>
               </div>
@@ -242,21 +260,33 @@ function AdminDashboard() {
                 {data.recentOrders.slice(0, 5).map((o) => (
                   <div key={o.id} className="flex items-center justify-between py-3">
                     <div>
-                      <p className="font-mono text-xs font-semibold text-foreground">{o.order_number}</p>
+                      <p className="font-mono text-xs font-semibold text-foreground">
+                        {o.order_number}
+                      </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {o.payment_status}
+                        {new Date(o.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}{" "}
+                        · {o.payment_status}
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="font-display text-sm font-bold text-foreground">{formatGHS(Number(o.total_ghs))}</span>
-                      <span className={`rounded-md border px-2 py-0.5 text-[10px] font-bold capitalize tracking-wide ${getStatusBadgeClass(o.status)}`}>
+                      <span className="font-display text-sm font-bold text-foreground">
+                        {formatGHS(Number(o.total_ghs))}
+                      </span>
+                      <span
+                        className={`rounded-md border px-2 py-0.5 text-[10px] font-bold capitalize tracking-wide ${getStatusBadgeClass(o.status)}`}
+                      >
                         {o.status.replace(/_/g, " ")}
                       </span>
                     </div>
                   </div>
                 ))}
                 {data.recentOrders.length === 0 && (
-                  <p className="py-8 text-center text-xs text-muted-foreground">No orders recorded yet.</p>
+                  <p className="py-8 text-center text-xs text-muted-foreground">
+                    No orders recorded yet.
+                  </p>
                 )}
               </div>
             </div>
@@ -269,7 +299,10 @@ function AdminDashboard() {
                 <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
                   <AlertTriangle className="h-4.5 w-4.5 text-amber-500" /> Stock Alerts
                 </h3>
-                <Link to="/admin/products" className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5">
+                <Link
+                  to="/admin/products"
+                  className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5"
+                >
                   Refill <ArrowUpRight className="h-3 w-3" />
                 </Link>
               </div>
@@ -282,7 +315,9 @@ function AdminDashboard() {
                     <div key={p.id} className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-semibold text-foreground">{p.name}</span>
-                        <span className={`font-bold ${isCritical ? "text-destructive" : "text-amber-500"}`}>
+                        <span
+                          className={`font-bold ${isCritical ? "text-destructive" : "text-amber-500"}`}
+                        >
                           {p.stock_quantity} {p.unit} remaining
                         </span>
                       </div>
@@ -296,7 +331,9 @@ function AdminDashboard() {
                   );
                 })}
                 {data.lowStock.length === 0 && (
-                  <p className="py-8 text-center text-xs text-muted-foreground">All items have healthy inventory levels.</p>
+                  <p className="py-8 text-center text-xs text-muted-foreground">
+                    All items have healthy inventory levels.
+                  </p>
                 )}
               </div>
             </div>

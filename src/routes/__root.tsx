@@ -80,10 +80,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Barima Ba Foods — Taste. Quality. Trust." },
-      { name: "description", content: "Barima Ba Foods is a Ghanaian food brand committed to delivering premium quality, authentic and delicious foods." },
+      {
+        name: "description",
+        content:
+          "Barima Ba Foods is a Ghanaian food brand committed to delivering premium quality, authentic and delicious foods.",
+      },
       { name: "author", content: "Barima Ba Foods" },
       { property: "og:title", content: "Barima Ba Foods — Taste. Quality. Trust." },
-      { property: "og:description", content: "Premium quality homemade Ghanaian foods made with passion, rich in flavor and crafted for your satisfaction." },
+      {
+        property: "og:description",
+        content:
+          "Premium quality homemade Ghanaian foods made with passion, rich in flavor and crafted for your satisfaction.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

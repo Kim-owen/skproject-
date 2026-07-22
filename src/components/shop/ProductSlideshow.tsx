@@ -84,7 +84,9 @@ export function ProductSlideshow({ products }: { products: Product[] }) {
       <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
         <div className="flex items-center gap-1.5 shrink-0 bg-gradient-to-r from-amber-500/20 via-amber-400/10 to-amber-500/20 text-amber-400 px-4 py-1.5 rounded-full border border-amber-500/40 shadow-lg shadow-amber-500/10 animate-pulse">
           <Flame className="h-4 w-4 fill-amber-400 text-amber-400" />
-          <span className="text-xs font-extrabold uppercase tracking-widest">LIVE SHOWCASE SLIDESHOW</span>
+          <span className="text-xs font-extrabold uppercase tracking-widest">
+            LIVE SHOWCASE SLIDESHOW
+          </span>
         </div>
 
         {products.map((p, idx) => (
@@ -107,7 +109,9 @@ export function ProductSlideshow({ products }: { products: Product[] }) {
         onClick={() => scroll("left")}
         disabled={!canScrollLeft}
         className={`absolute left-0 top-[55%] -translate-y-1/2 z-30 flex h-12 w-12 items-center justify-center rounded-2xl bg-black/95 text-amber-400 border border-amber-500/50 shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 backdrop-blur-xl ${
-          !canScrollLeft ? "opacity-20 cursor-not-allowed" : "opacity-90 hover:opacity-100 hover:shadow-amber-500/20"
+          !canScrollLeft
+            ? "opacity-20 cursor-not-allowed"
+            : "opacity-90 hover:opacity-100 hover:shadow-amber-500/20"
         }`}
         aria-label="Previous Slide"
       >
@@ -118,7 +122,9 @@ export function ProductSlideshow({ products }: { products: Product[] }) {
         onClick={() => scroll("right")}
         disabled={!canScrollRight}
         className={`absolute right-0 top-[55%] -translate-y-1/2 z-30 flex h-12 w-12 items-center justify-center rounded-2xl bg-black/95 text-amber-400 border border-amber-500/50 shadow-2xl transition-all duration-300 hover:scale-110 active:scale-95 backdrop-blur-xl ${
-          !canScrollRight ? "opacity-20 cursor-not-allowed" : "opacity-90 hover:opacity-100 hover:shadow-amber-500/20"
+          !canScrollRight
+            ? "opacity-20 cursor-not-allowed"
+            : "opacity-90 hover:opacity-100 hover:shadow-amber-500/20"
         }`}
         aria-label="Next Slide"
       >

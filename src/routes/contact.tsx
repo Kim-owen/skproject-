@@ -1,7 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ShopLayout } from "@/components/shop/Layout";
 import { Button } from "@/components/ui/button";
-import { Phone, Mail, MapPin, MessageSquare, Send, Instagram, Facebook, CheckCircle2 } from "lucide-react";
+import {
+  Phone,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Send,
+  Instagram,
+  Facebook,
+  CheckCircle2,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -34,11 +43,13 @@ function ContactPage() {
           </div>
 
           <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight">
-            Get In Touch With <span className="text-amber-400 italic font-serif">Barima Ba Foods</span>
+            Get In Touch With{" "}
+            <span className="text-amber-400 italic font-serif">Barima Ba Foods</span>
           </h1>
 
           <p className="mt-4 text-base sm:text-lg text-zinc-300 max-w-xl mx-auto">
-            Have questions about your order, wholesale inquiries, or catering bookings? Reach out to our team today.
+            Have questions about your order, wholesale inquiries, or catering bookings? Reach out to
+            our team today.
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -65,7 +76,9 @@ function ContactPage() {
                   <Phone className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="font-display font-extrabold text-sm text-amber-300">Call / WhatsApp</h4>
+                  <h4 className="font-display font-extrabold text-sm text-amber-300">
+                    Call / WhatsApp
+                  </h4>
                   <p className="text-sm font-semibold text-white mt-0.5">+233 24 123 4567</p>
                   <p className="text-sm font-semibold text-white">+233 50 123 4567</p>
                 </div>
@@ -78,8 +91,12 @@ function ContactPage() {
                   <MapPin className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="font-display font-extrabold text-sm text-amber-300">Kitchen & Distribution Hub</h4>
-                  <p className="text-sm text-zinc-300 mt-0.5">East Legon & Spintex Road, Accra, Ghana</p>
+                  <h4 className="font-display font-extrabold text-sm text-amber-300">
+                    Kitchen & Distribution Hub
+                  </h4>
+                  <p className="text-sm text-zinc-300 mt-0.5">
+                    East Legon & Spintex Road, Accra, Ghana
+                  </p>
                 </div>
               </div>
             </div>
@@ -90,8 +107,12 @@ function ContactPage() {
                   <Instagram className="h-6 w-6" />
                 </div>
                 <div>
-                  <h4 className="font-display font-extrabold text-sm text-amber-300">Social Media</h4>
-                  <p className="text-sm text-zinc-300 mt-0.5">@barimabafoods (Instagram, Facebook, TikTok)</p>
+                  <h4 className="font-display font-extrabold text-sm text-amber-300">
+                    Social Media
+                  </h4>
+                  <p className="text-sm text-zinc-300 mt-0.5">
+                    @barimabafoods (Instagram, Facebook, TikTok)
+                  </p>
                 </div>
               </div>
             </div>
@@ -100,19 +121,31 @@ function ContactPage() {
           {/* Right: Contact Form */}
           <div className="md:col-span-7">
             <div className="rounded-[2.5rem] border border-amber-500/30 bg-black/70 backdrop-blur-xl shadow-2xl p-8 sm:p-10">
-              <h3 className="font-display text-2xl font-extrabold text-white mb-6">Send Us a Direct Message</h3>
+              <h3 className="font-display text-2xl font-extrabold text-white mb-6">
+                Send Us a Direct Message
+              </h3>
 
               {submitted ? (
                 <div className="text-center p-8 rounded-2xl bg-amber-500/10 border border-amber-500/30">
                   <CheckCircle2 className="h-12 w-12 text-amber-400 mx-auto mb-3" />
                   <h4 className="text-xl font-bold text-white">Message Sent!</h4>
-                  <p className="mt-2 text-sm text-zinc-300">Thank you {form.name}, we will respond to your inquiry via email/phone shortly.</p>
-                  <Button onClick={() => setSubmitted(false)} variant="outline" className="mt-6 rounded-xl border-amber-500/40 text-amber-400">Send Another Message</Button>
+                  <p className="mt-2 text-sm text-zinc-300">
+                    Thank you {form.name}, we will respond to your inquiry via email/phone shortly.
+                  </p>
+                  <Button
+                    onClick={() => setSubmitted(false)}
+                    variant="outline"
+                    className="mt-6 rounded-xl border-amber-500/40 text-amber-400"
+                  >
+                    Send Another Message
+                  </Button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="text-xs font-bold uppercase text-amber-400">Your Name *</label>
+                    <label className="text-xs font-bold uppercase text-amber-400">
+                      Your Name *
+                    </label>
                     <input
                       type="text"
                       required
@@ -125,7 +158,9 @@ function ContactPage() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label className="text-xs font-bold uppercase text-amber-400">Phone Number</label>
+                      <label className="text-xs font-bold uppercase text-amber-400">
+                        Phone Number
+                      </label>
                       <input
                         type="tel"
                         value={form.phone}
@@ -135,7 +170,9 @@ function ContactPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-bold uppercase text-amber-400">Email Address</label>
+                      <label className="text-xs font-bold uppercase text-amber-400">
+                        Email Address
+                      </label>
                       <input
                         type="email"
                         value={form.email}
@@ -158,7 +195,11 @@ function ContactPage() {
                     />
                   </div>
 
-                  <Button type="submit" size="lg" className="w-full rounded-2xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-5">
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full rounded-2xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-5"
+                  >
                     <Send className="mr-2 h-5 w-5" /> SEND MESSAGE
                   </Button>
                 </form>

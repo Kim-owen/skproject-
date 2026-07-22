@@ -35,7 +35,11 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-500/0 via-amber-400/10 to-amber-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl pointer-events-none" />
 
       {/* Image Container with Zoom & Shimmer Glow */}
-      <Link to="/product/$slug" params={{ slug: product.slug }} className="relative block aspect-square overflow-hidden rounded-2xl bg-zinc-950/80 border border-amber-500/20 group/img">
+      <Link
+        to="/product/$slug"
+        params={{ slug: product.slug }}
+        className="relative block aspect-square overflow-hidden rounded-2xl bg-zinc-950/80 border border-amber-500/20 group/img"
+      >
         <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
         <img
           src={displayImage}
@@ -53,12 +57,20 @@ export function ProductCard({ product }: { product: Product }) {
 
       {/* Card Content & Details */}
       <div className="relative z-10 flex flex-1 flex-col pt-4">
-        <Link to="/product/$slug" params={{ slug: product.slug }} className="line-clamp-2 font-display text-sm font-extrabold tracking-tight text-foreground hover:text-amber-400 transition-colors min-h-[2.5rem] leading-snug">
+        <Link
+          to="/product/$slug"
+          params={{ slug: product.slug }}
+          className="line-clamp-2 font-display text-sm font-extrabold tracking-tight text-foreground hover:text-amber-400 transition-colors min-h-[2.5rem] leading-snug"
+        >
           {product.name}
         </Link>
         <div className="mt-2 flex items-baseline gap-1.5">
-          <span className="font-display text-lg font-extrabold text-amber-500 drop-shadow-sm">{formatGHS(Number(product.price_ghs))}</span>
-          <span className="text-[10px] text-muted-foreground font-sans font-semibold">/ {product.unit}</span>
+          <span className="font-display text-lg font-extrabold text-amber-500 drop-shadow-sm">
+            {formatGHS(Number(product.price_ghs))}
+          </span>
+          <span className="text-[10px] text-muted-foreground font-sans font-semibold">
+            / {product.unit}
+          </span>
         </div>
         <div className="mt-4">
           <Button
@@ -78,7 +90,14 @@ export function ProductCard({ product }: { product: Product }) {
               toast.success(`${product.name} added to cart`);
             }}
           >
-            {outOfStock ? "Sold out" : <><Plus className="mr-1.5 h-4 w-4 transition-transform duration-300 group-hover/btn:rotate-90" />Add to cart</>}
+            {outOfStock ? (
+              "Sold out"
+            ) : (
+              <>
+                <Plus className="mr-1.5 h-4 w-4 transition-transform duration-300 group-hover/btn:rotate-90" />
+                Add to cart
+              </>
+            )}
           </Button>
         </div>
       </div>

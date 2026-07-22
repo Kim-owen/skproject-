@@ -28,10 +28,16 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
 
         if (payload.event !== "charge.success") return new Response("ok");
 
-        const verify = await fetch(`https://api.paystack.co/transaction/verify/${payload.data.reference}`, {
-          headers: { Authorization: `Bearer ${secret}` },
-        });
-        const vjson = (await verify.json()) as { status: boolean; data?: { status: string; amount: number } };
+        const verify = await fetch(
+          `https://api.paystack.co/transaction/verify/${payload.data.reference}`,
+          {
+            headers: { Authorization: `Bearer ${secret}` },
+          },
+        );
+        const vjson = (await verify.json()) as {
+          status: boolean;
+          data?: { status: string; amount: number };
+        };
         if (!vjson.status || vjson.data?.status !== "success") {
           return new Response("Not verified", { status: 400 });
         }

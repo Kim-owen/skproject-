@@ -25,7 +25,7 @@ import {
   MapPin,
   Calendar,
   CreditCard,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 
 export const Route = createFileRoute("/orders")({
@@ -39,7 +39,9 @@ function CustomerOrdersPage() {
   const fetchOrders = useServerFn(listCustomerOrders);
 
   const [authUser, setAuthUser] = useState<any>(null);
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "delivered" | "cancelled">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "delivered" | "cancelled">(
+    "all",
+  );
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -63,7 +65,8 @@ function CustomerOrdersPage() {
     return orders.filter((o: any) => {
       // Status Filter
       if (statusFilter === "active") {
-        if (!["pending", "confirmed", "packed", "out_for_delivery"].includes(o.status)) return false;
+        if (!["pending", "confirmed", "packed", "out_for_delivery"].includes(o.status))
+          return false;
       } else if (statusFilter === "delivered") {
         if (o.status !== "delivered") return false;
       } else if (statusFilter === "cancelled") {
@@ -74,7 +77,9 @@ function CustomerOrdersPage() {
       if (searchQuery.trim()) {
         const q = searchQuery.trim().toLowerCase();
         const numMatch = o.order_number?.toLowerCase().includes(q);
-        const itemMatch = o.order_items?.some((i: any) => i.product_name?.toLowerCase().includes(q));
+        const itemMatch = o.order_items?.some((i: any) =>
+          i.product_name?.toLowerCase().includes(q),
+        );
         if (!numMatch && !itemMatch) return false;
       }
 
@@ -98,7 +103,7 @@ function CustomerOrdersPage() {
             unit: item.unit || "piece",
             image_url: null,
           },
-          item.quantity
+          item.quantity,
         );
       }
     });
@@ -130,19 +135,22 @@ function CustomerOrdersPage() {
       <ShopLayout>
         <div className="mx-auto max-w-4xl px-4 py-24 text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
-          <p className="mt-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Loading order history...</p>
+          <p className="mt-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+            Loading order history...
+          </p>
         </div>
       </ShopLayout>
     );
   }
 
-  const activeCount = orders.filter((o: any) => ["pending", "confirmed", "packed", "out_for_delivery"].includes(o.status)).length;
+  const activeCount = orders.filter((o: any) =>
+    ["pending", "confirmed", "packed", "out_for_delivery"].includes(o.status),
+  ).length;
   const deliveredCount = orders.filter((o: any) => o.status === "delivered").length;
 
   return (
     <ShopLayout>
       <div className="mx-auto max-w-5xl px-4 py-10 space-y-8 font-sans">
-        
         {/* Top Header & Overview */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-6">
           <div>
@@ -157,7 +165,11 @@ function CustomerOrdersPage() {
             </p>
           </div>
 
-          <Button asChild size="lg" className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs shadow-md">
+          <Button
+            asChild
+            size="lg"
+            className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs shadow-md"
+          >
             <Link to="/shop">
               <span>Order New Food</span>
               <ArrowRight className="ml-1 h-4 w-4" />
@@ -187,7 +199,9 @@ function CustomerOrdersPage() {
                   : "bg-card text-foreground border-border hover:bg-amber-500/10"
               }`}
             >
-              {activeCount > 0 && <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />}
+              {activeCount > 0 && (
+                <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+              )}
               <span>Pending & Active ({activeCount})</span>
             </button>
 
@@ -230,12 +244,20 @@ function CustomerOrdersPage() {
         {filteredOrders.length === 0 ? (
           <div className="rounded-3xl border border-border bg-card p-12 text-center space-y-4">
             <ShoppingBag className="mx-auto h-12 w-12 text-muted-foreground/40" />
-            <h3 className="font-display text-lg font-bold text-foreground">No orders match your filter</h3>
+            <h3 className="font-display text-lg font-bold text-foreground">
+              No orders match your filter
+            </h3>
             <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-              {searchQuery ? `No orders found matching "${searchQuery}"` : "You have no recorded orders in this category."}
+              {searchQuery
+                ? `No orders found matching "${searchQuery}"`
+                : "You have no recorded orders in this category."}
             </p>
             {statusFilter !== "all" && (
-              <Button variant="outline" onClick={() => setStatusFilter("all")} className="rounded-xl text-xs font-bold">
+              <Button
+                variant="outline"
+                onClick={() => setStatusFilter("all")}
+                className="rounded-xl text-xs font-bold"
+              >
                 Show All Orders
               </Button>
             )}
@@ -243,14 +265,20 @@ function CustomerOrdersPage() {
         ) : (
           <div className="space-y-5">
             {filteredOrders.map((o: any) => (
-              <div key={o.id} className="rounded-3xl border border-border bg-card p-6 shadow-md transition-all hover:border-amber-500/40 space-y-4">
-                
+              <div
+                key={o.id}
+                className="rounded-3xl border border-border bg-card p-6 shadow-md transition-all hover:border-amber-500/40 space-y-4"
+              >
                 {/* Header Row: Order number, date, status */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-4">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-base font-extrabold text-foreground tracking-wide">{o.order_number}</span>
-                      <span className={`rounded-lg border px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider ${getStatusBadgeClass(o.status)}`}>
+                      <span className="font-mono text-base font-extrabold text-foreground tracking-wide">
+                        {o.order_number}
+                      </span>
+                      <span
+                        className={`rounded-lg border px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider ${getStatusBadgeClass(o.status)}`}
+                      >
                         {o.status.replace(/_/g, " ")}
                       </span>
                       {o.is_subscription && (
@@ -260,19 +288,37 @@ function CustomerOrdersPage() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                      <span><Calendar className="inline h-3.5 w-3.5 text-muted-foreground mr-1" />{new Date(o.created_at).toLocaleDateString()} at {new Date(o.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span>
+                        <Calendar className="inline h-3.5 w-3.5 text-muted-foreground mr-1" />
+                        {new Date(o.created_at).toLocaleDateString()} at{" "}
+                        {new Date(o.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
                       <span>·</span>
-                      <span className="capitalize">{o.delivery_type === "pickup" ? "Self Pickup" : "Home Delivery"}</span>
+                      <span className="capitalize">
+                        {o.delivery_type === "pickup" ? "Self Pickup" : "Home Delivery"}
+                      </span>
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <Button asChild variant="outline" size="sm" className="rounded-xl text-xs font-bold gap-1">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl text-xs font-bold gap-1"
+                    >
                       <Link to="/order/$orderNumber" params={{ orderNumber: o.order_number }}>
                         <Eye className="h-3.5 w-3.5 text-amber-500" /> Receipt
                       </Link>
                     </Button>
-                    <Button size="sm" onClick={() => handleReorder(o)} className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs gap-1.5 shadow-sm">
+                    <Button
+                      size="sm"
+                      onClick={() => handleReorder(o)}
+                      className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs gap-1.5 shadow-sm"
+                    >
                       <RotateCcw className="h-3.5 w-3.5" /> Re-Order
                     </Button>
                   </div>
@@ -281,7 +327,15 @@ function CustomerOrdersPage() {
                 {/* Dispatch & Delivery Banner */}
                 {o.scheduled_delivery_date && (
                   <div className="flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">
-                    <span>⏰ Scheduled Delivery: <strong>{new Date(o.scheduled_delivery_date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</strong></span>
+                    <span>
+                      ⏰ Scheduled Delivery:{" "}
+                      <strong>
+                        {new Date(o.scheduled_delivery_date).toLocaleString([], {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                      </strong>
+                    </span>
                   </div>
                 )}
 
@@ -289,28 +343,52 @@ function CustomerOrdersPage() {
                   <div className="flex flex-col sm:flex-row items-center justify-between rounded-2xl border border-purple-500/40 bg-gradient-to-r from-purple-950/40 via-zinc-900 to-black p-3.5 text-xs text-purple-300 gap-2">
                     <div className="flex items-center gap-2">
                       <Truck className="h-4 w-4 text-purple-400 shrink-0" />
-                      <span><strong>Out for Delivery!</strong> {o.rider_name ? `Rider: ${o.rider_name}` : "Uber Package assigned."}</span>
+                      <span>
+                        <strong>Out for Delivery!</strong>{" "}
+                        {o.rider_name ? `Rider: ${o.rider_name}` : "Uber Package assigned."}
+                      </span>
                     </div>
-                    <a href={o.uber_tracking_url} target="_blank" rel="noreferrer" className="font-extrabold text-purple-300 bg-purple-500/20 px-3 py-1.5 rounded-xl border border-purple-500/30 hover:bg-purple-500/30 transition-all flex items-center gap-1.5 shrink-0">
+                    <a
+                      href={o.uber_tracking_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-extrabold text-purple-300 bg-purple-500/20 px-3 py-1.5 rounded-xl border border-purple-500/30 hover:bg-purple-500/30 transition-all flex items-center gap-1.5 shrink-0"
+                    >
                       Live Map Track <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                   </div>
-                ) : o.delivery_address && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 p-2.5 rounded-xl">
-                    <MapPin className="h-4 w-4 text-amber-500 shrink-0" />
-                    <span className="truncate">Destination: <strong>{o.delivery_address}</strong> {o.ghana_post_gps ? `(${o.ghana_post_gps})` : ""}</span>
-                  </div>
+                ) : (
+                  o.delivery_address && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 p-2.5 rounded-xl">
+                      <MapPin className="h-4 w-4 text-amber-500 shrink-0" />
+                      <span className="truncate">
+                        Destination: <strong>{o.delivery_address}</strong>{" "}
+                        {o.ghana_post_gps ? `(${o.ghana_post_gps})` : ""}
+                      </span>
+                    </div>
+                  )
                 )}
 
                 {/* Items Grid */}
                 {o.order_items && o.order_items.length > 0 && (
                   <div className="bg-muted/20 rounded-2xl p-4 space-y-2">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground block">Items Summary</span>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground block">
+                      Items Summary
+                    </span>
                     <div className="grid gap-2.5 sm:grid-cols-2">
                       {o.order_items.map((item: any, idx: number) => (
-                        <div key={idx} className="flex items-center justify-between text-xs border-b border-border/40 pb-1.5 last:border-0 last:pb-0">
-                          <span className="text-foreground font-medium">{item.quantity} × {item.product_name}</span>
-                          <span className="font-mono text-muted-foreground">{formatGHS(Number(item.line_total_ghs || item.unit_price_ghs * item.quantity))}</span>
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between text-xs border-b border-border/40 pb-1.5 last:border-0 last:pb-0"
+                        >
+                          <span className="text-foreground font-medium">
+                            {item.quantity} × {item.product_name}
+                          </span>
+                          <span className="font-mono text-muted-foreground">
+                            {formatGHS(
+                              Number(item.line_total_ghs || item.unit_price_ghs * item.quantity),
+                            )}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -321,20 +399,26 @@ function CustomerOrdersPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-border/40 text-xs">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <CreditCard className="h-3.5 w-3.5 text-amber-500" />
-                    <span>Payment: <strong className="uppercase text-foreground font-bold">{o.payment_method}</strong> ({o.payment_status})</span>
+                    <span>
+                      Payment:{" "}
+                      <strong className="uppercase text-foreground font-bold">
+                        {o.payment_method}
+                      </strong>{" "}
+                      ({o.payment_status})
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-2 text-right">
                     <span className="text-muted-foreground font-medium">Total Paid:</span>
-                    <span className="font-display text-lg font-extrabold text-foreground font-mono">{formatGHS(Number(o.total_ghs))}</span>
+                    <span className="font-display text-lg font-extrabold text-foreground font-mono">
+                      {formatGHS(Number(o.total_ghs))}
+                    </span>
                   </div>
                 </div>
-
               </div>
             ))}
           </div>
         )}
-
       </div>
     </ShopLayout>
   );

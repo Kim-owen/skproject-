@@ -23,19 +23,30 @@ function Track() {
           </div>
 
           <div>
-            <h1 className="font-display text-2xl font-extrabold text-white">Track Order Delivery</h1>
-            <p className="mt-1 text-xs text-zinc-300">Enter your order reference code (e.g., PS-12345678) to track your Uber rider and kitchen status in real time.</p>
+            <h1 className="font-display text-2xl font-extrabold text-white">
+              Track Order Delivery
+            </h1>
+            <p className="mt-1 text-xs text-zinc-300">
+              Enter your order reference code (e.g., PS-12345678) to track your Uber rider and
+              kitchen status in real time.
+            </p>
           </div>
 
           <form
             className="space-y-4 pt-2"
             onSubmit={(e) => {
               e.preventDefault();
-              if (num.trim()) navigate({ to: "/order/$orderNumber", params: { orderNumber: num.trim() } });
+              if (num.trim())
+                navigate({ to: "/order/$orderNumber", params: { orderNumber: num.trim() } });
             }}
           >
             <div>
-              <Label htmlFor="on" className="text-xs font-bold uppercase tracking-wider text-amber-400">Order Reference Number</Label>
+              <Label
+                htmlFor="on"
+                className="text-xs font-bold uppercase tracking-wider text-amber-400"
+              >
+                Order Reference Number
+              </Label>
               <div className="relative mt-1.5">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                 <Input
@@ -48,7 +59,11 @@ function Track() {
               </div>
             </div>
 
-            <Button type="submit" size="lg" className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-sm py-6 shadow-lg shadow-amber-500/20">
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-sm py-6 shadow-lg shadow-amber-500/20"
+            >
               Track Live Delivery →
             </Button>
           </form>
@@ -60,7 +75,17 @@ function Track() {
             <span>Need Immediate Help with Uber Rider?</span>
           </div>
           <p className="text-muted-foreground leading-relaxed">
-            Need to update your delivery address or contact customer support? Call or WhatsApp our hotline directly at <a href="https://wa.me/233241234567" target="_blank" rel="noreferrer" className="font-extrabold text-amber-500 hover:underline">+233 24 123 4567</a>.
+            Need to update your delivery address or contact customer support? Call or WhatsApp our
+            hotline directly at{" "}
+            <a
+              href="https://wa.me/233241234567"
+              target="_blank"
+              rel="noreferrer"
+              className="font-extrabold text-amber-500 hover:underline"
+            >
+              +233 24 123 4567
+            </a>
+            .
           </p>
         </div>
       </div>

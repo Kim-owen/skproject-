@@ -69,7 +69,8 @@ function TestimonialsPage() {
           </div>
 
           <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-tight text-white max-w-4xl mx-auto leading-tight">
-            Loved By Thousands Across <span className="text-amber-400 italic font-serif">Ghana & Beyond</span>
+            Loved By Thousands Across{" "}
+            <span className="text-amber-400 italic font-serif">Ghana & Beyond</span>
           </h1>
 
           <p className="mt-4 text-base sm:text-lg text-zinc-300 max-w-xl mx-auto">
@@ -93,12 +94,16 @@ function TestimonialsPage() {
                     <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                   ))}
                 </div>
-                <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-sans italic">"{review.text}"</p>
+                <p className="text-xs sm:text-sm text-zinc-200 leading-relaxed font-sans italic">
+                  "{review.text}"
+                </p>
               </div>
 
               <div className="mt-6 pt-4 border-t border-amber-500/10 flex items-center justify-between">
                 <div>
-                  <h4 className="font-display font-extrabold text-sm text-amber-300">{review.name}</h4>
+                  <h4 className="font-display font-extrabold text-sm text-amber-300">
+                    {review.name}
+                  </h4>
                   <p className="text-[11px] text-zinc-400">{review.location}</p>
                 </div>
                 {review.verified && (

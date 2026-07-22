@@ -1,7 +1,16 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Package, ShoppingBag, LogOut, Store, Menu, Film, Image as ImageIcon } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingBag,
+  LogOut,
+  Store,
+  Menu,
+  Film,
+  Image as ImageIcon,
+} from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useState, type ReactNode } from "react";
 
@@ -47,7 +56,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-card/85 px-4 backdrop-blur-md md:hidden">
         <Link to="/" className="flex items-center gap-2.5">
           <div className="flex h-9 w-12 items-center justify-center rounded-lg bg-white border border-amber-500/40 p-0.5 shadow-sm overflow-hidden shrink-0">
-            <img src="/images/barima-ba-logo.png" alt="Barima Ba Shito Logo" className="h-full w-full object-contain rounded-md" />
+            <img
+              src="/images/barima-ba-logo.png"
+              alt="Barima Ba Shito Logo"
+              className="h-full w-full object-contain rounded-md"
+            />
           </div>
           <span className="font-display text-base font-bold tracking-tight text-foreground">
             BARIMA BA <span className="text-amber-500">· Admin</span>
@@ -65,7 +78,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <SheetHeader className="pb-6 border-b">
                 <SheetTitle className="flex items-center gap-2.5 text-left">
                   <div className="flex h-9 w-12 items-center justify-center rounded-lg bg-white border border-amber-500/40 p-0.5 shadow-sm overflow-hidden shrink-0">
-                    <img src="/images/barima-ba-logo.png" alt="Barima Ba Shito Logo" className="h-full w-full object-contain rounded-md" />
+                    <img
+                      src="/images/barima-ba-logo.png"
+                      alt="Barima Ba Shito Logo"
+                      className="h-full w-full object-contain rounded-md"
+                    />
                   </div>
                   <span className="font-display text-base font-bold tracking-tight text-foreground">
                     BARIMA BA <span className="text-amber-500">· Admin</span>
@@ -73,7 +90,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 </SheetTitle>
               </SheetHeader>
               <nav className="mt-6 flex flex-col gap-1.5">
-                {navItems.map((item) => renderLink(item.to, item.label, item.Icon, () => setOpen(false)))}
+                {navItems.map((item) =>
+                  renderLink(item.to, item.label, item.Icon, () => setOpen(false)),
+                )}
               </nav>
             </div>
             <div className="border-t pt-4">
@@ -96,7 +115,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <div>
             <Link to="/" className="mb-8 flex items-center gap-3 px-3">
               <div className="flex h-10 w-14 items-center justify-center rounded-xl bg-white border border-amber-500/40 p-0.5 shadow-sm overflow-hidden shrink-0">
-                <img src="/images/barima-ba-logo.png" alt="Barima Ba Shito Logo" className="h-full w-full object-contain rounded-md" />
+                <img
+                  src="/images/barima-ba-logo.png"
+                  alt="Barima Ba Shito Logo"
+                  className="h-full w-full object-contain rounded-md"
+                />
               </div>
               <span className="font-display text-lg font-extrabold tracking-tight text-foreground">
                 BARIMA BA <span className="text-amber-500">· Admin</span>

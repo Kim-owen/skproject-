@@ -1,5 +1,24 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, ShoppingBag, LogIn, LogOut, User, Crown, Phone, Instagram, Menu, X, Truck, ChevronDown, Camera, Star, HelpCircle, PackageCheck, Utensils, Shield } from "lucide-react";
+import {
+  ShoppingCart,
+  ShoppingBag,
+  LogIn,
+  LogOut,
+  User,
+  Crown,
+  Phone,
+  Instagram,
+  Menu,
+  X,
+  Truck,
+  ChevronDown,
+  Camera,
+  Star,
+  HelpCircle,
+  PackageCheck,
+  Utensils,
+  Shield,
+} from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
@@ -94,7 +113,9 @@ export function Header() {
       to={to}
       onClick={() => setMobileOpen(false)}
       className={`text-xs font-bold uppercase tracking-wider transition-all duration-200 hover:text-amber-400 py-1 ${
-        pathname === to ? "text-amber-400 font-extrabold border-b-2 border-amber-400" : "text-foreground/80 hover:scale-105"
+        pathname === to
+          ? "text-amber-400 font-extrabold border-b-2 border-amber-400"
+          : "text-foreground/80 hover:scale-105"
       }`}
     >
       {label}
@@ -152,7 +173,9 @@ export function Header() {
               className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-foreground/80 hover:text-amber-400 py-1 transition-colors focus:outline-none"
             >
               <span>Explore</span>
-              <ChevronDown className={`h-3.5 w-3.5 text-amber-400 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
+              <ChevronDown
+                className={`h-3.5 w-3.5 text-amber-400 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+              />
             </button>
 
             {dropdownOpen && (
@@ -198,7 +221,9 @@ export function Header() {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2.5">
-          <div className="hidden sm:block"><ThemeToggle /></div>
+          <div className="hidden sm:block">
+            <ThemeToggle />
+          </div>
 
           {authUser ? (
             <div className="relative hidden sm:block" ref={userMenuRef}>
@@ -207,15 +232,23 @@ export function Header() {
                 className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/15 px-3 py-1.5 text-xs font-extrabold text-amber-400 hover:bg-amber-500/25 transition-all shadow-sm"
               >
                 <User className="h-3.5 w-3.5 text-amber-400" />
-                <span className="max-w-[110px] truncate">{userName || authUser.email?.split("@")[0]}</span>
-                <ChevronDown className={`h-3 w-3 text-amber-400 transition-transform ${userMenuOpen ? "rotate-180" : ""}`} />
+                <span className="max-w-[110px] truncate">
+                  {userName || authUser.email?.split("@")[0]}
+                </span>
+                <ChevronDown
+                  className={`h-3 w-3 text-amber-400 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                />
               </button>
 
               {userMenuOpen && (
                 <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-amber-500/30 bg-zinc-950/95 p-2.5 backdrop-blur-2xl shadow-2xl z-50 animate-fade-in-up">
                   <div className="border-b border-zinc-800 pb-2 mb-2 px-2">
-                    <span className="block text-xs font-extrabold text-amber-400 truncate">{userName || "Barima Ba Customer"}</span>
-                    <span className="block text-[10px] text-zinc-400 truncate">{authUser.email}</span>
+                    <span className="block text-xs font-extrabold text-amber-400 truncate">
+                      {userName || "Barima Ba Customer"}
+                    </span>
+                    <span className="block text-[10px] text-zinc-400 truncate">
+                      {authUser.email}
+                    </span>
                   </div>
                   <Link
                     to="/profile"
@@ -252,11 +285,23 @@ export function Header() {
               )}
             </div>
           ) : (
-            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex rounded-xl text-muted-foreground hover:text-foreground hover:bg-amber-500/10 text-xs font-bold">
-              <Link to="/auth"><LogIn className="mr-1.5 h-4 w-4 text-amber-500" />Sign In</Link>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="hidden sm:inline-flex rounded-xl text-muted-foreground hover:text-foreground hover:bg-amber-500/10 text-xs font-bold"
+            >
+              <Link to="/auth">
+                <LogIn className="mr-1.5 h-4 w-4 text-amber-500" />
+                Sign In
+              </Link>
             </Button>
           )}
-          <Button asChild size="sm" className="relative rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-extrabold shadow-lg shadow-amber-500/20 transition-all hover:scale-102">
+          <Button
+            asChild
+            size="sm"
+            className="relative rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-extrabold shadow-lg shadow-amber-500/20 transition-all hover:scale-102"
+          >
             <Link to="/cart">
               <ShoppingCart className="mr-1.5 h-4 w-4 fill-black" />
               Order Now
@@ -276,7 +321,11 @@ export function Header() {
             className="md:hidden p-2 text-foreground hover:text-amber-500 focus:outline-none rounded-xl border border-amber-500/20 bg-background/50"
             aria-label="Toggle Navigation"
           >
-            {mobileOpen ? <X className="h-6 w-6 text-amber-400" /> : <Menu className="h-6 w-6 text-foreground" />}
+            {mobileOpen ? (
+              <X className="h-6 w-6 text-amber-400" />
+            ) : (
+              <Menu className="h-6 w-6 text-foreground" />
+            )}
           </button>
         </div>
       </div>
@@ -321,7 +370,9 @@ export function Header() {
 
             {/* Primary Menu Categories */}
             <div className="space-y-2 mb-6">
-              <div className="px-1 pb-1 text-[11px] font-extrabold uppercase tracking-widest text-amber-400/80">Main Navigation</div>
+              <div className="px-1 pb-1 text-[11px] font-extrabold uppercase tracking-widest text-amber-400/80">
+                Main Navigation
+              </div>
 
               <Link
                 to="/"
@@ -410,7 +461,9 @@ export function Header() {
 
             {/* Explore Grid */}
             <div className="mb-6">
-              <div className="px-1 pb-2 text-[11px] font-extrabold uppercase tracking-widest text-amber-400/80">Explore More</div>
+              <div className="px-1 pb-2 text-[11px] font-extrabold uppercase tracking-widest text-amber-400/80">
+                Explore More
+              </div>
               <div className="grid grid-cols-2 gap-2.5">
                 <Link
                   to="/gallery"
@@ -450,7 +503,11 @@ export function Header() {
 
           {/* Bottom Action Area */}
           <div className="pt-4 border-t border-amber-500/20 space-y-3">
-            <Button asChild size="lg" className="w-full rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-black font-extrabold text-sm py-6 shadow-xl shadow-amber-500/25 hover:scale-102 transition-transform">
+            <Button
+              asChild
+              size="lg"
+              className="w-full rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-black font-extrabold text-sm py-6 shadow-xl shadow-amber-500/25 hover:scale-102 transition-transform"
+            >
               <Link to="/cart" onClick={() => setMobileOpen(false)}>
                 <ShoppingCart className="mr-2 h-5 w-5 fill-black" />
                 ORDER NOW ({count} ITEMS)
@@ -495,8 +552,12 @@ export function Footer() {
               <Truck className="h-5 w-5" />
             </div>
             <div>
-              <p className="font-extrabold text-sm uppercase tracking-wide text-black">NATIONWIDE DELIVERY</p>
-              <p className="text-xs font-semibold text-zinc-900">We deliver to your doorstep anywhere in Ghana.</p>
+              <p className="font-extrabold text-sm uppercase tracking-wide text-black">
+                NATIONWIDE DELIVERY
+              </p>
+              <p className="text-xs font-semibold text-zinc-900">
+                We deliver to your doorstep anywhere in Ghana.
+              </p>
             </div>
           </div>
 
@@ -505,8 +566,12 @@ export function Footer() {
               <Phone className="h-5 w-5" />
             </div>
             <div className="text-left">
-              <p className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-900">CALL / WHATSAPP</p>
-              <p className="text-sm font-extrabold text-black">+233 24 123 4567 | +233 50 123 4567</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-900">
+                CALL / WHATSAPP
+              </p>
+              <p className="text-sm font-extrabold text-black">
+                +233 24 123 4567 | +233 50 123 4567
+              </p>
             </div>
           </div>
 
@@ -515,7 +580,9 @@ export function Footer() {
               <Instagram className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-900">FOLLOW US</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-900">
+                FOLLOW US
+              </p>
               <p className="text-sm font-extrabold text-black">@barimabafoods</p>
             </div>
           </div>
@@ -540,10 +607,16 @@ export function Footer() {
               </span>
             </div>
             <p className="text-xs sm:text-sm leading-relaxed text-zinc-200">
-              Barima Ba Foods is a Ghanaian food brand committed to delivering premium quality, authentic and delicious foods. We value quality, hygiene and customer satisfaction in everything we do.
+              Barima Ba Foods is a Ghanaian food brand committed to delivering premium quality,
+              authentic and delicious foods. We value quality, hygiene and customer satisfaction in
+              everything we do.
             </p>
             <div className="pt-2">
-              <Button asChild size="sm" className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs px-5">
+              <Button
+                asChild
+                size="sm"
+                className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs px-5"
+              >
                 <Link to="/about">LEARN MORE</Link>
               </Button>
             </div>
@@ -551,33 +624,87 @@ export function Footer() {
 
           {/* Column 2: Quick Links */}
           <div className="md:col-span-2">
-            <p className="text-xs font-extrabold uppercase tracking-widest text-amber-400 mb-4 border-b border-amber-500/20 pb-2">Quick Links</p>
+            <p className="text-xs font-extrabold uppercase tracking-widest text-amber-400 mb-4 border-b border-amber-500/20 pb-2">
+              Quick Links
+            </p>
             <ul className="space-y-2 text-xs font-semibold text-zinc-200">
-              <li><Link to="/" className="hover:text-amber-400 transition-colors">Home</Link></li>
-              <li><Link to="/about" className="hover:text-amber-400 transition-colors">About Us</Link></li>
-              <li><Link to="/shop" className="hover:text-amber-400 transition-colors">Products</Link></li>
-              <li><Link to="/catering" className="hover:text-amber-400 transition-colors">Catering Services</Link></li>
-              <li><Link to="/gallery" className="hover:text-amber-400 transition-colors">Gallery</Link></li>
-              <li><Link to="/testimonials" className="hover:text-amber-400 transition-colors">Testimonials</Link></li>
-              <li><Link to="/faq" className="hover:text-amber-400 transition-colors">FAQ</Link></li>
-              <li><Link to="/contact" className="hover:text-amber-400 transition-colors">Contact Us</Link></li>
+              <li>
+                <Link to="/" className="hover:text-amber-400 transition-colors">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/about" className="hover:text-amber-400 transition-colors">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link to="/shop" className="hover:text-amber-400 transition-colors">
+                  Products
+                </Link>
+              </li>
+              <li>
+                <Link to="/catering" className="hover:text-amber-400 transition-colors">
+                  Catering Services
+                </Link>
+              </li>
+              <li>
+                <Link to="/gallery" className="hover:text-amber-400 transition-colors">
+                  Gallery
+                </Link>
+              </li>
+              <li>
+                <Link to="/testimonials" className="hover:text-amber-400 transition-colors">
+                  Testimonials
+                </Link>
+              </li>
+              <li>
+                <Link to="/faq" className="hover:text-amber-400 transition-colors">
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-amber-400 transition-colors">
+                  Contact Us
+                </Link>
+              </li>
             </ul>
           </div>
 
           {/* Column 3: Customer Care */}
           <div className="md:col-span-3">
-            <p className="text-xs font-extrabold uppercase tracking-widest text-amber-400 mb-4 border-b border-amber-500/20 pb-2">Customer Care</p>
+            <p className="text-xs font-extrabold uppercase tracking-widest text-amber-400 mb-4 border-b border-amber-500/20 pb-2">
+              Customer Care
+            </p>
             <ul className="space-y-2 text-xs font-semibold text-zinc-200">
-              <li><Link to="/track" className="hover:text-amber-400 transition-colors">Shipping & Delivery</Link></li>
-              <li><Link to="/faq" className="hover:text-amber-400 transition-colors">Returns & Refunds</Link></li>
-              <li><Link to="/faq" className="hover:text-amber-400 transition-colors">Terms & Conditions</Link></li>
-              <li><Link to="/faq" className="hover:text-amber-400 transition-colors">Privacy Policy</Link></li>
+              <li>
+                <Link to="/track" className="hover:text-amber-400 transition-colors">
+                  Shipping & Delivery
+                </Link>
+              </li>
+              <li>
+                <Link to="/faq" className="hover:text-amber-400 transition-colors">
+                  Returns & Refunds
+                </Link>
+              </li>
+              <li>
+                <Link to="/faq" className="hover:text-amber-400 transition-colors">
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link to="/faq" className="hover:text-amber-400 transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
             </ul>
           </div>
 
           {/* Column 4: Newsletter */}
           <div className="md:col-span-3 space-y-3">
-            <p className="text-xs font-extrabold uppercase tracking-widest text-amber-400 border-b border-amber-500/20 pb-2">Newsletter</p>
+            <p className="text-xs font-extrabold uppercase tracking-widest text-amber-400 border-b border-amber-500/20 pb-2">
+              Newsletter
+            </p>
             <p className="text-xs text-zinc-200 leading-relaxed">
               Subscribe to get updates on new products, promotions and more.
             </p>
@@ -596,7 +723,11 @@ export function Footer() {
                   placeholder="Enter your email"
                   className="w-full rounded-xl border border-amber-500/30 bg-zinc-900 px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:border-amber-400 focus:outline-none"
                 />
-                <Button type="submit" size="sm" className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs">
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs"
+                >
                   SUBSCRIBE
                 </Button>
               </form>
@@ -613,7 +744,8 @@ export function Footer() {
             <span className="font-display font-extrabold text-sm text-white">BARIMA BA FOODS</span>
           </div>
           <p className="text-xs font-medium text-zinc-300 text-center sm:text-left">
-            © {new Date().getFullYear()} Barima Ba Foods · Taste. Quality. Trust. All rights reserved.
+            © {new Date().getFullYear()} Barima Ba Foods · Taste. Quality. Trust. All rights
+            reserved.
           </p>
           <span className="text-xs font-extrabold text-amber-400 tracking-wider">Accra, Ghana</span>
         </div>

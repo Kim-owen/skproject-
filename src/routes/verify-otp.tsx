@@ -141,7 +141,9 @@ function VerifyOtpPage() {
           <div className="space-y-1">
             <h1 className="font-display text-2xl font-extrabold text-white">Verify Phone Number</h1>
             <p className="text-xs text-zinc-300 leading-relaxed">
-              We have sent a 6-digit verification code to <span className="font-extrabold text-amber-400">{phone || "your number"}</span> via SMS.
+              We have sent a 6-digit verification code to{" "}
+              <span className="font-extrabold text-amber-400">{phone || "your number"}</span> via
+              SMS.
             </p>
           </div>
 
@@ -190,7 +192,8 @@ function VerifyOtpPage() {
           <div className="text-center pt-2">
             {timer > 0 ? (
               <p className="text-[11px] text-zinc-400">
-                Didn't receive the code? Resend in <span className="font-extrabold text-amber-400 font-mono">{timer}s</span>
+                Didn't receive the code? Resend in{" "}
+                <span className="font-extrabold text-amber-400 font-mono">{timer}s</span>
               </p>
             ) : (
               <button
@@ -217,7 +220,8 @@ function VerifyOtpPage() {
             <span>Secure SMS Verification</span>
           </div>
           <p className="text-muted-foreground leading-relaxed">
-            Your verification ensures secure checkout transactions, instant refund routing, and live driver tracking notifications.
+            Your verification ensures secure checkout transactions, instant refund routing, and live
+            driver tracking notifications.
           </p>
         </div>
       </div>

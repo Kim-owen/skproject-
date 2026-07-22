@@ -84,7 +84,10 @@ function AdminHeroSettings() {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: "video_url" | "poster_url") => {
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: "video_url" | "poster_url",
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -95,16 +98,19 @@ function AdminHeroSettings() {
       const filePath = `hero/${fileName}`;
 
       // Upload to supabase storage bucket 'public' or 'hero-media'
-      const { error: uploadError } = await supabase.storage.from("hero-media").upload(filePath, file, {
-        upsert: true,
-      });
+      const { error: uploadError } = await supabase.storage
+        .from("hero-media")
+        .upload(filePath, file, {
+          upsert: true,
+        });
 
       if (uploadError) {
         // Fallback: create object URL if storage bucket doesn't exist yet
         const localUrl = URL.createObjectURL(file);
         handleFieldChange(field, localUrl);
         toast.info("Media file selected locally", {
-          description: "For permanent cloud hosting, ensure 'hero-media' bucket is configured in Supabase Storage.",
+          description:
+            "For permanent cloud hosting, ensure 'hero-media' bucket is configured in Supabase Storage.",
         });
       } else {
         const { data: publicUrlData } = supabase.storage.from("hero-media").getPublicUrl(filePath);
@@ -145,7 +151,8 @@ function AdminHeroSettings() {
               </h1>
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
-              Customize the dynamic hero section video, headlines, audio playback, and visual branding in real-time.
+              Customize the dynamic hero section video, headlines, audio playback, and visual
+              branding in real-time.
             </p>
           </div>
 
@@ -199,10 +206,16 @@ function AdminHeroSettings() {
                 className="w-full"
               >
                 <TabsList className="grid grid-cols-2 w-full h-12 rounded-xl p-1 bg-muted">
-                  <TabsTrigger value="video" className="rounded-lg font-semibold flex items-center gap-2">
+                  <TabsTrigger
+                    value="video"
+                    className="rounded-lg font-semibold flex items-center gap-2"
+                  >
                     <Video className="h-4 w-4" /> Dynamic Video Player
                   </TabsTrigger>
-                  <TabsTrigger value="image" className="rounded-lg font-semibold flex items-center gap-2">
+                  <TabsTrigger
+                    value="image"
+                    className="rounded-lg font-semibold flex items-center gap-2"
+                  >
                     <ImageIcon className="h-4 w-4" /> Banner Image
                   </TabsTrigger>
                 </TabsList>
@@ -237,7 +250,11 @@ function AdminHeroSettings() {
                         }`}
                       >
                         <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-                          <img src={preset.poster_url} alt={preset.title} className="h-full w-full object-cover" />
+                          <img
+                            src={preset.poster_url}
+                            alt={preset.title}
+                            className="h-full w-full object-cover"
+                          />
                           {isSelected && (
                             <div className="absolute inset-0 bg-primary/20 backdrop-blur-[1px] flex items-center justify-center">
                               <CheckCircle2 className="h-5 w-5 text-white drop-shadow-md" />
@@ -281,7 +298,12 @@ function AdminHeroSettings() {
                         onChange={(e) => handleFileUpload(e, "video_url")}
                         disabled={uploading}
                       />
-                      <Button type="button" variant="outline" className="rounded-xl shrink-0 gap-1.5" asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-xl shrink-0 gap-1.5"
+                        asChild
+                      >
                         <span>
                           <Upload className="h-4 w-4" /> {uploading ? "..." : "Upload"}
                         </span>
@@ -311,7 +333,12 @@ function AdminHeroSettings() {
                       onChange={(e) => handleFileUpload(e, "poster_url")}
                       disabled={uploading}
                     />
-                    <Button type="button" variant="outline" className="rounded-xl shrink-0 gap-1.5" asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-xl shrink-0 gap-1.5"
+                      asChild
+                    >
                       <span>
                         <Upload className="h-4 w-4" /> {uploading ? "..." : "Upload"}
                       </span>
@@ -367,7 +394,10 @@ function AdminHeroSettings() {
                 </div>
 
                 <div>
-                  <Label htmlFor="headline_highlight" className="text-xs font-semibold text-foreground">
+                  <Label
+                    htmlFor="headline_highlight"
+                    className="text-xs font-semibold text-foreground"
+                  >
                     Headline (Italic Highlight)
                   </Label>
                   <Input
@@ -396,7 +426,9 @@ function AdminHeroSettings() {
             {/* Video Playback Settings */}
             {form.media_type === "video" && (
               <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-4">
-                <h3 className="font-display text-base font-bold text-foreground">Playback Defaults</h3>
+                <h3 className="font-display text-base font-bold text-foreground">
+                  Playback Defaults
+                </h3>
 
                 <div className="grid gap-4 sm:grid-cols-3">
                   <div className="flex items-center justify-between rounded-xl border border-border/80 p-3 bg-muted/30">
@@ -455,7 +487,8 @@ function AdminHeroSettings() {
                 <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 text-xs text-muted-foreground">
                   <p className="font-semibold text-foreground">Pro Tip:</p>
                   <p className="mt-0.5">
-                    Clicking <strong className="text-foreground">Save Live Changes</strong> updates the store home hero video immediately without requiring visitors to refresh.
+                    Clicking <strong className="text-foreground">Save Live Changes</strong> updates
+                    the store home hero video immediately without requiring visitors to refresh.
                   </p>
                 </div>
               </div>

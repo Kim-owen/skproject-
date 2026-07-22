@@ -16,6 +16,7 @@
 **Barima Ba Foods** (formerly Provision Shop) is a state-of-the-art e-commerce storefront and admin management system built for high-performance delivery of Ghanaian provisions, artisanal shito, seasoned meats, and catering services across Accra, Ghana.
 
 The platform features:
+
 - **Cinematic Ambient Hero Media**: Admin-controllable hero section supporting custom 4K background videos (including `Shito animi.mp4`), HTML5 playback controls (Play/Pause, Mute/Unmute, Fullscreen), dynamic badges, and customizable headlines.
 - **Glassmorphism UI System**: Dual-mode (Light Ivory Glass & Dark Obsidian Glass) luxury design system with frosted backdrop blurs (`backdrop-blur-xl`), animated shimmer typography, and an ambient **Spicy African Backdrop** texture.
 - **Real-Time Admin Dashboard**: `/admin/hero` suite for 1-click video preset switching, custom video URL updates, copy editing, and live preview.
@@ -36,6 +37,7 @@ The platform features:
 ## 🍽️ Catering Services
 
 Barima Ba Foods provides full-service catering for all occasions across Accra:
+
 - 💍 **Weddings**
 - 🎉 **Parties & Celebrations**
 - 🏢 **Corporate Events**
