@@ -30,6 +30,7 @@ import { Route as AdminMediaRouteImport } from './routes/admin/media'
 import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
 import { Route as AdminProductsRouteImport } from './routes/admin/products'
 import { Route as AdminRiderRouteImport } from './routes/admin/rider'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as OrderOrderNumberRouteImport } from './routes/order.$orderNumber'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as ApiPublicWebhooksPaystackRouteImport } from './routes/api/public/webhooks/paystack'
@@ -139,6 +140,11 @@ const AdminRiderRoute = AdminRiderRouteImport.update({
   path: '/admin/rider',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/admin/settings',
+  path: '/admin/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrderOrderNumberRoute = OrderOrderNumberRouteImport.update({
   id: '/order/$orderNumber',
   path: '/order/$orderNumber',
@@ -177,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/rider': typeof AdminRiderRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/order/$orderNumber': typeof OrderOrderNumberRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/rider': typeof AdminRiderRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/order/$orderNumber': typeof OrderOrderNumberRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin': typeof AdminIndexRoute
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/rider': typeof AdminRiderRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/order/$orderNumber': typeof OrderOrderNumberRoute
   '/product/$slug': typeof ProductSlugRoute
   '/admin/': typeof AdminIndexRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/products'
     | '/admin/rider'
+    | '/admin/settings'
     | '/order/$orderNumber'
     | '/product/$slug'
     | '/admin/'
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/products'
     | '/admin/rider'
+    | '/admin/settings'
     | '/order/$orderNumber'
     | '/product/$slug'
     | '/admin'
@@ -310,6 +321,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/products'
     | '/admin/rider'
+    | '/admin/settings'
     | '/order/$orderNumber'
     | '/product/$slug'
     | '/admin/'
@@ -337,6 +349,7 @@ export interface RootRouteChildren {
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRoute
   AdminRiderRoute: typeof AdminRiderRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   OrderOrderNumberRoute: typeof OrderOrderNumberRoute
   ProductSlugRoute: typeof ProductSlugRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -492,6 +505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRiderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/admin/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/order/$orderNumber': {
       id: '/order/$orderNumber'
       path: '/order/$orderNumber'
@@ -537,6 +557,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRoute,
   AdminRiderRoute: AdminRiderRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   OrderOrderNumberRoute: OrderOrderNumberRoute,
   ProductSlugRoute: ProductSlugRoute,
   AdminIndexRoute: AdminIndexRoute,

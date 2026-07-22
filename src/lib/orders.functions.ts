@@ -241,11 +241,28 @@ export const createOrder = createServerFn({ method: "POST" })
       .insert(orderItems.map((it) => ({ ...it, order_id: order.id })));
     if (iErr) throw new Error(iErr.message);
 
-    // Trigger SMS async
-    const dispatchMethodText =
-      data.dispatch_partner === "uber" ? "Uber Package Dispatch" : "Barima Ba Rider";
-    const smsMessage = `Hello ${data.customer_name.split(" ")[0]}! Your order ${order.order_number} has been received (${dispatchMethodText}). Total: ₵${total.toFixed(2)}. Track your food live on our site.`;
-    sendSMSNotification(data.customer_phone, smsMessage).catch(console.error);
+    // Trigger SMS async based on preferences
+    try {
+      const { getNotificationSettings } = await import("./settings.functions");
+      const notifSettings = await getNotificationSettings();
+
+      if (notifSettings.enable_customer_alerts) {
+        const dispatchMethodText =
+          data.dispatch_partner === "uber" ? "Uber Package Dispatch" : "Barima Ba Rider";
+        const smsMessage = `Hello ${data.customer_name.split(" ")[0]}! Your order ${order.order_number} has been received (${dispatchMethodText}). Total: ₵${total.toFixed(2)}. Track your food live on our site.`;
+        sendSMSNotification(data.customer_phone, smsMessage).catch(console.error);
+      }
+
+      if (notifSettings.enable_admin_alerts && notifSettings.admin_notification_phone) {
+        const itemSummary = orderItems.map((it) => `${it.quantity}x ${it.product_name}`).join(", ");
+        const adminMessage = `🚨 NEW ORDER! Order #${order.order_number} placed by ${data.customer_name}. Total: ₵${total.toFixed(2)}. Delivery: ${data.delivery_type === "delivery" ? "Doorstep" : "Branch Pickup"}. Details: ${itemSummary}`;
+        sendSMSNotification(notifSettings.admin_notification_phone, adminMessage).catch(
+          console.error,
+        );
+      }
+    } catch (notifErr) {
+      console.error("SMS notification triggers failed:", notifErr);
+    }
 
     if (data.payment_method === "paystack") {
       const secret = process.env.PAYSTACK_SECRET_KEY;

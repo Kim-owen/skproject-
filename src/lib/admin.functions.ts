@@ -119,7 +119,15 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
         break;
     }
     if (msg) {
-      sendSMSNotification(order.customer_phone, msg).catch(console.error);
+      try {
+        const { getNotificationSettings } = await import("./settings.functions");
+        const notifSettings = await getNotificationSettings();
+        if (notifSettings.enable_customer_alerts) {
+          sendSMSNotification(order.customer_phone, msg).catch(console.error);
+        }
+      } catch (err) {
+        console.error("SMS notification trigger failed:", err);
+      }
     }
 
     return { ok: true };
@@ -156,7 +164,9 @@ export const updateOrderDispatchDetails = createServerFn({ method: "POST" })
 
     const { data: order, error: fErr } = await supabaseAdmin
       .from("orders")
-      .select("order_number, customer_name, customer_phone")
+      .select(
+        "order_number, customer_name, customer_phone, delivery_address, gps_coordinates, ghana_post_gps",
+      )
       .eq("id", data.order_id)
       .single();
     if (fErr || !order) throw new Error("Order not found");
@@ -167,14 +177,35 @@ export const updateOrderDispatchDetails = createServerFn({ method: "POST" })
       .eq("id", data.order_id);
     if (error) throw new Error(error.message);
 
-    // Send SMS notification to customer about assigned rider
-    const firstName = order.customer_name.split(" ")[0];
-    const partnerName = data.dispatch_partner === "uber" ? "Uber Package" : "Barima Ba Rider";
-    const riderDetails = data.rider_name
-      ? ` Rider: ${data.rider_name} (${data.rider_phone || ""}).`
-      : "";
-    const smsMessage = `Hello ${firstName}, ${partnerName} has been assigned to your order ${order.order_number}.${riderDetails} Track your delivery live on our site!`;
-    sendSMSNotification(order.customer_phone, smsMessage).catch(console.error);
+    // Send SMS notifications based on preferences
+    try {
+      const { getNotificationSettings } = await import("./settings.functions");
+      const notifSettings = await getNotificationSettings();
+
+      const firstName = order.customer_name.split(" ")[0];
+      const partnerName = data.dispatch_partner === "uber" ? "Uber Package" : "Barima Ba Rider";
+
+      if (notifSettings.enable_customer_alerts) {
+        const riderDetails = data.rider_name
+          ? ` Rider: ${data.rider_name} (${data.rider_phone || ""}).`
+          : "";
+        const smsMessage = `Hello ${firstName}, ${partnerName} has been assigned to your order ${order.order_number}.${riderDetails} Track your delivery live on our site!`;
+        sendSMSNotification(order.customer_phone, smsMessage).catch(console.error);
+      }
+
+      if (notifSettings.enable_rider_alerts && data.rider_phone) {
+        const gpsInfo = order.gps_coordinates ? `GPS: ${order.gps_coordinates}` : "";
+        const gpGpsInfo = order.ghana_post_gps ? `Ghana Post GPS: ${order.ghana_post_gps}` : "";
+        const locationDetails = [order.delivery_address, gpsInfo, gpGpsInfo]
+          .filter(Boolean)
+          .join(" | ");
+
+        const riderMessage = `🏍️ DELIVERY ASSIGNED: Order #${order.order_number}. Customer: ${order.customer_name} (${order.customer_phone}). Delivery Location: ${locationDetails || "Pick up from kitchen."}`;
+        sendSMSNotification(data.rider_phone, riderMessage).catch(console.error);
+      }
+    } catch (notifErr) {
+      console.error("Dispatch SMS triggers failed:", notifErr);
+    }
 
     return { ok: true };
   });

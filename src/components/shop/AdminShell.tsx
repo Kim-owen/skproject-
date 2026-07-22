@@ -10,6 +10,7 @@ import {
   Menu,
   Film,
   Image as ImageIcon,
+  Settings,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useState, type ReactNode } from "react";
@@ -25,6 +26,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     { to: "/admin/products", label: "Products", Icon: Package },
     { to: "/admin/hero", label: "Hero Video", Icon: Film },
     { to: "/admin/media", label: "Site Images Hub", Icon: ImageIcon },
+    { to: "/admin/settings", label: "Settings", Icon: Settings },
   ];
 
   const handleSignOut = async () => {

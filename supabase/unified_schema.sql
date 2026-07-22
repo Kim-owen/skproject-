@@ -332,6 +332,17 @@ INSERT INTO public.site_settings (key, value) VALUES (
   )
 ) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
+-- SEED NOTIFICATIONS SETTINGS
+INSERT INTO public.site_settings (key, value) VALUES (
+  'notifications_config',
+  jsonb_build_object(
+    'admin_notification_phone', '233241234567',
+    'enable_admin_alerts', true,
+    'enable_rider_alerts', true,
+    'enable_customer_alerts', true
+  )
+) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
+
 
 -- SUPABASE AUTH SMS HOOK FOR TXTCONNECT
 CREATE OR REPLACE FUNCTION public.send_txtconnect_sms(event jsonb)

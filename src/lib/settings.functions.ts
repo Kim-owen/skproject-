@@ -128,3 +128,79 @@ export const updateHeroSettings = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { success: true };
   });
+
+export interface NotificationSettings {
+  admin_notification_phone: string;
+  enable_admin_alerts: boolean;
+  enable_rider_alerts: boolean;
+  enable_customer_alerts: boolean;
+}
+
+export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
+  admin_notification_phone: "233241234567",
+  enable_admin_alerts: true,
+  enable_rider_alerts: true,
+  enable_customer_alerts: true,
+};
+
+export const getNotificationSettings = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("key", "notifications_config")
+      .maybeSingle();
+
+    if (error || !data || !data.value) {
+      return DEFAULT_NOTIFICATION_SETTINGS;
+    }
+    return { ...DEFAULT_NOTIFICATION_SETTINGS, ...(data.value as Partial<NotificationSettings>) };
+  } catch (err) {
+    console.error("Error fetching notification settings:", err);
+    return DEFAULT_NOTIFICATION_SETTINGS;
+  }
+});
+
+export const updateNotificationSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      admin_notification_phone: z.string().trim().min(7).max(20),
+      enable_admin_alerts: z.boolean(),
+      enable_rider_alerts: z.boolean(),
+      enable_customer_alerts: z.boolean(),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { error } = await supabaseAdmin.from("site_settings").upsert({
+      key: "notifications_config",
+      value: data,
+      updated_at: new Date().toISOString(),
+    });
+
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+export const sendTestSMS = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      phone: z.string().trim().min(7).max(20),
+      message: z.string().trim().min(1),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { sendSMSNotification } = await import("@/lib/orders.functions");
+    try {
+      await sendSMSNotification(data.phone, data.message);
+      return { success: true };
+    } catch (err: any) {
+      throw new Error(err.message || "Failed to send test SMS");
+    }
+  });
