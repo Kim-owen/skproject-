@@ -354,6 +354,27 @@ export type Database = {
         }
         Relationships: []
       }
+      phone_otps: {
+        Row: {
+          phone: string
+          code: string
+          expires_at: string
+          created_at: string
+        }
+        Insert: {
+          phone: string
+          code: string
+          expires_at: string
+          created_at?: string
+        }
+        Update: {
+          phone?: string
+          code?: string
+          expires_at?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           key: string

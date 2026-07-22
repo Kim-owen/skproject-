@@ -98,16 +98,19 @@ export async function sendSMSNotification(phone: string, message: string) {
   }
 }
 
-// In-memory store for SMS OTP codes
-const otpCache = new Map<string, { code: string; expiresAt: number }>();
-
 export const sendPhoneOTP = createServerFn({ method: "POST" })
   .validator(z.object({ phone: z.string().trim().min(7).max(20) }))
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 10 * 60 * 1000;
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
     const formattedPhone = data.phone.trim().replace(/\s+/g, "");
-    otpCache.set(formattedPhone, { code: otp, expiresAt });
+
+    const { error } = await supabaseAdmin
+      .from("phone_otps")
+      .upsert({ phone: formattedPhone, code: otp, expires_at: expiresAt }, { onConflict: "phone" });
+    if (error) throw new Error("Failed to store OTP: " + error.message);
+
     const message = `Your Barima Ba Foods login code is: ${otp}. Valid for 10 minutes.`;
     await sendSMSNotification(formattedPhone, message);
     return { ok: true, message: "OTP sent via SMS" };
@@ -116,15 +119,30 @@ export const sendPhoneOTP = createServerFn({ method: "POST" })
 export const verifyPhoneOTP = createServerFn({ method: "POST" })
   .validator(z.object({ phone: z.string().trim().min(7).max(20), code: z.string().trim() }))
   .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const formattedPhone = data.phone.trim().replace(/\s+/g, "");
-    const cached = otpCache.get(formattedPhone);
-    if (!cached || Date.now() > cached.expiresAt) {
+
+    const { data: record, error } = await supabaseAdmin
+      .from("phone_otps")
+      .select("code, expires_at")
+      .eq("phone", formattedPhone)
+      .single();
+
+    if (error || !record) {
       throw new Error("OTP code expired or not found. Please request a new code.");
     }
-    if (cached.code !== data.code.trim()) {
+
+    const isExpired = new Date(record.expires_at).getTime() < Date.now();
+    if (isExpired) {
+      await supabaseAdmin.from("phone_otps").delete().eq("phone", formattedPhone);
+      throw new Error("OTP code expired. Please request a new code.");
+    }
+
+    if (record.code !== data.code.trim()) {
       throw new Error("Invalid verification code. Please check and try again.");
     }
-    otpCache.delete(formattedPhone);
+
+    await supabaseAdmin.from("phone_otps").delete().eq("phone", formattedPhone);
     return { ok: true };
   });
 
