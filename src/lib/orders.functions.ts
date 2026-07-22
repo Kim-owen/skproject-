@@ -79,8 +79,7 @@ export async function sendSMSNotification(phone: string, message: string) {
   const apiKey = process.env.TXTCONNECT_API_KEY || process.env.ARKESEL_API_KEY;
   console.log(`[SMS MOCK] To: ${phone} | Message: ${message}`);
   if (!apiKey) {
-    console.log("[SMS WARNING] TXTCONNECT_API_KEY is not configured in .env. Skipping HTTP request.");
-    return;
+    throw new Error("SMS sending failed: TXTCONNECT_API_KEY is not configured in the server environment (Vercel/env).");
   }
   try {
     const formattedPhone = normalizePhoneNumber(phone);
