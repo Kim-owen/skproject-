@@ -87,7 +87,7 @@ export async function sendSMSNotification(phone: string, message: string) {
       body: JSON.stringify({
         to: formattedPhone,
         from: process.env.TXTCONNECT_SENDER_ID || "BarimaBa",
-        unicode: "regular",
+        unicode: false,
         sms: message,
       }),
     });

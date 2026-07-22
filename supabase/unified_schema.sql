@@ -332,3 +332,45 @@ INSERT INTO public.site_settings (key, value) VALUES (
   )
 ) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 
+
+-- SUPABASE AUTH SMS HOOK FOR TXTCONNECT
+CREATE OR REPLACE FUNCTION public.send_txtconnect_sms(event jsonb)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  phone text;
+  sms_message text;
+  txtconnect_key text := 'T5Ca1X9vjBnVexWoyLrfcpQSYdR02NhU46wm7IsE8gMZJOGqlF';
+  sender_id text := 'Barimafoods';
+  req_body jsonb;
+BEGIN
+  phone := event->>'phone';
+  sms_message := event->>'sms_text';
+
+  IF starts_with(phone, '0') THEN
+    phone := '233' || substr(phone, 2);
+  ELSIF starts_with(phone, '+') THEN
+    phone := substr(phone, 2);
+  END IF;
+
+  req_body := jsonb_build_object(
+    'to', phone,
+    'from', sender_id,
+    'unicode', false,
+    'sms', sms_message
+  );
+
+  PERFORM net.http_post(
+    url := 'https://api.txtconnect.net/dev/api/sms/send',
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer ' || txtconnect_key,
+      'Content-Type', 'application/json'
+    ),
+    body := req_body
+  );
+
+  RETURN jsonb_build_object('status', 'success');
+EXCEPTION WHEN OTHERS THEN
+  RETURN jsonb_build_object('status', 'error', 'error_message', SQLERRM);
+END;
+$$;
+
