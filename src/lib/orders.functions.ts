@@ -64,6 +64,17 @@ export const calculateUberEstimate = createServerFn({ method: "POST" })
     };
   });
 
+export function normalizePhoneNumber(phone: string): string {
+  let formatted = phone.trim().replace(/\s+/g, "");
+  if (formatted.startsWith("+")) {
+    formatted = formatted.slice(1);
+  }
+  if (formatted.startsWith("0")) {
+    formatted = `233${formatted.slice(1)}`;
+  }
+  return formatted;
+}
+
 export async function sendSMSNotification(phone: string, message: string) {
   const apiKey = process.env.TXTCONNECT_API_KEY || process.env.ARKESEL_API_KEY;
   console.log(`[SMS MOCK] To: ${phone} | Message: ${message}`);
@@ -72,12 +83,7 @@ export async function sendSMSNotification(phone: string, message: string) {
     return;
   }
   try {
-    let formattedPhone = phone.trim().replace(/\s+/g, "");
-    if (formattedPhone.startsWith("0")) {
-      formattedPhone = `233${formattedPhone.slice(1)}`;
-    } else if (formattedPhone.startsWith("+")) {
-      formattedPhone = formattedPhone.slice(1);
-    }
+    const formattedPhone = normalizePhoneNumber(phone);
     const res = await fetch("https://api.txtconnect.net/dev/api/sms/send", {
       method: "POST",
       headers: {
@@ -104,7 +110,7 @@ export const sendPhoneOTP = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    const formattedPhone = data.phone.trim().replace(/\s+/g, "");
+    const formattedPhone = normalizePhoneNumber(data.phone);
 
     const { error } = await supabaseAdmin
       .from("phone_otps")
@@ -120,7 +126,7 @@ export const verifyPhoneOTP = createServerFn({ method: "POST" })
   .validator(z.object({ phone: z.string().trim().min(7).max(20), code: z.string().trim() }))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const formattedPhone = data.phone.trim().replace(/\s+/g, "");
+    const formattedPhone = normalizePhoneNumber(data.phone);
 
     const { data: record, error } = await supabaseAdmin
       .from("phone_otps")
