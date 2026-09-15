@@ -1,7 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listAdminProducts, upsertProduct, deleteProduct } from "@/lib/admin.functions";
+import {
+  listAdminProducts,
+  upsertProduct,
+  deleteProduct,
+  permanentlyDeleteProduct,
+  toggleProductStatus,
+} from "@/lib/admin.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/shop/AdminShell";
 import { useAdminGuard } from "@/lib/useAdminGuard";
 import { formatGHS } from "@/lib/cart";
@@ -20,13 +27,14 @@ import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import {
   Plus,
   Pencil,
@@ -36,6 +44,11 @@ import {
   ShoppingBag,
   Eye,
   Image as ImageIcon,
+  Upload,
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
+  X,
 } from "lucide-react";
 
 type Product = {
@@ -63,7 +76,7 @@ const EMPTY: Product = {
   is_active: true,
 };
 
-export const Route = createFileRoute("/admin/products")({
+export const Route = createFileRoute("/portal/products")({
   head: () => ({ meta: [{ title: "Admin — Products" }, { name: "robots", content: "noindex" }] }),
   component: AdminProductsPage,
 });
@@ -73,7 +86,10 @@ function AdminProductsPage() {
   const fetcher = useServerFn(listAdminProducts);
   const save = useServerFn(upsertProduct);
   const del = useServerFn(deleteProduct);
+  const hardDel = useServerFn(permanentlyDeleteProduct);
+  const toggleStatus = useServerFn(toggleProductStatus);
   const qc = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-products"],
@@ -84,8 +100,11 @@ function AdminProductsPage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Product>(EMPTY);
   const [busy, setBusy] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [deleteModalProduct, setDeleteModalProduct] = useState<any | null>(null);
+  const [deletingBusy, setDeletingBusy] = useState(false);
 
   const filteredProducts = useMemo(() => {
     if (!data?.products) return [];
@@ -134,6 +153,79 @@ function AdminProductsPage() {
       is_active: p.is_active,
     });
     setOpen(true);
+  };
+
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file (PNG, JPG, WebP)");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image file size must be less than 10MB");
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const filename = `product-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+      const path = `uploads/${filename}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("product-images")
+        .upload(path, file, { upsert: true });
+
+      if (uploadError) {
+        // Fallback to media bucket if product-images fails
+        const { error: fallbackError } = await supabase.storage
+          .from("media")
+          .upload(path, file, { upsert: true });
+        if (fallbackError) throw fallbackError;
+
+        const { data: publicData } = supabase.storage.from("media").getPublicUrl(path);
+        setForm((prev) => ({ ...prev, image_url: publicData.publicUrl }));
+        toast.success("Image uploaded successfully!");
+      } else {
+        const { data: publicData } = supabase.storage.from("product-images").getPublicUrl(path);
+        setForm((prev) => ({ ...prev, image_url: publicData.publicUrl }));
+        toast.success("Image uploaded successfully!");
+      }
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      toast.error(err.message || "Failed to upload image. Please check your connection.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleQuickToggle = async (product: any, currentActive: boolean) => {
+    try {
+      await toggleStatus({ data: { id: product.id, is_active: !currentActive } });
+      toast.success(
+        !currentActive ? `${product.name} activated for customers` : `${product.name} hidden from store`,
+      );
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["admin-stats"] });
+    } catch (e: any) {
+      toast.error(e.message || "Failed to update product status");
+    }
+  };
+
+  const handleConfirmPermanentDelete = async () => {
+    if (!deleteModalProduct) return;
+    setDeletingBusy(true);
+    try {
+      await hardDel({ data: { id: deleteModalProduct.id } });
+      toast.success(`"${deleteModalProduct.name}" permanently deleted from database`);
+      setDeleteModalProduct(null);
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["admin-stats"] });
+    } catch (e: any) {
+      toast.error(e.message || "Failed to permanently delete product");
+    } finally {
+      setDeletingBusy(false);
+    }
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -333,20 +425,88 @@ function AdminProductsPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="image"
-                    className="text-xs font-bold text-muted-foreground uppercase"
-                  >
-                    Display Image URL
+                {/* Image Upload & URL */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-muted-foreground uppercase flex items-center justify-between">
+                    <span>Product Image</span>
+                    <span className="text-[10px] text-muted-foreground font-normal">PNG, JPG, WebP up to 10MB</span>
                   </Label>
-                  <Input
-                    id="image"
-                    value={form.image_url ?? ""}
-                    onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                    className="rounded-xl"
-                    placeholder="https://images.unsplash.com/..."
-                  />
+
+                  <div className="flex gap-3 items-start">
+                    {/* Image Preview or placeholder */}
+                    <div className="relative h-20 w-20 shrink-0 rounded-xl border border-border bg-muted/40 overflow-hidden flex items-center justify-center group">
+                      {form.image_url ? (
+                        <>
+                          <img
+                            src={form.image_url}
+                            alt="Preview"
+                            className="h-full w-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setForm((p) => ({ ...p, image_url: "" }))}
+                            className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
+                            title="Remove image"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </>
+                      ) : (
+                        <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
+                      )}
+                      {uploadingImage && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Upload button & Direct URL input */}
+                    <div className="flex-1 space-y-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file);
+                        }}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={uploadingImage}
+                          onClick={() => fileInputRef.current?.click()}
+                          className="rounded-xl text-xs font-semibold"
+                        >
+                          {uploadingImage ? (
+                            <>
+                              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="mr-1.5 h-3.5 w-3.5" /> Upload Image File
+                            </>
+                          )}
+                        </Button>
+                        {form.image_url && (
+                          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Image attached
+                          </span>
+                        )}
+                      </div>
+                      <Input
+                        id="image"
+                        value={form.image_url ?? ""}
+                        onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+                        className="rounded-xl text-xs"
+                        placeholder="Or paste external image URL (https://...)"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-3 pt-2">
@@ -478,15 +638,23 @@ function AdminProductsPage() {
 
                         {/* Active toggle indicator */}
                         <td className="px-5 py-3.5">
-                          <span
-                            className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                              p.is_active
-                                ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
-                                : "bg-muted text-muted-foreground"
-                            }`}
-                          >
-                            {p.is_active ? "Active Listing" : "Hidden"}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={p.is_active}
+                              onCheckedChange={() => handleQuickToggle(p, p.is_active)}
+                              className="scale-90"
+                              title={p.is_active ? "Click to hide from store" : "Click to activate"}
+                            />
+                            <span
+                              className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                p.is_active
+                                  ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400"
+                                  : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              {p.is_active ? "Active" : "Hidden"}
+                            </span>
+                          </div>
                         </td>
 
                         {/* Actions */}
@@ -496,6 +664,7 @@ function AdminProductsPage() {
                             variant="ghost"
                             size="icon"
                             className="rounded-lg hover:bg-secondary"
+                            title="View product in shop"
                           >
                             <Link to="/product/$slug" params={{ slug: p.slug }} target="_blank">
                               <Eye className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
@@ -506,6 +675,7 @@ function AdminProductsPage() {
                             variant="ghost"
                             className="rounded-lg hover:bg-secondary"
                             onClick={() => openEdit(p)}
+                            title="Edit product details"
                           >
                             <Pencil className="h-4 w-4 text-muted-foreground hover:text-primary transition-colors" />
                           </Button>
@@ -513,24 +683,8 @@ function AdminProductsPage() {
                             size="icon"
                             variant="ghost"
                             className="rounded-lg hover:bg-destructive/10"
-                            onClick={async () => {
-                              if (
-                                !confirm(
-                                  `Are you sure you want to hide ${p.name} from catalog listings?`,
-                                )
-                              )
-                                return;
-                              try {
-                                await del({ data: { id: p.id } });
-                                toast.success(`${p.name} hidden successfully`);
-                                qc.invalidateQueries({ queryKey: ["admin-products"] });
-                                qc.invalidateQueries({ queryKey: ["admin-stats"] });
-                              } catch (e) {
-                                toast.error(
-                                  e instanceof Error ? e.message : "Failed to delete product",
-                                );
-                              }
-                            }}
+                            onClick={() => setDeleteModalProduct(p)}
+                            title="Permanently delete product"
                           >
                             <Trash2 className="h-4 w-4 text-destructive hover:scale-105 transition-transform" />
                           </Button>
@@ -561,6 +715,60 @@ function AdminProductsPage() {
           </div>
         </div>
       </div>
+
+      {/* Permanent Delete Confirmation Dialog */}
+      <Dialog
+        open={Boolean(deleteModalProduct)}
+        onOpenChange={(open) => !open && setDeleteModalProduct(null)}
+      >
+        <DialogContent className="max-w-md rounded-2xl border-border bg-card">
+          <DialogHeader>
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive mb-2">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <DialogTitle className="font-display text-lg font-bold text-center">
+              Permanently Delete Product?
+            </DialogTitle>
+            <DialogDescription className="text-center text-xs text-muted-foreground pt-1">
+              You are about to permanently delete{" "}
+              <strong className="text-foreground">{deleteModalProduct?.name}</strong>.
+              <span className="block mt-2 text-destructive font-medium">
+                ⚠️ This action cannot be undone. The product will be completely removed from the
+                store database. Past orders will keep their historical receipt records.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="gap-2 sm:gap-0 pt-4 border-t border-border">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={deletingBusy}
+              onClick={() => setDeleteModalProduct(null)}
+              className="rounded-xl font-semibold"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={deletingBusy}
+              onClick={handleConfirmPermanentDelete}
+              className="rounded-xl font-semibold shadow-sm shadow-destructive/20"
+            >
+              {deletingBusy ? (
+                <>
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-1.5 h-4 w-4" /> Yes, Delete Permanently
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminShell>
   );
 }

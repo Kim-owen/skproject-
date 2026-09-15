@@ -16,11 +16,12 @@ const createOrderInput = z.object({
   delivery_zone_id: z.string().uuid().optional().nullable(),
   ghana_post_gps: z.string().trim().max(15).optional().or(z.literal("")),
   gps_coordinates: z.string().trim().max(60).optional().or(z.literal("")),
-  payment_method: z.enum(["paystack", "cash_on_delivery", "wallet"]),
+  payment_method: z.enum(["paystack", "wallet"]),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
   scheduled_delivery_date: z.string().optional().nullable(),
   is_subscription: z.boolean().optional(),
   subscription_frequency: z.enum(["weekly", "biweekly", "monthly"]).optional().nullable(),
+  callback_url: z.string().optional().nullable(),
   items: z.array(itemSchema).min(1).max(50),
 });
 
@@ -197,22 +198,78 @@ export const createOrder = createServerFn({ method: "POST" })
 
     let deliveryFee = 0;
     if (data.delivery_type === "delivery") {
-      if (!data.delivery_zone_id) throw new Error("Delivery zone required");
-      if (!data.delivery_address) throw new Error("Delivery address required");
-      const { data: zone, error: zErr } = await supabaseAdmin
-        .from("delivery_zones")
-        .select("fee_ghs")
-        .eq("id", data.delivery_zone_id)
-        .single();
-      if (zErr || !zone) throw new Error("Invalid delivery zone");
-      deliveryFee = Number(zone.fee_ghs);
+      if (data.dispatch_partner === "uber" && data.gps_coordinates && data.gps_coordinates.includes(",")) {
+        // Compute Uber fee strictly on server using GPS coordinates and formula
+        const [latStr, lngStr] = data.gps_coordinates.split(",");
+        const lat = parseFloat(latStr.trim());
+        const lng = parseFloat(lngStr.trim());
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const distKm = calculateHaversineDistance(STORE_LAT, STORE_LNG, lat, lng);
+          const roundedDist = Math.max(1, Math.round(distKm * 10) / 10);
+          deliveryFee = Math.round((12 + roundedDist * 2.3) * 100) / 100;
+        }
+      }
+
+      // If zone fee is used or Uber coordinates were not provided
+      if (deliveryFee === 0) {
+        if (!data.delivery_zone_id) throw new Error("Delivery zone required for delivery orders");
+        if (!data.delivery_address) throw new Error("Delivery address required");
+        const { data: zone, error: zErr } = await supabaseAdmin
+          .from("delivery_zones")
+          .select("fee_ghs")
+          .eq("id", data.delivery_zone_id)
+          .single();
+        if (zErr || !zone) throw new Error("Invalid delivery zone");
+        deliveryFee = Number(zone.fee_ghs);
+      }
     }
 
-    const total = subtotal + deliveryFee;
+    subtotal = Math.round(subtotal * 100) / 100;
+    deliveryFee = Math.round(deliveryFee * 100) / 100;
+    const total = Math.round((subtotal + deliveryFee) * 100) / 100;
+
+    // Server-Side Wallet Balance Verification & Deduction
+    let initialPaymentStatus: "unpaid" | "paid" = "unpaid";
+    let initialOrderStatus: "pending" | "confirmed" = "pending";
+
+    if (data.payment_method === "wallet") {
+      if (!context.userId) {
+        throw new Error("You must be logged in to pay using your wallet balance.");
+      }
+      const { data: profile, error: profErr } = await supabaseAdmin
+        .from("profiles")
+        .select("wallet_balance_ghs")
+        .eq("id", context.userId)
+        .single();
+      if (profErr || !profile) {
+        throw new Error("Could not retrieve customer wallet balance.");
+      }
+
+      const currentBalance = Number(profile.wallet_balance_ghs || 0);
+      if (currentBalance < total) {
+        throw new Error(
+          `Insufficient wallet balance. Your balance is ₵${currentBalance.toFixed(2)}, but order total is ₵${total.toFixed(2)}. Please top up or pay with Paystack.`,
+        );
+      }
+
+      // Atomically deduct the exact server total from wallet
+      const updatedBalance = Math.round((currentBalance - total) * 100) / 100;
+      const { error: deductErr } = await supabaseAdmin
+        .from("profiles")
+        .update({ wallet_balance_ghs: updatedBalance })
+        .eq("id", context.userId);
+      if (deductErr) {
+        throw new Error("Failed to deduct wallet balance: " + deductErr.message);
+      }
+
+      initialPaymentStatus = "paid";
+      initialOrderStatus = "confirmed";
+    }
 
     const { data: order, error: oErr } = await supabaseAdmin
       .from("orders")
       .insert({
+        user_id: context.userId || null,
         customer_name: data.customer_name,
         customer_phone: data.customer_phone,
         customer_email: data.customer_email || null,
@@ -225,6 +282,8 @@ export const createOrder = createServerFn({ method: "POST" })
         subtotal_ghs: subtotal,
         total_ghs: total,
         payment_method: data.payment_method,
+        payment_status: initialPaymentStatus,
+        status: initialOrderStatus,
         notes: data.notes || null,
         ghana_post_gps: data.ghana_post_gps || null,
         gps_coordinates: data.gps_coordinates || null,
@@ -232,7 +291,7 @@ export const createOrder = createServerFn({ method: "POST" })
         is_subscription: !!data.is_subscription,
         subscription_frequency: data.subscription_frequency || null,
       })
-      .select("id, order_number, total_ghs")
+      .select("id, order_number, total_ghs, payment_status")
       .single();
     if (oErr || !order) throw new Error(oErr?.message || "Failed to create order");
 
@@ -266,14 +325,14 @@ export const createOrder = createServerFn({ method: "POST" })
 
     if (data.payment_method === "paystack") {
       const secret = process.env.PAYSTACK_SECRET_KEY;
-      if (!secret) {
+      if (!secret || secret.includes("placeholder")) {
         return {
           order_id: order.id,
           order_number: order.order_number,
           total_ghs: Number(order.total_ghs),
           paystack_url: null as string | null,
           paystack_error:
-            "Paystack is not configured yet. Ask the shop admin to add PAYSTACK_SECRET_KEY.",
+            "Paystack is not fully configured with a valid secret key yet. Please provide PAYSTACK_SECRET_KEY in .env.",
         };
       }
       try {
@@ -285,14 +344,36 @@ export const createOrder = createServerFn({ method: "POST" })
             currency: "GHS",
             email:
               data.customer_email ||
-              `${data.customer_phone.replace(/\D/g, "")}@guest.provision.shop`,
-            reference: order.order_number,
-            metadata: { order_id: order.id, order_number: order.order_number },
+              `${data.customer_phone.replace(/\D/g, "")}@guest.barimabafoods.shop`,
+            callback_url: data.callback_url
+              ? data.callback_url.includes("{order_number}")
+                ? data.callback_url.replace("{order_number}", order.order_number)
+                : `${data.callback_url.replace(/\/$/, "")}/${order.order_number}?reference=${order.order_number}&from_paystack=1`
+              : undefined,
+            channels: ["card", "mobile_money"],
+            metadata: {
+              order_id: order.id,
+              order_number: order.order_number,
+              customer_name: data.customer_name,
+              customer_phone: data.customer_phone,
+              custom_fields: [
+                {
+                  display_name: "Customer Phone",
+                  variable_name: "customer_phone",
+                  value: data.customer_phone,
+                },
+                {
+                  display_name: "Order Number",
+                  variable_name: "order_number",
+                  value: order.order_number,
+                },
+              ],
+            },
           }),
         });
         const json = (await resp.json()) as {
           status: boolean;
-          data?: { authorization_url: string };
+          data?: { authorization_url: string; access_code?: string; reference: string };
           message?: string;
         };
         if (!json.status || !json.data) throw new Error(json.message || "Paystack init failed");
@@ -334,12 +415,202 @@ export const getOrderByNumber = createServerFn({ method: "POST" })
     const { data: order, error } = await supabaseAdmin
       .from("orders")
       .select(
-        "id, order_number, status, payment_status, payment_method, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)",
+        "id, order_number, status, payment_status, payment_method, payment_reference, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, customer_email, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)",
       )
       .eq("order_number", data.order_number.trim().toUpperCase())
       .maybeSingle();
     if (error) throw new Error(error.message);
     return order;
+  });
+
+export const initiatePaystackPayment = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      order_number: z.string().trim().min(3).max(50),
+      callback_url: z.string().optional().nullable(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: order, error } = await supabaseAdmin
+      .from("orders")
+      .select("id, order_number, total_ghs, customer_name, customer_phone, customer_email, payment_status")
+      .eq("order_number", data.order_number.trim().toUpperCase())
+      .single();
+
+    if (error || !order) throw new Error("Order not found");
+    if (order.payment_status === "paid") {
+      throw new Error("This order has already been paid for.");
+    }
+
+    const secret = process.env.PAYSTACK_SECRET_KEY;
+    if (!secret || secret.includes("placeholder")) {
+      throw new Error(
+        "Paystack secret key is not configured yet. Please add a valid PAYSTACK_SECRET_KEY in your .env configuration.",
+      );
+    }
+
+    // Generate unique reference attempt to avoid Paystack duplicate reference rejection
+    const reference = `${order.order_number}-${Date.now().toString().slice(-6)}`;
+    const totalKobo = Math.round(Number(order.total_ghs) * 100);
+
+    const resp = await fetch("https://api.paystack.co/transaction/initialize", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: totalKobo,
+        currency: "GHS",
+        email:
+          order.customer_email ||
+          `${order.customer_phone?.replace(/\D/g, "") || "customer"}@guest.barimabafoods.shop`,
+        reference,
+        callback_url: data.callback_url
+          ? data.callback_url.includes("{order_number}")
+            ? data.callback_url.replace("{order_number}", order.order_number)
+            : `${data.callback_url.replace(/\/$/, "")}/${order.order_number}?reference=${reference}&from_paystack=1`
+          : undefined,
+        channels: ["card", "mobile_money"],
+        metadata: {
+          order_id: order.id,
+          order_number: order.order_number,
+          customer_name: order.customer_name,
+          customer_phone: order.customer_phone,
+        },
+      }),
+    });
+
+    const json = (await resp.json()) as {
+      status: boolean;
+      data?: { authorization_url: string; access_code?: string; reference: string };
+      message?: string;
+    };
+
+    if (!json.status || !json.data) {
+      throw new Error(json.message || "Failed to initialize Paystack checkout");
+    }
+
+    await supabaseAdmin
+      .from("orders")
+      .update({ payment_reference: reference })
+      .eq("id", order.id);
+
+    return {
+      authorization_url: json.data.authorization_url,
+      reference,
+    };
+  });
+
+export const verifyPaystackPayment = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      reference: z.string().trim().min(3).max(100),
+      order_number: z.string().trim().optional().nullable(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const secret = process.env.PAYSTACK_SECRET_KEY;
+
+    if (!secret || secret.includes("placeholder")) {
+      throw new Error("Paystack secret key is not configured. Please add PAYSTACK_SECRET_KEY to .env");
+    }
+
+    const resp = await fetch(
+      `https://api.paystack.co/transaction/verify/${encodeURIComponent(data.reference)}`,
+      {
+        headers: { Authorization: `Bearer ${secret}` },
+      },
+    );
+
+    const vjson = (await resp.json()) as {
+      status: boolean;
+      data?: {
+        status: string;
+        amount: number;
+        currency: string;
+        reference: string;
+        channel: string;
+        paid_at: string;
+        customer?: { email: string; phone?: string };
+        metadata?: { order_id?: string; order_number?: string };
+      };
+      message?: string;
+    };
+
+    if (!vjson.status || !vjson.data) {
+      throw new Error(vjson.message || "Failed to verify transaction with Paystack");
+    }
+
+    if (vjson.data.status !== "success") {
+      return {
+        success: false,
+        status: vjson.data.status,
+        message: `Paystack reported payment status as ${vjson.data.status}`,
+      };
+    }
+
+    // Locate the matching order
+    let query = supabaseAdmin
+      .from("orders")
+      .select("id, order_number, total_ghs, payment_status, status, customer_name, customer_phone");
+
+    if (data.order_number) {
+      query = query.eq("order_number", data.order_number.toUpperCase());
+    } else {
+      query = query.or(`payment_reference.eq.${data.reference},order_number.eq.${data.reference}`);
+    }
+
+    const { data: order, error: findErr } = await query.maybeSingle();
+    if (findErr || !order) {
+      throw new Error("No matching order found for this payment reference.");
+    }
+
+    if (order.payment_status === "paid") {
+      return {
+        success: true,
+        already_paid: true,
+        order_number: order.order_number,
+        message: "Order has already been confirmed and marked as paid.",
+      };
+    }
+
+    const expectedKobo = Math.round(Number(order.total_ghs) * 100);
+    if (vjson.data.amount < expectedKobo) {
+      throw new Error(
+        `Amount received (GHS ${(vjson.data.amount / 100).toFixed(2)}) is less than required order total (GHS ${Number(order.total_ghs).toFixed(2)})`,
+      );
+    }
+
+    const nextStatus = order.status === "pending" ? "confirmed" : order.status;
+    const { error: updateErr } = await supabaseAdmin
+      .from("orders")
+      .update({
+        payment_status: "paid",
+        payment_reference: data.reference,
+        status: nextStatus,
+      })
+      .eq("id", order.id);
+
+    if (updateErr) throw new Error(updateErr.message);
+
+    // Send SMS confirmation async
+    try {
+      const { getNotificationSettings } = await import("./settings.functions");
+      const notifSettings = await getNotificationSettings();
+      if (notifSettings.enable_customer_alerts && order.customer_phone) {
+        const msg = `Barima Ba Foods: Payment of ₵${Number(order.total_ghs).toFixed(2)} for Order #${order.order_number} confirmed! Our kitchen is preparing your authentic meal.`;
+        sendSMSNotification(order.customer_phone, msg).catch(console.error);
+      }
+    } catch (smsErr) {
+      console.error("Payment confirmation SMS notification error:", smsErr);
+    }
+
+    return {
+      success: true,
+      order_number: order.order_number,
+      channel: vjson.data.channel,
+      message: "Payment verified successfully!",
+    };
   });
 
 export const getUserAccountDetails = createServerFn({ method: "GET" })

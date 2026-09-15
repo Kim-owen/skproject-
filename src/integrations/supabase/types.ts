@@ -405,7 +405,7 @@ export type Database = {
       delivery_type: "delivery" | "pickup";
       order_status:
         "pending" | "confirmed" | "packed" | "out_for_delivery" | "delivered" | "cancelled";
-      payment_method: "paystack" | "cash_on_delivery" | "wallet";
+      payment_method: "paystack" | "wallet";
       payment_status: "unpaid" | "paid" | "failed" | "refunded";
     };
     CompositeTypes: {
@@ -538,7 +538,7 @@ export const Constants = {
         "delivered",
         "cancelled",
       ],
-      payment_method: ["paystack", "cash_on_delivery", "wallet"],
+      payment_method: ["paystack", "wallet"],
       payment_status: ["unpaid", "paid", "failed", "refunded"],
     },
   },

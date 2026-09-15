@@ -23,7 +23,7 @@ function CartPageInner() {
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">Your cart</h1>
       {count === 0 ? (
-        <div className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-secondary/60 via-card to-background p-12 text-center">
+        <div className="mt-10 overflow-hidden rounded-[2rem] border border-white/10 bg-linear-to-br from-secondary/60 via-card to-background p-12 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary mint-glow">
             <ShoppingBag className="h-7 w-7" />
           </div>

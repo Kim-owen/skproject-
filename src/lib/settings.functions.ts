@@ -204,3 +204,160 @@ export const sendTestSMS = createServerFn({ method: "POST" })
       throw new Error(err.message || "Failed to send test SMS");
     }
   });
+
+export interface StoreGeneralSettings {
+  store_name: string;
+  support_email: string;
+  support_phone: string;
+  whatsapp_number: string;
+  operating_hours: string;
+  minimum_order_amount: number;
+  maintenance_mode: boolean;
+  maintenance_banner_text: string;
+}
+
+export const DEFAULT_STORE_GENERAL_SETTINGS: StoreGeneralSettings = {
+  store_name: "Barima Ba Foods",
+  support_email: "support@barimabafoods.shop",
+  support_phone: "+233 24 123 4567",
+  whatsapp_number: "233241234567",
+  operating_hours: "Monday – Saturday: 7:30 AM – 9:00 PM | Sunday: 11:00 AM – 7:00 PM",
+  minimum_order_amount: 30,
+  maintenance_mode: false,
+  maintenance_banner_text: "We are briefly upgrading our systems. New orders will resume shortly!",
+};
+
+export const getStoreGeneralSettings = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin
+      .from("site_settings")
+      .select("value")
+      .eq("key", "store_general_settings")
+      .maybeSingle();
+
+    return {
+      ...DEFAULT_STORE_GENERAL_SETTINGS,
+      ...((data?.value as Partial<StoreGeneralSettings>) || {}),
+    };
+  } catch (err) {
+    console.error("Error fetching general settings:", err);
+    return DEFAULT_STORE_GENERAL_SETTINGS;
+  }
+});
+
+export const updateStoreGeneralSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((d: unknown) => d as StoreGeneralSettings)
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { error } = await supabaseAdmin.from("site_settings").upsert({
+      key: "store_general_settings",
+      value: data as any,
+      updated_at: new Date().toISOString(),
+    });
+
+    if (error) throw new Error(error.message);
+    return { success: true };
+  });
+
+export const broadcastNotificationToUsers = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      message: z.string().trim().min(3).max(480),
+      audience: z.enum(["all_users", "customers_with_orders", "phone_verified"]),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { sendSMSNotification } = await import("@/lib/orders.functions");
+
+    let query = supabaseAdmin.from("profiles").select("phone, is_phone_verified");
+    if (data.audience === "phone_verified") {
+      query = query.eq("is_phone_verified", true);
+    }
+    const { data: profiles } = await query;
+
+    const phonesSet = new Set<string>();
+    for (const p of profiles ?? []) {
+      if (p.phone && p.phone.trim().length >= 9) {
+        phonesSet.add(p.phone.trim());
+      }
+    }
+
+    // Also include customer phones from orders if requested
+    if (data.audience === "customers_with_orders" || data.audience === "all_users") {
+      const { data: orders } = await supabaseAdmin
+        .from("orders")
+        .select("customer_phone")
+        .not("customer_phone", "is", null);
+      for (const o of orders ?? []) {
+        if (o.customer_phone && o.customer_phone.trim().length >= 9) {
+          phonesSet.add(o.customer_phone.trim());
+        }
+      }
+    }
+
+    const recipientList = Array.from(phonesSet);
+    if (recipientList.length === 0) {
+      return { totalRecipients: 0, sentCount: 0, failedCount: 0 };
+    }
+
+    let sentCount = 0;
+    let failedCount = 0;
+
+    // Send SMS in small batches to preserve throughput without overloading
+    for (const phone of recipientList) {
+      try {
+        await sendSMSNotification(phone, data.message);
+        sentCount++;
+      } catch {
+        failedCount++;
+      }
+    }
+
+    return {
+      totalRecipients: recipientList.length,
+      sentCount,
+      failedCount,
+    };
+  });
+
+export const updateAdminSecurity = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      full_name: z.string().trim().min(2).optional(),
+      new_password: z.string().min(8).optional().or(z.literal("")),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Update password if provided
+    if (data.new_password && data.new_password.trim().length >= 8) {
+      const { error: pwdErr } = await supabaseAdmin.auth.admin.updateUserById(context.userId, {
+        password: data.new_password,
+      });
+      if (pwdErr) throw new Error(pwdErr.message);
+    }
+
+    // Update profile full_name if provided
+    if (data.full_name) {
+      await supabaseAdmin.from("profiles").upsert(
+        {
+          id: context.userId,
+          full_name: data.full_name,
+        },
+        { onConflict: "id" },
+      );
+    }
+
+    return { success: true };
+  });
+

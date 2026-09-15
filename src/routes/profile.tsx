@@ -201,13 +201,13 @@ function ProfilePage() {
     <ShopLayout>
       <div className="mx-auto max-w-5xl px-4 py-10 space-y-8 font-sans">
         {/* Profile Hero Header Card */}
-        <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-r from-zinc-950 via-black to-zinc-900 p-6 md:p-8 shadow-2xl">
+        <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-linear-to-r from-zinc-950 via-black to-zinc-900 p-6 md:p-8 shadow-2xl">
           <div className="absolute top-0 right-0 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
               <div className="relative">
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-black font-extrabold text-3xl shadow-xl ring-4 ring-amber-500/20">
+                <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-linear-to-br from-amber-500 to-amber-600 text-black font-extrabold text-3xl shadow-xl ring-4 ring-amber-500/20">
                   {fullName ? fullName[0].toUpperCase() : authUser.email[0].toUpperCase()}
                 </div>
                 <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-black text-xs font-bold ring-2 ring-black">
@@ -232,11 +232,11 @@ function ProfilePage() {
             </div>
 
             {/* Wallet Balance Callout */}
-            <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-950/40 via-zinc-900 to-black p-4 text-center sm:text-right shrink-0 shadow-lg min-w-[200px]">
+            <div className="rounded-2xl border border-emerald-500/30 bg-linear-to-br from-emerald-950/40 via-zinc-900 to-black p-4 text-center sm:text-right shrink-0 shadow-lg min-w-50">
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400 block">
                 Barima Ba Wallet
               </span>
-              <span className="font-display text-2xl font-extrabold text-emerald-400 font-mono block mt-0.5">
+              <span className="font-display text-2xl font-extrabold text-emerald-400 block mt-0.5">
                 {formatGHS(Number(profile?.wallet_balance_ghs || 0))}
               </span>
               <span className="text-[10px] text-zinc-400 mt-1 block">
@@ -404,7 +404,7 @@ function ProfilePage() {
                       </div>
 
                       <div className="flex items-center gap-3">
-                        <span className="font-display text-lg font-extrabold text-foreground font-mono">
+                        <span className="font-display text-lg font-extrabold text-foreground">
                           {formatGHS(Number(o.total_ghs))}
                         </span>
                         <Button
@@ -462,7 +462,7 @@ function ProfilePage() {
 
           {/* SUBSCRIPTIONS & SCHEDULES TAB */}
           <TabsContent value="subscriptions" className="space-y-6">
-            <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-zinc-950 to-card p-6 md:p-8 shadow-xl space-y-6">
+            <div className="rounded-3xl border border-amber-500/30 bg-linear-to-r from-amber-500/10 via-zinc-950 to-card p-6 md:p-8 shadow-xl space-y-6">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/60 pb-6">
                 <div>
                   <div className="flex items-center gap-2">

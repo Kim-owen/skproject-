@@ -340,7 +340,7 @@ function CustomerOrdersPage() {
                 )}
 
                 {o.uber_tracking_url ? (
-                  <div className="flex flex-col sm:flex-row items-center justify-between rounded-2xl border border-purple-500/40 bg-gradient-to-r from-purple-950/40 via-zinc-900 to-black p-3.5 text-xs text-purple-300 gap-2">
+                  <div className="flex flex-col sm:flex-row items-center justify-between rounded-2xl border border-purple-500/40 bg-linear-to-r from-purple-950/40 via-zinc-900 to-black p-3.5 text-xs text-purple-300 gap-2">
                     <div className="flex items-center gap-2">
                       <Truck className="h-4 w-4 text-purple-400 shrink-0" />
                       <span>
@@ -410,7 +410,7 @@ function CustomerOrdersPage() {
 
                   <div className="flex items-center gap-2 text-right">
                     <span className="text-muted-foreground font-medium">Total Paid:</span>
-                    <span className="font-display text-lg font-extrabold text-foreground font-mono">
+                    <span className="font-display text-lg font-extrabold text-foreground">
                       {formatGHS(Number(o.total_ghs))}
                     </span>
                   </div>

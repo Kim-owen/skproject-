@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-export const Route = createFileRoute("/admin/rider")({
+export const Route = createFileRoute("/portal/rider")({
   head: () => ({
     meta: [{ title: "Rider Delivery Console" }, { name: "robots", content: "noindex" }],
   }),

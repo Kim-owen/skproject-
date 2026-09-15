@@ -232,7 +232,7 @@ export function Header() {
                 className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/15 px-3 py-1.5 text-xs font-extrabold text-amber-400 hover:bg-amber-500/25 transition-all shadow-sm"
               >
                 <User className="h-3.5 w-3.5 text-amber-400" />
-                <span className="max-w-[110px] truncate">
+                <span className="max-w-27.5 truncate">
                   {userName || authUser.email?.split("@")[0]}
                 </span>
                 <ChevronDown
@@ -300,7 +300,7 @@ export function Header() {
           <Button
             asChild
             size="sm"
-            className="relative rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-extrabold shadow-lg shadow-amber-500/20 transition-all hover:scale-102"
+            className="relative rounded-xl bg-linear-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-black font-extrabold shadow-lg shadow-amber-500/20 transition-all hover:scale-102"
           >
             <Link to="/cart">
               <ShoppingCart className="mr-1.5 h-4 w-4 fill-black" />
@@ -332,7 +332,7 @@ export function Header() {
 
       {/* Premium Full-Screen Mobile Navigation Overlay (iOS & Android Optimized) */}
       {mobileOpen && (
-        <div className="fixed inset-0 top-0 left-0 z-[100] h-[100dvh] w-full md:hidden bg-zinc-950 p-5 sm:p-7 overflow-y-auto animate-fade-in text-white flex flex-col justify-between">
+        <div className="fixed inset-0 top-0 left-0 z-100 h-dvh w-full md:hidden bg-zinc-950 p-5 sm:p-7 overflow-y-auto animate-fade-in text-white flex flex-col justify-between">
           <div>
             {/* Top Navigation Bar */}
             <div className="flex items-center justify-between border-b border-amber-500/20 pb-4 mb-6">
@@ -506,7 +506,7 @@ export function Header() {
             <Button
               asChild
               size="lg"
-              className="w-full rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-black font-extrabold text-sm py-6 shadow-xl shadow-amber-500/25 hover:scale-102 transition-transform"
+              className="w-full rounded-2xl bg-linear-to-r from-amber-500 via-amber-400 to-amber-500 text-black font-extrabold text-sm py-6 shadow-xl shadow-amber-500/25 hover:scale-102 transition-transform"
             >
               <Link to="/cart" onClick={() => setMobileOpen(false)}>
                 <ShoppingCart className="mr-2 h-5 w-5 fill-black" />
@@ -545,7 +545,7 @@ export function Footer() {
   return (
     <footer className="border-t-2 border-amber-500/30 bg-zinc-950 text-white font-sans relative z-10">
       {/* 1. Gold Delivery & Contact Bar */}
-      <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 px-4 py-4 text-black shadow-lg">
+      <div className="bg-linear-to-r from-amber-500 via-amber-400 to-amber-500 px-4 py-4 text-black shadow-lg">
         <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-amber-400 shrink-0">

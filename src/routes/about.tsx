@@ -22,7 +22,7 @@ function AboutPage() {
       {/* Hero Section */}
       <section className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6">
         <div className="overflow-hidden rounded-[2.5rem] border border-amber-500/30 bg-black/60 backdrop-blur-xl shadow-2xl p-8 sm:p-16 text-center relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-transparent to-amber-500/10 pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-r from-amber-500/10 via-transparent to-amber-500/10 pointer-events-none" />
 
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-4 py-1.5 text-xs font-extrabold tracking-widest uppercase text-amber-400 mb-6">
             <Crown className="h-4 w-4 fill-amber-400" />

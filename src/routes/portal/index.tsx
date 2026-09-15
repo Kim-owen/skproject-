@@ -26,7 +26,7 @@ import {
   Activity,
 } from "lucide-react";
 
-export const Route = createFileRoute("/admin/")({
+export const Route = createFileRoute("/portal/")({
   head: () => ({ meta: [{ title: "Admin — Dashboard" }, { name: "robots", content: "noindex" }] }),
   component: AdminDashboard,
 });
@@ -143,10 +143,10 @@ function AdminDashboard() {
           </div>
           <div className="flex gap-2.5">
             <Button asChild variant="outline" className="rounded-xl font-semibold">
-              <Link to="/admin/orders">Manage Orders</Link>
+              <Link to="/portal/orders">Manage Orders</Link>
             </Button>
             <Button asChild className="rounded-xl font-semibold">
-              <Link to="/admin/products">Manage Inventory</Link>
+              <Link to="/portal/products">Manage Inventory</Link>
             </Button>
           </div>
         </div>
@@ -249,7 +249,7 @@ function AdminDashboard() {
                   <Activity className="h-4.5 w-4.5 text-primary" /> Recent Activity
                 </h3>
                 <Link
-                  to="/admin/orders"
+                  to="/portal/orders"
                   className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5"
                 >
                   View all <ArrowUpRight className="h-3 w-3" />
@@ -300,7 +300,7 @@ function AdminDashboard() {
                   <AlertTriangle className="h-4.5 w-4.5 text-amber-500" /> Stock Alerts
                 </h3>
                 <Link
-                  to="/admin/products"
+                  to="/portal/products"
                   className="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5"
                 >
                   Refill <ArrowUpRight className="h-3 w-3" />

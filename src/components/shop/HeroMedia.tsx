@@ -73,7 +73,7 @@ export function HeroMedia({ settings, previewMode = false }: HeroMediaProps) {
   return (
     <div
       ref={containerRef}
-      className="group relative aspect-[4/5] sm:aspect-[4/3] lg:aspect-[4/5] w-full overflow-hidden rounded-[2rem] border border-border/80 bg-card shadow-2xl shadow-foreground/5 animate-float transition-all duration-500"
+      className="group relative aspect-4/5 sm:aspect-4/3 lg:aspect-4/5 w-full overflow-hidden rounded-[2rem] border border-border/80 bg-card shadow-2xl shadow-foreground/5 animate-float transition-all duration-500"
     >
       {/* Video or Image Element */}
       {isVideo ? (
@@ -106,7 +106,7 @@ export function HeroMedia({ settings, previewMode = false }: HeroMediaProps) {
       )}
 
       {/* Ambient Gradient Overlay */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-background/90 via-background/20 to-transparent" />
 
       {/* Top Live Badge */}
       <div className="absolute top-4 left-4 z-10 flex items-center gap-2 rounded-full border border-white/20 bg-background/60 px-3 py-1.5 backdrop-blur-md shadow-lg">

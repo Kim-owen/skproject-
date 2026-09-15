@@ -24,14 +24,19 @@ import { Route as ShopRouteImport } from './routes/shop'
 import { Route as TestimonialsRouteImport } from './routes/testimonials'
 import { Route as TrackRouteImport } from './routes/track'
 import { Route as VerifyOtpRouteImport } from './routes/verify-otp'
-import { Route as AdminIndexRouteImport } from './routes/admin/index'
-import { Route as AdminHeroRouteImport } from './routes/admin/hero'
-import { Route as AdminMediaRouteImport } from './routes/admin/media'
-import { Route as AdminOrdersRouteImport } from './routes/admin/orders'
-import { Route as AdminProductsRouteImport } from './routes/admin/products'
-import { Route as AdminRiderRouteImport } from './routes/admin/rider'
-import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as OrderOrderNumberRouteImport } from './routes/order.$orderNumber'
+import { Route as PortalIndexRouteImport } from './routes/portal/index'
+import { Route as PortalCategoriesRouteImport } from './routes/portal/categories'
+import { Route as PortalDeliveryRouteImport } from './routes/portal/delivery'
+import { Route as PortalGalleryRouteImport } from './routes/portal/gallery'
+import { Route as PortalHeroRouteImport } from './routes/portal/hero'
+import { Route as PortalMediaRouteImport } from './routes/portal/media'
+import { Route as PortalOrdersRouteImport } from './routes/portal/orders'
+import { Route as PortalProductsRouteImport } from './routes/portal/products'
+import { Route as PortalRiderRouteImport } from './routes/portal/rider'
+import { Route as PortalSettingsRouteImport } from './routes/portal/settings'
+import { Route as PortalStorefrontRouteImport } from './routes/portal/storefront'
+import { Route as PortalUsersRouteImport } from './routes/portal/users'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as ApiPublicWebhooksPaystackRouteImport } from './routes/api/public/webhooks/paystack'
 
@@ -110,44 +115,69 @@ const VerifyOtpRoute = VerifyOtpRouteImport.update({
   path: '/verify-otp',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/admin/',
-  path: '/admin/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminHeroRoute = AdminHeroRouteImport.update({
-  id: '/admin/hero',
-  path: '/admin/hero',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminMediaRoute = AdminMediaRouteImport.update({
-  id: '/admin/media',
-  path: '/admin/media',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminOrdersRoute = AdminOrdersRouteImport.update({
-  id: '/admin/orders',
-  path: '/admin/orders',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminProductsRoute = AdminProductsRouteImport.update({
-  id: '/admin/products',
-  path: '/admin/products',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRiderRoute = AdminRiderRouteImport.update({
-  id: '/admin/rider',
-  path: '/admin/rider',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminSettingsRoute = AdminSettingsRouteImport.update({
-  id: '/admin/settings',
-  path: '/admin/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OrderOrderNumberRoute = OrderOrderNumberRouteImport.update({
   id: '/order/$orderNumber',
   path: '/order/$orderNumber',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalIndexRoute = PortalIndexRouteImport.update({
+  id: '/portal/',
+  path: '/portal/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalCategoriesRoute = PortalCategoriesRouteImport.update({
+  id: '/portal/categories',
+  path: '/portal/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalDeliveryRoute = PortalDeliveryRouteImport.update({
+  id: '/portal/delivery',
+  path: '/portal/delivery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalGalleryRoute = PortalGalleryRouteImport.update({
+  id: '/portal/gallery',
+  path: '/portal/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalHeroRoute = PortalHeroRouteImport.update({
+  id: '/portal/hero',
+  path: '/portal/hero',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalMediaRoute = PortalMediaRouteImport.update({
+  id: '/portal/media',
+  path: '/portal/media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalOrdersRoute = PortalOrdersRouteImport.update({
+  id: '/portal/orders',
+  path: '/portal/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalProductsRoute = PortalProductsRouteImport.update({
+  id: '/portal/products',
+  path: '/portal/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRiderRoute = PortalRiderRouteImport.update({
+  id: '/portal/rider',
+  path: '/portal/rider',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalSettingsRoute = PortalSettingsRouteImport.update({
+  id: '/portal/settings',
+  path: '/portal/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalStorefrontRoute = PortalStorefrontRouteImport.update({
+  id: '/portal/storefront',
+  path: '/portal/storefront',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalUsersRoute = PortalUsersRouteImport.update({
+  id: '/portal/users',
+  path: '/portal/users',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
@@ -178,15 +208,20 @@ export interface FileRoutesByFullPath {
   '/testimonials': typeof TestimonialsRoute
   '/track': typeof TrackRoute
   '/verify-otp': typeof VerifyOtpRoute
-  '/admin/hero': typeof AdminHeroRoute
-  '/admin/media': typeof AdminMediaRoute
-  '/admin/orders': typeof AdminOrdersRoute
-  '/admin/products': typeof AdminProductsRoute
-  '/admin/rider': typeof AdminRiderRoute
-  '/admin/settings': typeof AdminSettingsRoute
   '/order/$orderNumber': typeof OrderOrderNumberRoute
+  '/portal/categories': typeof PortalCategoriesRoute
+  '/portal/delivery': typeof PortalDeliveryRoute
+  '/portal/gallery': typeof PortalGalleryRoute
+  '/portal/hero': typeof PortalHeroRoute
+  '/portal/media': typeof PortalMediaRoute
+  '/portal/orders': typeof PortalOrdersRoute
+  '/portal/products': typeof PortalProductsRoute
+  '/portal/rider': typeof PortalRiderRoute
+  '/portal/settings': typeof PortalSettingsRoute
+  '/portal/storefront': typeof PortalStorefrontRoute
+  '/portal/users': typeof PortalUsersRoute
   '/product/$slug': typeof ProductSlugRoute
-  '/admin/': typeof AdminIndexRoute
+  '/portal/': typeof PortalIndexRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
 }
 export interface FileRoutesByTo {
@@ -205,15 +240,20 @@ export interface FileRoutesByTo {
   '/testimonials': typeof TestimonialsRoute
   '/track': typeof TrackRoute
   '/verify-otp': typeof VerifyOtpRoute
-  '/admin/hero': typeof AdminHeroRoute
-  '/admin/media': typeof AdminMediaRoute
-  '/admin/orders': typeof AdminOrdersRoute
-  '/admin/products': typeof AdminProductsRoute
-  '/admin/rider': typeof AdminRiderRoute
-  '/admin/settings': typeof AdminSettingsRoute
   '/order/$orderNumber': typeof OrderOrderNumberRoute
+  '/portal/categories': typeof PortalCategoriesRoute
+  '/portal/delivery': typeof PortalDeliveryRoute
+  '/portal/gallery': typeof PortalGalleryRoute
+  '/portal/hero': typeof PortalHeroRoute
+  '/portal/media': typeof PortalMediaRoute
+  '/portal/orders': typeof PortalOrdersRoute
+  '/portal/products': typeof PortalProductsRoute
+  '/portal/rider': typeof PortalRiderRoute
+  '/portal/settings': typeof PortalSettingsRoute
+  '/portal/storefront': typeof PortalStorefrontRoute
+  '/portal/users': typeof PortalUsersRoute
   '/product/$slug': typeof ProductSlugRoute
-  '/admin': typeof AdminIndexRoute
+  '/portal': typeof PortalIndexRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
 }
 export interface FileRoutesById {
@@ -233,15 +273,20 @@ export interface FileRoutesById {
   '/testimonials': typeof TestimonialsRoute
   '/track': typeof TrackRoute
   '/verify-otp': typeof VerifyOtpRoute
-  '/admin/hero': typeof AdminHeroRoute
-  '/admin/media': typeof AdminMediaRoute
-  '/admin/orders': typeof AdminOrdersRoute
-  '/admin/products': typeof AdminProductsRoute
-  '/admin/rider': typeof AdminRiderRoute
-  '/admin/settings': typeof AdminSettingsRoute
   '/order/$orderNumber': typeof OrderOrderNumberRoute
+  '/portal/categories': typeof PortalCategoriesRoute
+  '/portal/delivery': typeof PortalDeliveryRoute
+  '/portal/gallery': typeof PortalGalleryRoute
+  '/portal/hero': typeof PortalHeroRoute
+  '/portal/media': typeof PortalMediaRoute
+  '/portal/orders': typeof PortalOrdersRoute
+  '/portal/products': typeof PortalProductsRoute
+  '/portal/rider': typeof PortalRiderRoute
+  '/portal/settings': typeof PortalSettingsRoute
+  '/portal/storefront': typeof PortalStorefrontRoute
+  '/portal/users': typeof PortalUsersRoute
   '/product/$slug': typeof ProductSlugRoute
-  '/admin/': typeof AdminIndexRoute
+  '/portal/': typeof PortalIndexRoute
   '/api/public/webhooks/paystack': typeof ApiPublicWebhooksPaystackRoute
 }
 export interface FileRouteTypes {
@@ -262,15 +307,20 @@ export interface FileRouteTypes {
     | '/testimonials'
     | '/track'
     | '/verify-otp'
-    | '/admin/hero'
-    | '/admin/media'
-    | '/admin/orders'
-    | '/admin/products'
-    | '/admin/rider'
-    | '/admin/settings'
     | '/order/$orderNumber'
+    | '/portal/categories'
+    | '/portal/delivery'
+    | '/portal/gallery'
+    | '/portal/hero'
+    | '/portal/media'
+    | '/portal/orders'
+    | '/portal/products'
+    | '/portal/rider'
+    | '/portal/settings'
+    | '/portal/storefront'
+    | '/portal/users'
     | '/product/$slug'
-    | '/admin/'
+    | '/portal/'
     | '/api/public/webhooks/paystack'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -289,15 +339,20 @@ export interface FileRouteTypes {
     | '/testimonials'
     | '/track'
     | '/verify-otp'
-    | '/admin/hero'
-    | '/admin/media'
-    | '/admin/orders'
-    | '/admin/products'
-    | '/admin/rider'
-    | '/admin/settings'
     | '/order/$orderNumber'
+    | '/portal/categories'
+    | '/portal/delivery'
+    | '/portal/gallery'
+    | '/portal/hero'
+    | '/portal/media'
+    | '/portal/orders'
+    | '/portal/products'
+    | '/portal/rider'
+    | '/portal/settings'
+    | '/portal/storefront'
+    | '/portal/users'
     | '/product/$slug'
-    | '/admin'
+    | '/portal'
     | '/api/public/webhooks/paystack'
   id:
     | '__root__'
@@ -316,15 +371,20 @@ export interface FileRouteTypes {
     | '/testimonials'
     | '/track'
     | '/verify-otp'
-    | '/admin/hero'
-    | '/admin/media'
-    | '/admin/orders'
-    | '/admin/products'
-    | '/admin/rider'
-    | '/admin/settings'
     | '/order/$orderNumber'
+    | '/portal/categories'
+    | '/portal/delivery'
+    | '/portal/gallery'
+    | '/portal/hero'
+    | '/portal/media'
+    | '/portal/orders'
+    | '/portal/products'
+    | '/portal/rider'
+    | '/portal/settings'
+    | '/portal/storefront'
+    | '/portal/users'
     | '/product/$slug'
-    | '/admin/'
+    | '/portal/'
     | '/api/public/webhooks/paystack'
   fileRoutesById: FileRoutesById
 }
@@ -344,15 +404,20 @@ export interface RootRouteChildren {
   TestimonialsRoute: typeof TestimonialsRoute
   TrackRoute: typeof TrackRoute
   VerifyOtpRoute: typeof VerifyOtpRoute
-  AdminHeroRoute: typeof AdminHeroRoute
-  AdminMediaRoute: typeof AdminMediaRoute
-  AdminOrdersRoute: typeof AdminOrdersRoute
-  AdminProductsRoute: typeof AdminProductsRoute
-  AdminRiderRoute: typeof AdminRiderRoute
-  AdminSettingsRoute: typeof AdminSettingsRoute
   OrderOrderNumberRoute: typeof OrderOrderNumberRoute
+  PortalCategoriesRoute: typeof PortalCategoriesRoute
+  PortalDeliveryRoute: typeof PortalDeliveryRoute
+  PortalGalleryRoute: typeof PortalGalleryRoute
+  PortalHeroRoute: typeof PortalHeroRoute
+  PortalMediaRoute: typeof PortalMediaRoute
+  PortalOrdersRoute: typeof PortalOrdersRoute
+  PortalProductsRoute: typeof PortalProductsRoute
+  PortalRiderRoute: typeof PortalRiderRoute
+  PortalSettingsRoute: typeof PortalSettingsRoute
+  PortalStorefrontRoute: typeof PortalStorefrontRoute
+  PortalUsersRoute: typeof PortalUsersRoute
   ProductSlugRoute: typeof ProductSlugRoute
-  AdminIndexRoute: typeof AdminIndexRoute
+  PortalIndexRoute: typeof PortalIndexRoute
   ApiPublicWebhooksPaystackRoute: typeof ApiPublicWebhooksPaystackRoute
 }
 
@@ -463,60 +528,95 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VerifyOtpRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/': {
-      id: '/admin/'
-      path: '/admin'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/hero': {
-      id: '/admin/hero'
-      path: '/admin/hero'
-      fullPath: '/admin/hero'
-      preLoaderRoute: typeof AdminHeroRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/media': {
-      id: '/admin/media'
-      path: '/admin/media'
-      fullPath: '/admin/media'
-      preLoaderRoute: typeof AdminMediaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/orders': {
-      id: '/admin/orders'
-      path: '/admin/orders'
-      fullPath: '/admin/orders'
-      preLoaderRoute: typeof AdminOrdersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/products': {
-      id: '/admin/products'
-      path: '/admin/products'
-      fullPath: '/admin/products'
-      preLoaderRoute: typeof AdminProductsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/rider': {
-      id: '/admin/rider'
-      path: '/admin/rider'
-      fullPath: '/admin/rider'
-      preLoaderRoute: typeof AdminRiderRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/settings': {
-      id: '/admin/settings'
-      path: '/admin/settings'
-      fullPath: '/admin/settings'
-      preLoaderRoute: typeof AdminSettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/order/$orderNumber': {
       id: '/order/$orderNumber'
       path: '/order/$orderNumber'
       fullPath: '/order/$orderNumber'
       preLoaderRoute: typeof OrderOrderNumberRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/': {
+      id: '/portal/'
+      path: '/portal'
+      fullPath: '/portal/'
+      preLoaderRoute: typeof PortalIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/categories': {
+      id: '/portal/categories'
+      path: '/portal/categories'
+      fullPath: '/portal/categories'
+      preLoaderRoute: typeof PortalCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/delivery': {
+      id: '/portal/delivery'
+      path: '/portal/delivery'
+      fullPath: '/portal/delivery'
+      preLoaderRoute: typeof PortalDeliveryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/gallery': {
+      id: '/portal/gallery'
+      path: '/portal/gallery'
+      fullPath: '/portal/gallery'
+      preLoaderRoute: typeof PortalGalleryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/hero': {
+      id: '/portal/hero'
+      path: '/portal/hero'
+      fullPath: '/portal/hero'
+      preLoaderRoute: typeof PortalHeroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/media': {
+      id: '/portal/media'
+      path: '/portal/media'
+      fullPath: '/portal/media'
+      preLoaderRoute: typeof PortalMediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/orders': {
+      id: '/portal/orders'
+      path: '/portal/orders'
+      fullPath: '/portal/orders'
+      preLoaderRoute: typeof PortalOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/products': {
+      id: '/portal/products'
+      path: '/portal/products'
+      fullPath: '/portal/products'
+      preLoaderRoute: typeof PortalProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/rider': {
+      id: '/portal/rider'
+      path: '/portal/rider'
+      fullPath: '/portal/rider'
+      preLoaderRoute: typeof PortalRiderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/settings': {
+      id: '/portal/settings'
+      path: '/portal/settings'
+      fullPath: '/portal/settings'
+      preLoaderRoute: typeof PortalSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/storefront': {
+      id: '/portal/storefront'
+      path: '/portal/storefront'
+      fullPath: '/portal/storefront'
+      preLoaderRoute: typeof PortalStorefrontRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal/users': {
+      id: '/portal/users'
+      path: '/portal/users'
+      fullPath: '/portal/users'
+      preLoaderRoute: typeof PortalUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/product/$slug': {
@@ -552,15 +652,20 @@ const rootRouteChildren: RootRouteChildren = {
   TestimonialsRoute: TestimonialsRoute,
   TrackRoute: TrackRoute,
   VerifyOtpRoute: VerifyOtpRoute,
-  AdminHeroRoute: AdminHeroRoute,
-  AdminMediaRoute: AdminMediaRoute,
-  AdminOrdersRoute: AdminOrdersRoute,
-  AdminProductsRoute: AdminProductsRoute,
-  AdminRiderRoute: AdminRiderRoute,
-  AdminSettingsRoute: AdminSettingsRoute,
   OrderOrderNumberRoute: OrderOrderNumberRoute,
+  PortalCategoriesRoute: PortalCategoriesRoute,
+  PortalDeliveryRoute: PortalDeliveryRoute,
+  PortalGalleryRoute: PortalGalleryRoute,
+  PortalHeroRoute: PortalHeroRoute,
+  PortalMediaRoute: PortalMediaRoute,
+  PortalOrdersRoute: PortalOrdersRoute,
+  PortalProductsRoute: PortalProductsRoute,
+  PortalRiderRoute: PortalRiderRoute,
+  PortalSettingsRoute: PortalSettingsRoute,
+  PortalStorefrontRoute: PortalStorefrontRoute,
+  PortalUsersRoute: PortalUsersRoute,
   ProductSlugRoute: ProductSlugRoute,
-  AdminIndexRoute: AdminIndexRoute,
+  PortalIndexRoute: PortalIndexRoute,
   ApiPublicWebhooksPaystackRoute: ApiPublicWebhooksPaystackRoute,
 }
 export const routeTree = rootRouteImport

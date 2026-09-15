@@ -82,7 +82,7 @@ export function ProductSlideshow({ products }: { products: Product[] }) {
     >
       {/* Category Pills & Quick Filter Bar */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar scroll-smooth">
-        <div className="flex items-center gap-1.5 shrink-0 bg-gradient-to-r from-amber-500/20 via-amber-400/10 to-amber-500/20 text-amber-400 px-4 py-1.5 rounded-full border border-amber-500/40 shadow-lg shadow-amber-500/10 animate-pulse">
+        <div className="flex items-center gap-1.5 shrink-0 bg-linear-to-r from-amber-500/20 via-amber-400/10 to-amber-500/20 text-amber-400 px-4 py-1.5 rounded-full border border-amber-500/40 shadow-lg shadow-amber-500/10 animate-pulse">
           <Flame className="h-4 w-4 fill-amber-400 text-amber-400" />
           <span className="text-xs font-extrabold uppercase tracking-widest">
             LIVE SHOWCASE SLIDESHOW
@@ -140,7 +140,7 @@ export function ProductSlideshow({ products }: { products: Product[] }) {
         {products.map((p, idx) => (
           <div
             key={p.id}
-            className={`w-[255px] sm:w-[285px] md:w-[305px] shrink-0 snap-start transition-all duration-500 hover:scale-103 ${
+            className={`w-63.75 sm:w-71.25 md:w-76.25 shrink-0 snap-start transition-all duration-500 hover:scale-103 ${
               activeIndex === idx ? "opacity-100 scale-102" : "opacity-90"
             }`}
           >

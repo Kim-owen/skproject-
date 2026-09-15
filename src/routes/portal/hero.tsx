@@ -22,6 +22,10 @@ import {
   RefreshCw,
   Eye,
   Sliders,
+  Trash2,
+  Ban,
+  X,
+  Plus,
 } from "lucide-react";
 import {
   getHeroSettings,
@@ -33,7 +37,7 @@ import {
 import { HeroMedia } from "@/components/shop/HeroMedia";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/admin/hero")({
+export const Route = createFileRoute("/portal/hero")({
   head: () => ({
     meta: [
       { title: "Admin — Hero Video & Media Settings" },
@@ -57,6 +61,7 @@ function AdminHeroSettings() {
   });
 
   const [form, setForm] = useState<HeroMediaSettings>(DEFAULT_HERO_SETTINGS);
+  const [presets, setPresets] = useState(PRO_VIDEO_PRESETS);
   const [uploading, setUploading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -97,21 +102,22 @@ function AdminHeroSettings() {
       const fileName = `hero_${field}_${Date.now()}.${fileExt}`;
       const filePath = `hero/${fileName}`;
 
-      // Upload to supabase storage bucket 'public' or 'hero-media'
-      const { error: uploadError } = await supabase.storage
+      // Upload to supabase storage bucket 'hero-media' with fallback to 'media'
+      let { error: uploadError } = await supabase.storage
         .from("hero-media")
         .upload(filePath, file, {
           upsert: true,
         });
 
       if (uploadError) {
-        // Fallback: create object URL if storage bucket doesn't exist yet
-        const localUrl = URL.createObjectURL(file);
-        handleFieldChange(field, localUrl);
-        toast.info("Media file selected locally", {
-          description:
-            "For permanent cloud hosting, ensure 'hero-media' bucket is configured in Supabase Storage.",
-        });
+        const { error: fallbackErr } = await supabase.storage
+          .from("media")
+          .upload(filePath, file, { upsert: true });
+        if (fallbackErr) throw fallbackErr;
+
+        const { data: publicUrlData } = supabase.storage.from("media").getPublicUrl(filePath);
+        handleFieldChange(field, publicUrlData.publicUrl);
+        toast.success("File uploaded to Supabase Storage!");
       } else {
         const { data: publicUrlData } = supabase.storage.from("hero-media").getPublicUrl(filePath);
         handleFieldChange(field, publicUrlData.publicUrl);
@@ -122,6 +128,16 @@ function AdminHeroSettings() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleClearHeroBg = () => {
+    setForm((p) => ({ ...p, video_url: "", poster_url: "" }));
+    toast.success("Hero background media cleared!");
+  };
+
+  const handleRemovePreset = (id: string) => {
+    setPresets((p) => p.filter((item) => item.id !== id));
+    toast.success("Preset removed from list");
   };
 
   if (guard !== "ok") {
@@ -225,46 +241,99 @@ function AdminHeroSettings() {
             {/* Video Presets Showcase */}
             {form.media_type === "video" && (
               <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-                <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2 mb-1">
-                  <Sparkles className="h-4 w-4 text-primary" /> Pro Video Presets
-                </h3>
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" /> Pro Video Presets & Backgrounds
+                  </h3>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearHeroBg}
+                    className="text-xs text-destructive hover:bg-destructive/10 h-7 rounded-lg"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" /> Clear Background
+                  </Button>
+                </div>
                 <p className="text-xs text-muted-foreground mb-4">
-                  Select a curated grocery/food video theme for instant application:
+                  Select a video theme, remove unwanted presets, or click "No Background" to clear:
                 </p>
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {PRO_VIDEO_PRESETS.map((preset) => {
+                  {/* Option: No Video / None */}
+                  <button
+                    type="button"
+                    onClick={handleClearHeroBg}
+                    className={`group relative overflow-hidden rounded-xl border text-left transition-all p-1.5 ${
+                      !form.video_url && !form.poster_url
+                        ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-md"
+                        : "border-dashed border-border hover:border-primary/50 bg-card/60"
+                    }`}
+                  >
+                    <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted/60 flex flex-col items-center justify-center text-muted-foreground">
+                      <Ban className="h-5 w-5 mb-1" />
+                      <span className="text-[10px] font-bold">No Background</span>
+                      {!form.video_url && !form.poster_url && (
+                        <div className="absolute inset-0 bg-primary/20 backdrop-blur-[1px] flex items-center justify-center">
+                          <CheckCircle2 className="h-5 w-5 text-white drop-shadow-md" />
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-1.5 text-[11px] font-semibold text-foreground truncate px-1">
+                      Clean Minimal (None)
+                    </p>
+                  </button>
+
+                  {/* Curated / Uploaded Presets */}
+                  {presets.map((preset) => {
                     const isSelected = form.video_url === preset.video_url;
                     return (
-                      <button
+                      <div
                         key={preset.id}
-                        type="button"
-                        onClick={() => {
-                          handleFieldChange("video_url", preset.video_url);
-                          handleFieldChange("poster_url", preset.poster_url);
-                        }}
                         className={`group relative overflow-hidden rounded-xl border text-left transition-all p-1.5 ${
                           isSelected
                             ? "border-primary bg-primary/5 ring-2 ring-primary/20 shadow-md"
                             : "border-border hover:border-primary/50 bg-card"
                         }`}
                       >
-                        <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-                          <img
-                            src={preset.poster_url}
-                            alt={preset.title}
-                            className="h-full w-full object-cover"
-                          />
-                          {isSelected && (
-                            <div className="absolute inset-0 bg-primary/20 backdrop-blur-[1px] flex items-center justify-center">
-                              <CheckCircle2 className="h-5 w-5 text-white drop-shadow-md" />
-                            </div>
-                          )}
-                        </div>
-                        <p className="mt-1.5 text-[11px] font-semibold text-foreground truncate px-1">
-                          {preset.title}
-                        </p>
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleFieldChange("video_url", preset.video_url);
+                            handleFieldChange("poster_url", preset.poster_url);
+                          }}
+                          className="w-full text-left"
+                        >
+                          <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
+                            <img
+                              src={preset.poster_url}
+                              alt={preset.title}
+                              className="h-full w-full object-cover"
+                            />
+                            {isSelected && (
+                              <div className="absolute inset-0 bg-primary/20 backdrop-blur-[1px] flex items-center justify-center">
+                                <CheckCircle2 className="h-5 w-5 text-white drop-shadow-md" />
+                              </div>
+                            )}
+                          </div>
+                          <p className="mt-1.5 text-[11px] font-semibold text-foreground truncate px-1">
+                            {preset.title}
+                          </p>
+                        </button>
+
+                        {/* Remove preset button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemovePreset(preset.id);
+                          }}
+                          className="absolute top-2 right-2 h-5 w-5 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
+                          title="Remove this preset option"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -273,15 +342,39 @@ function AdminHeroSettings() {
 
             {/* Media URLs & Uploads */}
             <div className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-4">
-              <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2">
-                <Sliders className="h-4 w-4 text-primary" /> Media Assets & File Sources
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2">
+                  <Sliders className="h-4 w-4 text-primary" /> Media Assets & File Sources
+                </h3>
+                {(form.video_url || form.poster_url) && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleClearHeroBg}
+                    className="text-xs text-destructive hover:bg-destructive/10 h-7 rounded-lg"
+                  >
+                    <Trash2 className="h-3.5 w-3.5 mr-1" /> Remove Both
+                  </Button>
+                )}
+              </div>
 
               {form.media_type === "video" && (
                 <div>
-                  <Label htmlFor="video_url" className="text-xs font-semibold text-foreground">
-                    Direct MP4 / Video Stream URL
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="video_url" className="text-xs font-semibold text-foreground">
+                      Direct MP4 / Video Stream URL
+                    </Label>
+                    {form.video_url && (
+                      <button
+                        type="button"
+                        onClick={() => handleFieldChange("video_url", "")}
+                        className="text-[11px] text-destructive hover:underline"
+                      >
+                        Remove video
+                      </button>
+                    )}
+                  </div>
                   <div className="mt-1.5 flex gap-2">
                     <Input
                       id="video_url"
@@ -305,7 +398,7 @@ function AdminHeroSettings() {
                         asChild
                       >
                         <span>
-                          <Upload className="h-4 w-4" /> {uploading ? "..." : "Upload"}
+                          <Upload className="h-4 w-4" /> {uploading ? "..." : "Upload Video"}
                         </span>
                       </Button>
                     </label>
@@ -314,9 +407,20 @@ function AdminHeroSettings() {
               )}
 
               <div>
-                <Label htmlFor="poster_url" className="text-xs font-semibold text-foreground">
-                  {form.media_type === "video" ? "Video Poster / Thumbnail URL" : "Hero Image URL"}
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="poster_url" className="text-xs font-semibold text-foreground">
+                    {form.media_type === "video" ? "Video Poster / Thumbnail URL" : "Hero Image URL"}
+                  </Label>
+                  {form.poster_url && (
+                    <button
+                      type="button"
+                      onClick={() => handleFieldChange("poster_url", "")}
+                      className="text-[11px] text-destructive hover:underline"
+                    >
+                      Remove poster image
+                    </button>
+                  )}
+                </div>
                 <div className="mt-1.5 flex gap-2">
                   <Input
                     id="poster_url"
@@ -340,7 +444,7 @@ function AdminHeroSettings() {
                       asChild
                     >
                       <span>
-                        <Upload className="h-4 w-4" /> {uploading ? "..." : "Upload"}
+                        <Upload className="h-4 w-4" /> {uploading ? "..." : "Upload Image"}
                       </span>
                     </Button>
                   </label>

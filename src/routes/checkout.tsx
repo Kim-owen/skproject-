@@ -59,7 +59,7 @@ function Checkout() {
   const [gpsCoordinates, setGpsCoordinates] = useState("");
   const [locating, setLocating] = useState(false);
   const [notes, setNotes] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "cash_on_delivery" | "wallet">(
+  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "wallet">(
     "paystack",
   );
   const [submitting, setSubmitting] = useState(false);
@@ -205,6 +205,7 @@ function Checkout() {
           gps_coordinates:
             deliveryType === "delivery" && gpsCoordinates ? gpsCoordinates : undefined,
           payment_method: paymentMethod,
+          callback_url: window.location.origin + "/order",
           notes: notes || undefined,
           scheduled_delivery_date: orderScheduleType === "schedule" ? scheduledDate : undefined,
           is_subscription: orderScheduleType === "subscription",
@@ -238,7 +239,7 @@ function Checkout() {
         <div className="space-y-6">
           {/* Account Auth & Wallet Status Callout */}
           {!authUser ? (
-            <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-500/20 via-zinc-900 to-black p-5 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="rounded-2xl border border-amber-500/40 bg-linear-to-r from-amber-500/20 via-zinc-900 to-black p-5 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500 text-black shrink-0 font-extrabold shadow-md">
                   🔐
@@ -268,7 +269,7 @@ function Checkout() {
               </div>
             </div>
           ) : (
-            <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/40 via-zinc-900 to-black p-4 text-white shadow-md flex items-center justify-between gap-3">
+            <div className="rounded-2xl border border-emerald-500/30 bg-linear-to-r from-emerald-950/40 via-zinc-900 to-black p-4 text-white shadow-md flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
                   💳
@@ -352,7 +353,7 @@ function Checkout() {
               }}
               className="mt-4 grid gap-3 sm:grid-cols-3"
             >
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10 transition-all">
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-data-[state=checked]:border-amber-500 has-data-[state=checked]:bg-amber-500/10 transition-all">
                 <RadioGroupItem value="uber" className="mt-1" />
                 <div>
                   <div className="flex items-center gap-1.5 font-bold text-foreground">
@@ -364,7 +365,7 @@ function Checkout() {
                 </div>
               </label>
 
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10 transition-all">
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-data-[state=checked]:border-amber-500 has-data-[state=checked]:bg-amber-500/10 transition-all">
                 <RadioGroupItem value="in_house" className="mt-1" />
                 <div>
                   <div className="flex items-center gap-1.5 font-bold text-foreground">
@@ -376,7 +377,7 @@ function Checkout() {
                 </div>
               </label>
 
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10 transition-all">
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-data-[state=checked]:border-amber-500 has-data-[state=checked]:bg-amber-500/10 transition-all">
                 <RadioGroupItem value="pickup" className="mt-1" />
                 <div>
                   <div className="flex items-center gap-1.5 font-bold text-foreground">
@@ -470,7 +471,7 @@ function Checkout() {
 
                 {/* Dynamic Uber Pricing Estimate Badge */}
                 {dispatchPartner === "uber" && (
-                  <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-zinc-950 via-zinc-900 to-black p-4 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="rounded-2xl border border-amber-500/30 bg-linear-to-r from-zinc-950 via-zinc-900 to-black p-4 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
                         <Navigation className="h-5 w-5" />
@@ -516,7 +517,7 @@ function Checkout() {
           </section>
 
           {/* Schedule & Recurring Meal Subscriptions */}
-          <section className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/5 via-zinc-950 to-card p-5 space-y-4 shadow-lg">
+          <section className="rounded-2xl border border-amber-500/30 bg-linear-to-r from-amber-500/5 via-zinc-950 to-card p-5 space-y-4 shadow-lg">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 font-bold border border-amber-500/30 shrink-0">
                 📅
@@ -537,7 +538,7 @@ function Checkout() {
               onValueChange={(v) => setOrderScheduleType(v as "now" | "schedule" | "subscription")}
               className="grid gap-3 sm:grid-cols-3"
             >
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/15 transition-all">
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 has-data-[state=checked]:border-amber-500 has-data-[state=checked]:bg-amber-500/15 transition-all">
                 <RadioGroupItem value="now" className="mt-1" />
                 <div>
                   <span className="font-extrabold text-xs text-foreground block">
@@ -549,7 +550,7 @@ function Checkout() {
                 </div>
               </label>
 
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/15 transition-all">
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 has-data-[state=checked]:border-amber-500 has-data-[state=checked]:bg-amber-500/15 transition-all">
                 <RadioGroupItem value="schedule" className="mt-1" />
                 <div>
                   <span className="font-extrabold text-xs text-foreground block">
@@ -561,7 +562,7 @@ function Checkout() {
                 </div>
               </label>
 
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/15 transition-all">
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 has-data-[state=checked]:border-amber-500 has-data-[state=checked]:bg-amber-500/15 transition-all">
                 <RadioGroupItem value="subscription" className="mt-1" />
                 <div>
                   <span className="font-extrabold text-xs text-amber-400 block">
@@ -729,34 +730,40 @@ function Checkout() {
             <RadioGroup
               value={paymentMethod}
               onValueChange={(v) =>
-                setPaymentMethod(v as "paystack" | "cash_on_delivery" | "wallet")
+                setPaymentMethod(v as "paystack" | "wallet")
               }
-              className="mt-4 grid gap-3 sm:grid-cols-3"
+              className="mt-4 grid gap-3 sm:grid-cols-2"
             >
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10 transition-all">
+              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-data-[state=checked]:border-amber-500 has-data-[state=checked]:bg-amber-500/10 has-data-[state=checked]:shadow-sm transition-all">
                 <RadioGroupItem value="paystack" className="mt-1" />
-                <div>
-                  <span className="block font-bold text-foreground">Pay online</span>
+                <div className="w-full">
+                  <div className="flex items-center justify-between">
+                    <span className="block font-bold text-foreground">Pay online</span>
+                    <span className="rounded bg-amber-500/20 text-amber-400 font-extrabold text-[10px] px-1.5 py-0.5 border border-amber-500/30">
+                      INSTANT
+                    </span>
+                  </div>
                   <span className="block text-xs text-muted-foreground mt-0.5">
-                    Mobile Money · Visa / Card
+                    Mobile Money & Cards
                   </span>
-                </div>
-              </label>
-
-              <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10 transition-all">
-                <RadioGroupItem value="cash_on_delivery" className="mt-1" />
-                <div>
-                  <span className="block font-bold text-foreground">Cash on delivery</span>
-                  <span className="block text-xs text-muted-foreground mt-0.5">
-                    Pay cash to driver
-                  </span>
+                  <div className="mt-2.5 flex flex-wrap items-center gap-1 text-[10px] font-bold">
+                    <span className="rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 px-1.5 py-0.5">
+                      MTN MoMo
+                    </span>
+                    <span className="rounded bg-red-500/20 text-red-300 border border-red-500/40 px-1.5 py-0.5">
+                      Telecel
+                    </span>
+                    <span className="rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 px-1.5 py-0.5">
+                      Visa / MC
+                    </span>
+                  </div>
                 </div>
               </label>
 
               <label
                 className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
                   walletBalance >= total
-                    ? "has-[[data-state=checked]]:border-amber-500 has-[[data-state=checked]]:bg-amber-500/10"
+                    ? "has-data-[state=checked]:border-amber-500 has-data-[state=checked]:bg-amber-500/10"
                     : "opacity-60 bg-muted/30"
                 }`}
               >

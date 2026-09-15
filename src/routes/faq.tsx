@@ -30,7 +30,7 @@ const FAQS = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "We accept MTN Mobile Money, Telecel Cash, AT Money, Bank Cards (Visa/Mastercard via Paystack), and Cash on Delivery in Accra.",
+    a: "We accept MTN Mobile Money, Telecel Cash, AT Money, Bank Cards (Visa/Mastercard via Paystack), and Barima Ba Wallet.",
   },
 ];
 

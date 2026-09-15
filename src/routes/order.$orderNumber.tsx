@@ -1,7 +1,13 @@
+import { useState, useEffect, useRef } from "react";
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { getOrderByNumber } from "@/lib/orders.functions";
+import { toast } from "sonner";
+import {
+  getOrderByNumber,
+  verifyPaystackPayment,
+  initiatePaystackPayment,
+} from "@/lib/orders.functions";
 import { ShopLayout } from "@/components/shop/Layout";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +21,10 @@ import {
   MapPin,
   ChefHat,
   Sparkles,
+  CreditCard,
+  ShieldCheck,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { formatGHS } from "@/lib/cart";
 
@@ -29,7 +39,22 @@ const orderQuery = (
   refetchInterval: 10_000,
 });
 
+interface OrderPageSearch {
+  reference?: string;
+  trxref?: string;
+  from_paystack?: boolean;
+}
+
 export const Route = createFileRoute("/order/$orderNumber")({
+  validateSearch: (search: Record<string, unknown>): OrderPageSearch => ({
+    reference:
+      typeof search.reference === "string"
+        ? search.reference
+        : typeof search.trxref === "string"
+          ? search.trxref
+          : undefined,
+    from_paystack: search.from_paystack ? true : undefined,
+  }),
   head: ({ params }) => ({
     meta: [
       { title: `Order ${params.orderNumber} — Barima Ba Foods` },
@@ -53,9 +78,62 @@ const STATUS_STEPS = [
 
 function OrderPage() {
   const { orderNumber } = Route.useParams();
+  const { reference } = Route.useSearch();
+  const queryClient = useQueryClient();
   const fetcher = useServerFn(getOrderByNumber);
+  const verifyFn = useServerFn(verifyPaystackPayment);
+  const payFn = useServerFn(initiatePaystackPayment);
+
   const { data: order } = useSuspenseQuery(orderQuery(fetcher, orderNumber));
   if (!order) throw notFound();
+
+  const [verifying, setVerifying] = useState(false);
+  const [paying, setPaying] = useState(false);
+  const verifiedRef = useRef(false);
+
+  useEffect(() => {
+    if (reference && order && order.payment_status !== "paid" && !verifiedRef.current) {
+      verifiedRef.current = true;
+      setVerifying(true);
+      verifyFn({ data: { reference, order_number: order.order_number } })
+        .then((res) => {
+          if (res.success) {
+            toast.success(res.message || "Payment verified! Thank you.");
+            queryClient.invalidateQueries({ queryKey: ["order", orderNumber] });
+          } else {
+            toast.warning(res.message || "Payment could not be verified automatically.");
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+          toast.error(err instanceof Error ? err.message : "Failed to verify payment with Paystack");
+        })
+        .finally(() => {
+          setVerifying(false);
+        });
+    }
+  }, [reference, order?.payment_status, order?.order_number, verifyFn, queryClient, orderNumber]);
+
+  const handlePayNow = async () => {
+    setPaying(true);
+    try {
+      const res = await payFn({
+        data: {
+          order_number: order.order_number,
+          callback_url: window.location.origin + "/order",
+        },
+      });
+      if (res.authorization_url) {
+        window.location.href = res.authorization_url;
+      } else {
+        toast.error("Could not obtain Paystack checkout link");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to initialize Paystack checkout");
+    } finally {
+      setPaying(false);
+    }
+  };
 
   const currentStep = STATUS_STEPS.findIndex((s) => s.key === order.status);
   const isUber = order.dispatch_partner === "uber";
@@ -75,8 +153,21 @@ function OrderPage() {
   return (
     <ShopLayout>
       <div className="mx-auto max-w-3xl px-4 py-10 space-y-6">
+        {/* Verification in Progress Alert */}
+        {verifying && (
+          <div className="flex items-center gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/15 p-4 text-amber-300 shadow-lg">
+            <Loader2 className="h-5 w-5 animate-spin shrink-0 text-amber-400" />
+            <div>
+              <p className="font-bold text-sm">Verifying Paystack Payment...</p>
+              <p className="text-xs text-amber-200/80">
+                Please hold on while we confirm transaction {reference} with your network/bank.
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Top Celebration Card */}
-        <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-zinc-950 via-zinc-900 to-black p-6 sm:p-8 text-center shadow-2xl relative overflow-hidden text-white">
+        <div className="rounded-3xl border border-amber-500/30 bg-linear-to-br from-zinc-950 via-zinc-900 to-black p-6 sm:p-8 text-center shadow-2xl relative overflow-hidden text-white">
           <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
             <Sparkles className="h-40 w-40 text-amber-400" />
           </div>
@@ -102,10 +193,10 @@ function OrderPage() {
               }`}
             >
               {order.payment_status === "paid"
-                ? "✓ Paid Online"
+                ? "✓ Paid via Paystack"
                 : order.payment_method === "cash_on_delivery"
                   ? "Cash on Delivery"
-                  : "Payment Pending"}
+                  : "Payment Pending (Paystack)"}
             </span>
 
             <span className="px-3 py-1 rounded-full bg-zinc-800 text-zinc-200 border border-zinc-700 font-bold">
@@ -126,6 +217,67 @@ function OrderPage() {
             </a>
           </div>
         </div>
+
+        {/* Paystack Online Payment CTA (If Unpaid) */}
+        {order.payment_status !== "paid" && order.payment_method === "paystack" && (
+          <div className="rounded-3xl border border-amber-500/50 bg-linear-to-b from-zinc-900 to-zinc-950 p-6 shadow-2xl text-white space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 shrink-0">
+                  <CreditCard className="h-6 w-6" />
+                </div>
+                <div>
+                  <h2 className="font-display text-base sm:text-lg font-bold text-white">
+                    Complete Online Payment
+                  </h2>
+                  <p className="text-xs text-zinc-400">
+                    Pay securely using MTN Mobile Money, Telecel Cash, or Visa / Mastercard
+                  </p>
+                </div>
+              </div>
+              <div className="sm:text-right">
+                <div className="text-[11px] text-zinc-400 uppercase font-semibold">Total Amount</div>
+                <div className="text-xl font-mono font-extrabold text-amber-400">
+                  {formatGHS(Number(order.total_ghs))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
+              <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-bold w-full sm:w-auto">
+                <span className="rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 px-2 py-1">
+                  MTN MoMo
+                </span>
+                <span className="rounded bg-red-500/20 text-red-300 border border-red-500/40 px-2 py-1">
+                  Telecel Cash
+                </span>
+                <span className="rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 px-2 py-1">
+                  Visa / MC
+                </span>
+                <span className="flex items-center gap-1 text-zinc-400 text-xs ml-1">
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                  Secured by Paystack
+                </span>
+              </div>
+
+              <Button
+                onClick={handlePayNow}
+                disabled={paying}
+                size="lg"
+                className="w-full sm:w-auto bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-lg shadow-amber-500/20 px-8"
+              >
+                {paying ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Opening Paystack…
+                  </>
+                ) : (
+                  <>Pay {formatGHS(Number(order.total_ghs))} Now</>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Uber Courier & Dispatch Card (If Assigned) */}
         {(order.rider_name || order.status === "out_for_delivery" || isUber) && (
@@ -185,7 +337,7 @@ function OrderPage() {
               {order.rider_phone && (
                 <a
                   href={`tel:${order.rider_phone}`}
-                  className="flex-1 min-w-[130px] flex items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-600 px-4 py-3 text-xs font-extrabold text-black transition-all shadow-lg shadow-amber-500/20"
+                  className="flex-1 min-w-32.5 flex items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-600 px-4 py-3 text-xs font-extrabold text-black transition-all shadow-lg shadow-amber-500/20"
                 >
                   <Phone className="h-4 w-4 fill-black" />
                   <span>Call Rider</span>
@@ -197,7 +349,7 @@ function OrderPage() {
                   href={`https://wa.me/${getPhoneClean(order.rider_phone)}?text=Hello%20${encodeURIComponent(order.rider_name || "Rider")},%20I%20am%20tracking%20Barima%20Ba%20Foods%20Order%20${order.order_number}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex-1 min-w-[130px] flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 px-4 py-3 text-xs font-extrabold text-emerald-400 transition-all"
+                  className="flex-1 min-w-32.5 flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 px-4 py-3 text-xs font-extrabold text-emerald-400 transition-all"
                 >
                   <MessageSquare className="h-4 w-4" />
                   <span>WhatsApp</span>

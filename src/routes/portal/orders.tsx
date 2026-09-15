@@ -32,6 +32,7 @@ import {
   Truck,
   Phone,
   Navigation,
+  MessageSquare,
 } from "lucide-react";
 
 const STATUSES = [
@@ -43,7 +44,26 @@ const STATUSES = [
   "cancelled",
 ] as const;
 
-export const Route = createFileRoute("/admin/orders")({
+function getStatusBadge(status: string) {
+  switch (status) {
+    case "pending":
+      return "bg-amber-500/10 text-amber-600 border border-amber-500/20";
+    case "confirmed":
+      return "bg-blue-500/10 text-blue-600 border border-blue-500/20";
+    case "packed":
+      return "bg-purple-500/10 text-purple-600 border border-purple-500/20";
+    case "out_for_delivery":
+      return "bg-indigo-500/10 text-indigo-600 border border-indigo-500/20";
+    case "delivered":
+      return "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20";
+    case "cancelled":
+      return "bg-rose-500/10 text-rose-600 border border-rose-500/20";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+}
+
+export const Route = createFileRoute("/portal/orders")({
   head: () => ({ meta: [{ title: "Admin — Orders" }, { name: "robots", content: "noindex" }] }),
   component: AdminOrdersPage,
 });
@@ -182,8 +202,8 @@ function AdminOrdersPage() {
 
         {/* Filter and Search Bar */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          {/* Tabs */}
-          <div className="flex flex-wrap gap-1.5 border-b pb-1">
+          {/* Tabs - Scrollable on mobile */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 max-w-full -mx-1 px-1">
             {(["all", ...STATUSES] as const).map((tab) => {
               const count = orders
                 ? orders.filter((o) => tab === "all" || o.status === tab).length
@@ -217,8 +237,150 @@ function AdminOrdersPage() {
           </div>
         </div>
 
-        {/* Table View */}
-        <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
+        {/* Mobile View: Cards */}
+        <div className="space-y-3 md:hidden">
+          {isLoading ? (
+            [1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse rounded-2xl border border-border bg-card p-4 space-y-3">
+                <div className="h-4 w-1/3 bg-muted rounded" />
+                <div className="h-4 w-2/3 bg-muted rounded" />
+                <div className="h-8 w-full bg-muted rounded" />
+              </div>
+            ))
+          ) : filteredOrders.length === 0 ? (
+            <div className="rounded-2xl border border-border bg-card p-8 text-center">
+              <ShoppingBag className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+              <h4 className="font-bold text-sm text-foreground">No orders found</h4>
+              <p className="text-xs text-muted-foreground mt-1">Try adjusting your query or status filter.</p>
+            </div>
+          ) : (
+            filteredOrders.map((o) => (
+              <div
+                key={o.id}
+                className="rounded-2xl border border-border bg-card p-4 shadow-sm space-y-3 transition-all hover:border-amber-500/40"
+              >
+                {/* Header: Number, Date, Price */}
+                <div className="flex items-start justify-between gap-2 border-b border-border/60 pb-2.5">
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <Tag className="h-3.5 w-3.5 text-amber-500" />
+                      <span className="font-mono text-xs font-bold text-foreground">{o.order_number}</span>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">
+                      {new Date(o.created_at).toLocaleDateString([], {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="font-mono text-sm font-extrabold text-foreground">
+                      {formatGHS(Number(o.total_ghs))}
+                    </div>
+                    <span
+                      className={`inline-block mt-0.5 rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${getPaymentBadge(o.payment_status)}`}
+                    >
+                      {o.payment_status}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Customer & Contact */}
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{o.customer_name}</span>
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">
+                      {o.delivery_type === "delivery" ? "Doorstep Delivery" : "Branch Pickup"} · {o.payment_method.replace(/_/g, " ")}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    {o.customer_phone && (
+                      <>
+                        <a
+                          href={`tel:${o.customer_phone.replace(/\s+/g, "")}`}
+                          className="h-8 w-8 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/30 flex items-center justify-center hover:bg-amber-500 hover:text-black transition-colors"
+                          title="Call Customer"
+                        >
+                          <Phone className="h-3.5 w-3.5" />
+                        </a>
+                        <a
+                          href={`https://wa.me/${o.customer_phone.replace(/\D/g, "")}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="h-8 w-8 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 flex items-center justify-center hover:bg-emerald-500 hover:text-black transition-colors"
+                          title="WhatsApp Customer"
+                        >
+                          <MessageSquare className="h-3.5 w-3.5" />
+                        </a>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Status Dropdown */}
+                <div className="pt-1">
+                  <Select
+                    value={o.status}
+                    onValueChange={async (v) => {
+                      try {
+                        await update({
+                          data: { order_id: o.id, status: v as (typeof STATUSES)[number] },
+                        });
+                        toast.success("Status updated");
+                        qc.invalidateQueries({ queryKey: ["admin-orders"] });
+                        qc.invalidateQueries({ queryKey: ["admin-stats"] });
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : "Failed to update status");
+                      }
+                    }}
+                  >
+                    <SelectTrigger className={`w-full h-9 rounded-xl text-xs font-bold capitalize ${getStatusBadge(o.status)}`}>
+                      <SelectValue placeholder="Update status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {STATUSES.map((s) => (
+                        <SelectItem key={s} value={s} className="capitalize text-xs font-medium">
+                          {s.replace(/_/g, " ")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/50">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openDispatchModal(o)}
+                    className="flex-1 h-8 rounded-xl border-amber-500/40 bg-amber-500/10 text-amber-500 font-bold text-xs gap-1.5"
+                  >
+                    <Truck className="h-3.5 w-3.5" />
+                    <span>{o.rider_name ? "Update Rider" : "Assign Dispatch"}</span>
+                  </Button>
+
+                  <Button asChild variant="outline" size="sm" className="h-8 rounded-xl text-xs px-3">
+                    <Link to="/order/$orderNumber" params={{ orderNumber: o.order_number }}>
+                      <Eye className="mr-1 h-3.5 w-3.5" />
+                      <span>Details</span>
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted/50 border-b border-border/80 text-left text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -304,7 +466,6 @@ function AdminOrdersPage() {
                           <Select
                             value={o.status}
                             onValueChange={async (v) => {
-                              const originalStatus = o.status;
                               try {
                                 await update({
                                   data: { order_id: o.id, status: v as (typeof STATUSES)[number] },
@@ -320,16 +481,16 @@ function AdminOrdersPage() {
                             }}
                           >
                             <SelectTrigger
-                              className={`h-8.5 w-38 rounded-xl font-semibold border ${getStatusColor(o.status)}`}
+                              className={`w-40 rounded-xl text-xs font-bold capitalize border-0 shadow-xs ${getStatusBadge(o.status)}`}
                             >
-                              <SelectValue />
+                              <SelectValue placeholder="Status" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-xl border-border bg-card">
+                            <SelectContent className="rounded-xl border-border">
                               {STATUSES.map((s) => (
                                 <SelectItem
                                   key={s}
                                   value={s}
-                                  className="capitalize text-xs font-semibold tracking-wide"
+                                  className="text-xs font-medium capitalize"
                                 >
                                   {s.replace(/_/g, " ")}
                                 </SelectItem>

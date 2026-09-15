@@ -32,7 +32,7 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-amber-500/20 bg-card/80 backdrop-blur-xl p-4 shadow-lg transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:border-amber-400/60 hover:shadow-2xl hover:shadow-amber-500/20">
       {/* Ambient Glow Aura Behind Card on Hover */}
-      <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-500/0 via-amber-400/10 to-amber-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl pointer-events-none" />
+      <div className="absolute -inset-1 rounded-3xl bg-linear-to-r from-amber-500/0 via-amber-400/10 to-amber-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl pointer-events-none" />
 
       {/* Image Container with Zoom & Shimmer Glow */}
       <Link
@@ -40,7 +40,7 @@ export function ProductCard({ product }: { product: Product }) {
         params={{ slug: product.slug }}
         className="relative block aspect-square overflow-hidden rounded-2xl bg-zinc-950/80 border border-amber-500/20 group/img"
       >
-        <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/10 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
+        <div className="absolute inset-0 bg-linear-to-tr from-amber-500/10 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
         <img
           src={displayImage}
           alt={product.name}
@@ -60,7 +60,7 @@ export function ProductCard({ product }: { product: Product }) {
         <Link
           to="/product/$slug"
           params={{ slug: product.slug }}
-          className="line-clamp-2 font-display text-sm font-extrabold tracking-tight text-foreground hover:text-amber-400 transition-colors min-h-[2.5rem] leading-snug"
+          className="line-clamp-2 font-display text-sm font-extrabold tracking-tight text-foreground hover:text-amber-400 transition-colors min-h-10 leading-snug"
         >
           {product.name}
         </Link>
@@ -76,7 +76,7 @@ export function ProductCard({ product }: { product: Product }) {
           <Button
             size="sm"
             variant="outline"
-            className="group/btn w-full rounded-2xl border-amber-500/30 bg-background/80 hover:bg-gradient-to-r hover:from-amber-500 hover:via-amber-400 hover:to-amber-500 hover:text-black hover:border-amber-400 text-xs font-extrabold tracking-wider transition-all duration-300 shadow-md active:scale-95 hover:shadow-lg hover:shadow-amber-500/25"
+            className="group/btn w-full rounded-2xl border-amber-500/30 bg-background/80 hover:bg-linear-to-r hover:from-amber-500 hover:via-amber-400 hover:to-amber-500 hover:text-black hover:border-amber-400 text-xs font-extrabold tracking-wider transition-all duration-300 shadow-md active:scale-95 hover:shadow-lg hover:shadow-amber-500/25"
             disabled={outOfStock}
             onClick={() => {
               add({

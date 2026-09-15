@@ -122,7 +122,7 @@ function AuthPage() {
         _role: "admin",
       });
       if (isAdmin) {
-        navigate({ to: "/admin" });
+        navigate({ to: "/portal" });
         return;
       }
     }
@@ -167,6 +167,15 @@ function AuthPage() {
       if (error.message.includes("User already registered")) {
         setAuthError("An account with this email or phone already exists. Please click Sign In.");
         setActiveTab("signin");
+      } else if (
+        error.name === "AuthWeakPasswordError" ||
+        error.message.toLowerCase().includes("password should contain") ||
+        error.message.toLowerCase().includes("weak password")
+      ) {
+        setAuthError(
+          "Password is too weak. Please ensure your password includes uppercase & lowercase letters, numbers, and symbols (e.g. BarimaBa2026!), or relax password rules in your Supabase project settings."
+        );
+        return toast.error("Password is too weak. See requirements below.");
       } else {
         setAuthError(error.message);
       }
@@ -287,7 +296,15 @@ function AuthPage() {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setBusy(false);
     if (error) {
-      toast.error(error.message);
+      if (
+        error.name === "AuthWeakPasswordError" ||
+        error.message.toLowerCase().includes("password should contain") ||
+        error.message.toLowerCase().includes("weak password")
+      ) {
+        toast.error("Password is too weak. Please use uppercase, lowercase, numbers, and symbols.");
+      } else {
+        toast.error(error.message);
+      }
     } else {
       toast.success("Password updated successfully! Please sign in with your new password.");
       setIsRecoveryMode(false);
@@ -321,7 +338,7 @@ function AuthPage() {
       if (res.data.session) {
         toast.success("Demo Admin created & signed in!");
         setBusy(false);
-        return navigate({ to: "/admin" });
+        return navigate({ to: "/portal" });
       }
       // Re-try signin
       const res2 = await supabase.auth.signInWithPassword({
@@ -338,7 +355,7 @@ function AuthPage() {
       setAuthError(error.message);
     } else {
       toast.success("Logged in as Demo Store Manager!");
-      navigate({ to: "/admin" });
+      navigate({ to: "/portal" });
     }
   };
 
@@ -346,12 +363,12 @@ function AuthPage() {
     <ShopLayout>
       <div className="relative min-h-[85vh] flex items-center justify-center px-4 py-12 md:py-20 overflow-hidden font-sans">
         {/* Ambient Background Glows */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[350px] w-[350px] rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-10 right-10 h-[250px] w-[250px] rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 h-87.5 w-87.5 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-10 right-10 h-62.5 w-62.5 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
 
         <div className="w-full max-w-md space-y-6 z-10">
           {sessionUser ? (
-            <div className="rounded-3xl border border-amber-500/40 bg-gradient-to-b from-zinc-900/90 via-black to-zinc-950 p-8 shadow-2xl backdrop-blur-xl space-y-6">
+            <div className="rounded-3xl border border-amber-500/40 bg-linear-to-b from-zinc-900/90 via-black to-zinc-950 p-8 shadow-2xl backdrop-blur-xl space-y-6">
               {/* Signed In Header */}
               <div className="flex flex-col items-center text-center space-y-3">
                 <div className="relative">
@@ -379,7 +396,7 @@ function AuthPage() {
               </div>
 
               {/* Profile Details & Wallet Summary Card */}
-              <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/10 via-zinc-900 to-black p-4 space-y-3">
+              <div className="rounded-2xl border border-amber-500/30 bg-linear-to-r from-amber-500/10 via-zinc-900 to-black p-4 space-y-3">
                 <div className="flex items-center justify-between text-xs border-b border-zinc-800 pb-2">
                   <span className="text-zinc-400 font-medium">Mobile Phone:</span>
                   <span className="font-bold font-mono text-amber-400">
@@ -423,7 +440,7 @@ function AuthPage() {
                     size="lg"
                     className="w-full rounded-2xl border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 font-extrabold text-xs py-5"
                   >
-                    <Link to="/admin">Open Store Admin Panel</Link>
+                    <Link to="/portal">Open Store Manager Portal</Link>
                   </Button>
                 )}
               </div>
@@ -451,7 +468,7 @@ function AuthPage() {
                 <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">
                   Barima Ba Account
                 </h1>
-                <p className="text-xs text-muted-foreground max-w-[280px]">
+                <p className="text-xs text-muted-foreground max-w-70">
                   Sign in or register to manage orders, track deliveries, and access admin controls.
                 </p>
               </div>
