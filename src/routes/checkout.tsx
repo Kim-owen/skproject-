@@ -25,19 +25,29 @@ import { MapPin, Compass, Navigation, ExternalLink, Calculator, Sparkles } from 
 const zonesQuery = {
   queryKey: ["zones"],
   queryFn: async () => {
-    const { data, error } = await supabase
-      .from("delivery_zones")
-      .select("id, name, fee_ghs")
-      .eq("is_active", true)
-      .order("name");
-    if (error) throw error;
-    return data ?? [];
+    try {
+      const { data, error } = await supabase
+        .from("delivery_zones")
+        .select("id, name, fee_ghs")
+        .eq("is_active", true)
+        .order("name");
+      if (error) {
+        console.warn("Delivery zones fetch issue:", error.message);
+        return [];
+      }
+      return data ?? [];
+    } catch (err) {
+      console.warn("Delivery zones fetch exception:", err);
+      return [];
+    }
   },
+  staleTime: 60_000,
 };
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Provision Shop" }] }),
   loader: ({ context }) => context.queryClient.ensureQueryData(zonesQuery),
+  pendingMs: 0,
   component: Checkout,
 });
 
