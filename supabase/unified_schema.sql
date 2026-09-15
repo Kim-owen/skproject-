@@ -61,7 +61,7 @@ RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
   assigned_role text := 'customer';
 BEGIN
-  IF NEW.email = 'sunumanfred14@gmail.com' THEN
+  IF NEW.email = 'admin@barimaba.com' THEN
     assigned_role := 'admin';
   END IF;
 
@@ -70,7 +70,7 @@ BEGIN
     NEW.id, 
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''), 
     COALESCE(NEW.raw_user_meta_data->>'phone', ''),
-    (NEW.email = 'sunumanfred14@gmail.com')
+    (NEW.email = 'admin@barimaba.com')
   )
   ON CONFLICT (id) DO UPDATE SET
     full_name = EXCLUDED.full_name,
