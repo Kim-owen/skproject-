@@ -81,7 +81,7 @@ function Checkout() {
             "wallet_balance_ghs, phone, full_name, delivery_address, ghana_post_gps, gps_coordinates",
           )
           .eq("id", data.user.id)
-          .single()
+          .maybeSingle()
           .then(({ data: profile }) => {
             if (profile) {
               setWalletBalance(Number(profile.wallet_balance_ghs || 0));

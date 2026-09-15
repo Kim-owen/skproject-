@@ -69,7 +69,7 @@ function AuthPage() {
           .from("profiles")
           .select("full_name, phone, wallet_balance_ghs")
           .eq("id", data.user.id)
-          .single()
+          .maybeSingle()
           .then(({ data: prof }) => {
             if (prof) setUserProfile(prof);
           });
