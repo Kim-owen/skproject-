@@ -193,10 +193,8 @@ function OrderPage() {
               }`}
             >
               {order.payment_status === "paid"
-                ? "✓ Paid via Paystack"
-                : order.payment_method === "cash_on_delivery"
-                  ? "Cash on Delivery"
-                  : "Payment Pending (Paystack)"}
+                ? "✓ Paid"
+                : "Payment Pending"}
             </span>
 
             <span className="px-3 py-1 rounded-full bg-zinc-800 text-zinc-200 border border-zinc-700 font-bold">
