@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { ShopLayout } from "@/components/shop/Layout";
@@ -46,13 +46,11 @@ const zonesQuery = {
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Provision Shop" }] }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(zonesQuery),
-  pendingMs: 0,
   component: Checkout,
 });
 
 function Checkout() {
-  const { data: zones } = useSuspenseQuery(zonesQuery);
+  const { data: zones = [] } = useQuery(zonesQuery);
   const { items, subtotal, clear, count } = useCart();
   const navigate = useNavigate();
   const create = useServerFn(createOrder);
