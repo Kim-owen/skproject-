@@ -13,7 +13,7 @@ const createOrderInput = z.object({
   delivery_type: z.enum(["delivery", "pickup"]),
   dispatch_partner: z.enum(["uber", "in_house", "pickup"]).optional(),
   delivery_address: z.string().trim().max(500).optional().or(z.literal("")),
-  delivery_zone_id: z.string().uuid().optional().nullable(),
+  delivery_zone_id: z.string().uuid().optional().nullable().or(z.literal("")),
   ghana_post_gps: z.string().trim().max(15).optional().or(z.literal("")),
   gps_coordinates: z.string().trim().max(60).optional().or(z.literal("")),
   payment_method: z.enum(["paystack", "wallet"]),

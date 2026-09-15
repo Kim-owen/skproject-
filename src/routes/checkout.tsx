@@ -210,7 +210,7 @@ function Checkout() {
           delivery_type: deliveryType,
           dispatch_partner: deliveryType === "pickup" ? "pickup" : dispatchPartner,
           delivery_address: deliveryType === "delivery" ? address : undefined,
-          delivery_zone_id: deliveryType === "delivery" ? zoneId : undefined,
+          delivery_zone_id: deliveryType === "delivery" && zoneId ? zoneId : undefined,
           ghana_post_gps: deliveryType === "delivery" && ghanaPostGps ? ghanaPostGps : undefined,
           gps_coordinates:
             deliveryType === "delivery" && gpsCoordinates ? gpsCoordinates : undefined,
