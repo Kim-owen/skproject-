@@ -77,21 +77,23 @@ function Checkout() {
         // Fetch wallet balance and saved location profile
         supabase
           .from("profiles")
-          .select(
-            "wallet_balance_ghs, phone, full_name, delivery_address, ghana_post_gps, gps_coordinates",
-          )
+          .select("*")
           .eq("id", data.user.id)
           .maybeSingle()
-          .then(({ data: profile }) => {
+          .then(({ data: profile, error }) => {
+            if (error) {
+              console.warn("Profile fetch issue:", error.message);
+              return;
+            }
             if (profile) {
-              setWalletBalance(Number(profile.wallet_balance_ghs || 0));
-              if (profile.phone) setPhone(profile.phone);
-              if (profile.full_name && !name) setName(profile.full_name);
-              if (profile.delivery_address) setAddress(profile.delivery_address);
-              if (profile.ghana_post_gps) setGhanaPostGps(profile.ghana_post_gps);
-              if (profile.gps_coordinates) {
-                setGpsCoordinates(profile.gps_coordinates);
-                fetchUberQuote(profile.gps_coordinates);
+              setWalletBalance(Number((profile as any).wallet_balance_ghs || 0));
+              if ((profile as any).phone) setPhone((profile as any).phone);
+              if ((profile as any).full_name && !name) setName((profile as any).full_name);
+              if ((profile as any).delivery_address) setAddress((profile as any).delivery_address);
+              if ((profile as any).ghana_post_gps) setGhanaPostGps((profile as any).ghana_post_gps);
+              if ((profile as any).gps_coordinates) {
+                setGpsCoordinates((profile as any).gps_coordinates);
+                fetchUberQuote((profile as any).gps_coordinates);
               }
             }
           });
