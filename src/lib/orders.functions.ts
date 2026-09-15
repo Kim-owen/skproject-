@@ -266,33 +266,47 @@ export const createOrder = createServerFn({ method: "POST" })
       initialOrderStatus = "confirmed";
     }
 
-    const { data: order, error: oErr } = await supabaseAdmin
+    const orderPayload: any = {
+      user_id: context.userId || null,
+      customer_name: data.customer_name,
+      customer_phone: data.customer_phone,
+      customer_email: data.customer_email || null,
+      delivery_type: data.delivery_type,
+      dispatch_partner:
+        data.dispatch_partner || (data.delivery_type === "pickup" ? "pickup" : "uber"),
+      delivery_address: data.delivery_address || null,
+      delivery_zone_id: data.delivery_zone_id || null,
+      delivery_fee_ghs: deliveryFee,
+      subtotal_ghs: subtotal,
+      total_ghs: total,
+      payment_method: data.payment_method,
+      payment_status: initialPaymentStatus,
+      status: initialOrderStatus,
+      notes: data.notes || null,
+      ghana_post_gps: data.ghana_post_gps || null,
+      gps_coordinates: data.gps_coordinates || null,
+      scheduled_delivery_date: data.scheduled_delivery_date || null,
+      is_subscription: !!data.is_subscription,
+      subscription_frequency: data.subscription_frequency || null,
+    };
+
+    let { data: order, error: oErr } = await supabaseAdmin
       .from("orders")
-      .insert({
-        user_id: context.userId || null,
-        customer_name: data.customer_name,
-        customer_phone: data.customer_phone,
-        customer_email: data.customer_email || null,
-        delivery_type: data.delivery_type,
-        dispatch_partner:
-          data.dispatch_partner || (data.delivery_type === "pickup" ? "pickup" : "uber"),
-        delivery_address: data.delivery_address || null,
-        delivery_zone_id: data.delivery_zone_id || null,
-        delivery_fee_ghs: deliveryFee,
-        subtotal_ghs: subtotal,
-        total_ghs: total,
-        payment_method: data.payment_method,
-        payment_status: initialPaymentStatus,
-        status: initialOrderStatus,
-        notes: data.notes || null,
-        ghana_post_gps: data.ghana_post_gps || null,
-        gps_coordinates: data.gps_coordinates || null,
-        scheduled_delivery_date: data.scheduled_delivery_date || null,
-        is_subscription: !!data.is_subscription,
-        subscription_frequency: data.subscription_frequency || null,
-      })
+      .insert(orderPayload)
       .select("id, order_number, total_ghs, payment_status")
       .single();
+
+    if (oErr && oErr.message.includes("dispatch_partner")) {
+      delete orderPayload.dispatch_partner;
+      const retry = await supabaseAdmin
+        .from("orders")
+        .insert(orderPayload)
+        .select("id, order_number, total_ghs, payment_status")
+        .single();
+      order = retry.data;
+      oErr = retry.error;
+    }
+
     if (oErr || !order) throw new Error(oErr?.message || "Failed to create order");
 
     const { error: iErr } = await supabaseAdmin
