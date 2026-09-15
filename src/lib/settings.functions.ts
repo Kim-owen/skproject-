@@ -119,13 +119,48 @@ export const updateHeroSettings = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { error } = await supabaseAdmin.from("site_settings").upsert({
+    // 1. Save to hero_media
+    const { error: heroErr } = await supabaseAdmin.from("site_settings").upsert({
       key: "hero_media",
       value: data,
       updated_at: new Date().toISOString(),
     });
 
-    if (error) throw new Error(error.message);
+    if (heroErr) throw new Error(heroErr.message);
+
+    // 2. Sync to storefront_config so storefront homepage updates immediately
+    try {
+      const { data: sfData } = await supabaseAdmin
+        .from("site_settings")
+        .select("value")
+        .eq("key", "storefront_config")
+        .maybeSingle();
+
+      const sfConfig = sfData?.value ? (sfData.value as any) : {};
+      sfConfig.hero = {
+        ...(sfConfig.hero || {}),
+        enabled: true,
+        media_type: data.media_type,
+        video_url: data.video_url,
+        poster_url: data.poster_url,
+        badge_text: data.badge_text,
+        headline_main: data.headline_main,
+        headline_highlight: data.headline_highlight,
+        subheading: data.subheading,
+        autoplay: data.autoplay,
+        muted: data.muted,
+        loop: data.loop,
+      };
+
+      await supabaseAdmin.from("site_settings").upsert({
+        key: "storefront_config",
+        value: sfConfig,
+        updated_at: new Date().toISOString(),
+      });
+    } catch (syncErr) {
+      console.error("[HeroSettings] Error syncing to storefront_config:", syncErr);
+    }
+
     return { success: true };
   });
 

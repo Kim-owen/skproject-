@@ -17,16 +17,42 @@ export const getStorefrontConfig = createServerFn({ method: "GET" }).handler(
   async (): Promise<StorefrontConfig> => {
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data, error } = await supabaseAdmin
-        .from("site_settings")
-        .select("value")
-        .eq("key", "storefront_config")
-        .maybeSingle();
+      const [sfRes, heroRes] = await Promise.all([
+        supabaseAdmin
+          .from("site_settings")
+          .select("value")
+          .eq("key", "storefront_config")
+          .maybeSingle(),
+        supabaseAdmin
+          .from("site_settings")
+          .select("value")
+          .eq("key", "hero_media")
+          .maybeSingle(),
+      ]);
 
-      if (error || !data || !data.value) {
-        return DEFAULT_STOREFRONT_CONFIG;
+      let config = sfRes.data?.value ? normalizeStorefrontConfig(sfRes.data.value) : DEFAULT_STOREFRONT_CONFIG;
+
+      if (heroRes.data?.value) {
+        const hm = heroRes.data.value as any;
+        config = {
+          ...config,
+          hero: {
+            ...config.hero,
+            media_type: hm.media_type ?? config.hero.media_type,
+            video_url: hm.video_url ?? config.hero.video_url,
+            poster_url: hm.poster_url ?? config.hero.poster_url,
+            badge_text: hm.badge_text ?? config.hero.badge_text,
+            headline_main: hm.headline_main ?? config.hero.headline_main,
+            headline_highlight: hm.headline_highlight ?? config.hero.headline_highlight,
+            subheading: hm.subheading ?? config.hero.subheading,
+            autoplay: hm.autoplay ?? config.hero.autoplay,
+            muted: hm.muted ?? config.hero.muted,
+            loop: hm.loop ?? config.hero.loop,
+          },
+        };
       }
-      return normalizeStorefrontConfig(data.value);
+
+      return config;
     } catch (err) {
       console.error("[Storefront] Error loading storefront config:", err);
       return DEFAULT_STOREFRONT_CONFIG;

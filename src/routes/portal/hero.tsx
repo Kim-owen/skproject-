@@ -74,6 +74,7 @@ function AdminHeroSettings() {
     mutationFn: (newSettings: HeroMediaSettings) => updater({ data: newSettings }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hero-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["storefront-config"] });
       toast.success("Hero section media settings saved live!", {
         description: "Your storefront hero video and content are now updated.",
       });
@@ -117,11 +118,15 @@ function AdminHeroSettings() {
 
         const { data: publicUrlData } = supabase.storage.from("media").getPublicUrl(filePath);
         handleFieldChange(field, publicUrlData.publicUrl);
-        toast.success("File uploaded to Supabase Storage!");
+        toast.success("File uploaded to Storage!", {
+          description: "Click 'Save Live Changes' top right to publish to the storefront.",
+        });
       } else {
         const { data: publicUrlData } = supabase.storage.from("hero-media").getPublicUrl(filePath);
         handleFieldChange(field, publicUrlData.publicUrl);
-        toast.success("File uploaded to Supabase Storage!");
+        toast.success("File uploaded to Storage!", {
+          description: "Click 'Save Live Changes' top right to publish to the storefront.",
+        });
       }
     } catch (err: any) {
       toast.error("Upload error: " + err.message);

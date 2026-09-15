@@ -105,7 +105,8 @@ function Home() {
   const { data: config = DEFAULT_STOREFRONT_CONFIG } = useQuery({
     queryKey: ["storefront-config"],
     queryFn: () => fetchStorefrontConfig(),
-    staleTime: 30_000,
+    staleTime: 5_000,
+    refetchOnWindowFocus: true,
   });
 
   const { data: categories = [] } = useQuery({
