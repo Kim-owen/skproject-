@@ -6,10 +6,7 @@ import { ShopLayout } from "@/components/shop/Layout";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/shop/ProductCard";
 import { ProductSlideshow } from "@/components/shop/ProductSlideshow";
-import {
-  getStorefrontConfig,
-  listCategoriesWithCounts,
-} from "@/lib/storefront.functions";
+import { getStorefrontConfig, listCategoriesWithCounts } from "@/lib/storefront.functions";
 import {
   DEFAULT_STOREFRONT_CONFIG,
   normalizeStorefrontConfig,
@@ -72,7 +69,17 @@ const featuredQuery = {
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
-    return context.queryClient.ensureQueryData(featuredQuery);
+    await Promise.allSettled([
+      context.queryClient.ensureQueryData(featuredQuery),
+      context.queryClient.ensureQueryData({
+        queryKey: ["storefront-config"],
+        queryFn: () => getStorefrontConfig(),
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["homepage-categories"],
+        queryFn: () => listCategoriesWithCounts(),
+      }),
+    ]);
   },
   pendingMs: 0,
   pendingComponent: HomePending,
@@ -102,10 +109,10 @@ function Home() {
   const [isMuted, setIsMuted] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const { data: config = DEFAULT_STOREFRONT_CONFIG } = useQuery({
+  const { data: config } = useQuery({
     queryKey: ["storefront-config"],
     queryFn: () => fetchStorefrontConfig(),
-    staleTime: 5_000,
+    staleTime: 0,
     refetchOnWindowFocus: true,
   });
 
@@ -310,7 +317,11 @@ function Home() {
         }
 
         // 4. CATEGORIES SHOWCASE
-        if (sectionId === "categories" && safeConfig?.categories?.enabled && displayedCategories.length > 0) {
+        if (
+          sectionId === "categories" &&
+          safeConfig?.categories?.enabled &&
+          displayedCategories.length > 0
+        ) {
           return (
             <section key="categories" className="mx-auto max-w-7xl px-4 pt-16 pb-4 sm:px-6">
               <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
@@ -387,9 +398,7 @@ function Home() {
                 <h2 className="mt-2 font-display text-3xl font-extrabold tracking-tight text-foreground md:text-5xl leading-tight">
                   {feat.title}{" "}
                   {feat.title_highlight && (
-                    <span className="text-amber-500 font-serif italic">
-                      {feat.title_highlight}
-                    </span>
+                    <span className="text-amber-500 font-serif italic">{feat.title_highlight}</span>
                   )}
                 </h2>
 

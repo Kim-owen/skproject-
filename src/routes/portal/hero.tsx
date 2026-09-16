@@ -59,11 +59,13 @@ function AdminHeroSettings() {
     queryKey: ["hero-settings"],
     queryFn: () => fetcher(),
     enabled: guard === "ok",
+    staleTime: 0,
   });
 
   const [form, setForm] = useState<HeroMediaSettings>(DEFAULT_HERO_SETTINGS);
   const [presets, setPresets] = useState(PRO_VIDEO_PRESETS);
   const [uploading, setUploading] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
 
   useEffect(() => {
     if (initialData) {
@@ -71,6 +73,7 @@ function AdminHeroSettings() {
       if (initialData.presets && Array.isArray(initialData.presets)) {
         setPresets(initialData.presets);
       }
+      setIsInitialized(true);
     }
   }, [initialData]);
 

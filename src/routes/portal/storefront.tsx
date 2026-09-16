@@ -135,10 +135,13 @@ function StorefrontBuilderPage() {
   const [previewDevice, setPreviewDevice] = useState<"desktop" | "mobile">("desktop");
   const [isDirty, setIsDirty] = useState<boolean>(false);
 
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+
   const { data: serverConfig, isLoading } = useQuery({
     queryKey: ["storefront-config"],
     queryFn: () => fetchConfig(),
     enabled: guard === "ok",
+    staleTime: 0,
   });
 
   const { data: categories = [] } = useQuery({
@@ -156,7 +159,10 @@ function StorefrontBuilderPage() {
 
   useEffect(() => {
     if (serverConfig) {
-      setConfig(normalizeStorefrontConfig(serverConfig));
+      if (!isDirty || !isInitialized) {
+        setConfig(normalizeStorefrontConfig(serverConfig));
+        setIsInitialized(true);
+      }
     }
   }, [serverConfig]);
 
