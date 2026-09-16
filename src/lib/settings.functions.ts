@@ -24,22 +24,6 @@ export interface HeroMediaSettings {
   presets?: HeroMediaPreset[];
 }
 
-export const DEFAULT_HERO_SETTINGS: HeroMediaSettings = {
-  media_type: "video",
-  video_url: "/videos/shito-animi.mp4",
-  poster_url: "/images/hero-foods-spread.png",
-  badge_text: "Nationwide Delivery Across Ghana",
-  headline_main: "BARIMA BA FOODS",
-  headline_highlight: "Taste. Quality. Trust.",
-  subheading:
-    "Premium quality homemade Ghanaian foods made with passion, rich in flavor and crafted for your satisfaction.",
-  autoplay: true,
-  muted: true,
-  loop: true,
-  overlay_text: "Signature Shito Animi Reel",
-  presets: PRO_VIDEO_PRESETS,
-};
-
 export const PRO_VIDEO_PRESETS = [
   {
     id: "shito-animi",
@@ -81,6 +65,22 @@ export const PRO_VIDEO_PRESETS = [
       "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&q=80&w=800",
   },
 ];
+
+export const DEFAULT_HERO_SETTINGS: HeroMediaSettings = {
+  media_type: "video",
+  video_url: "/videos/shito-animi.mp4",
+  poster_url: "/images/hero-foods-spread.png",
+  badge_text: "Nationwide Delivery Across Ghana",
+  headline_main: "BARIMA BA FOODS",
+  headline_highlight: "Taste. Quality. Trust.",
+  subheading:
+    "Premium quality homemade Ghanaian foods made with passion, rich in flavor and crafted for your satisfaction.",
+  autoplay: true,
+  muted: true,
+  loop: true,
+  overlay_text: "Signature Shito Animi Reel",
+  presets: PRO_VIDEO_PRESETS,
+};
 
 async function assertAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
