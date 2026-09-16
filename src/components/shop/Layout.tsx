@@ -25,8 +25,8 @@ export function ShopLayout({ children }: { children: ReactNode }) {
       {/* Vibrant Spicy African Culinary Background Texture */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <img
-          src="/images/spicy-african-bg.png"
-          alt="Spicy African Backdrop"
+          src="/images/barima-ba-foods-design.png"
+          alt="Barima-Ba Culinary Backdrop"
           className="h-full w-full object-cover opacity-25 dark:opacity-80 scale-105 animate-slow-pan transition-opacity duration-500"
         />
         {/* Scrim Overlay tailored for Light Ivory & Dark Obsidian Themes */}
