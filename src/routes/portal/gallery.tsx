@@ -143,7 +143,9 @@ function AdminGalleryPage() {
       const fileName = `gallery-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const filePath = `gallery/${fileName}`;
 
-      const uploadRes = await supabase.storage.from("media").upload(filePath, file, { upsert: true });
+      const uploadRes = await supabase.storage
+        .from("media")
+        .upload(filePath, file, { upsert: true });
       let publicUrl = "";
 
       if (uploadRes.error) {
