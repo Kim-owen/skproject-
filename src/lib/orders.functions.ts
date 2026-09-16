@@ -198,7 +198,11 @@ export const createOrder = createServerFn({ method: "POST" })
 
     let deliveryFee = 0;
     if (data.delivery_type === "delivery") {
-      if (data.dispatch_partner === "uber" && data.gps_coordinates && data.gps_coordinates.includes(",")) {
+      if (
+        data.dispatch_partner === "uber" &&
+        data.gps_coordinates &&
+        data.gps_coordinates.includes(",")
+      ) {
         // Compute Uber fee strictly on server using GPS coordinates and formula
         const [latStr, lngStr] = data.gps_coordinates.split(",");
         const lat = parseFloat(latStr.trim());
@@ -226,7 +230,8 @@ export const createOrder = createServerFn({ method: "POST" })
 
     subtotal = Math.round(subtotal * 100) / 100;
     deliveryFee = Math.round(deliveryFee * 100) / 100;
-    const total = Math.round((subtotal + deliveryFee) * 100) / 100;
+    // Checkout total is items subtotal (delivery fee paid separately on delivery)
+    const total = subtotal;
 
     // Server-Side Wallet Balance Verification & Deduction
     let initialPaymentStatus: "unpaid" | "paid" = "unpaid";
@@ -448,7 +453,9 @@ export const initiatePaystackPayment = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order, error } = await supabaseAdmin
       .from("orders")
-      .select("id, order_number, total_ghs, customer_name, customer_phone, customer_email, payment_status")
+      .select(
+        "id, order_number, total_ghs, customer_name, customer_phone, customer_email, payment_status",
+      )
       .eq("order_number", data.order_number.trim().toUpperCase())
       .single();
 
@@ -503,10 +510,7 @@ export const initiatePaystackPayment = createServerFn({ method: "POST" })
       throw new Error(json.message || "Failed to initialize Paystack checkout");
     }
 
-    await supabaseAdmin
-      .from("orders")
-      .update({ payment_reference: reference })
-      .eq("id", order.id);
+    await supabaseAdmin.from("orders").update({ payment_reference: reference }).eq("id", order.id);
 
     return {
       authorization_url: json.data.authorization_url,
@@ -526,7 +530,9 @@ export const verifyPaystackPayment = createServerFn({ method: "POST" })
     const secret = process.env.PAYSTACK_SECRET_KEY;
 
     if (!secret || secret.includes("placeholder")) {
-      throw new Error("Paystack secret key is not configured. Please add PAYSTACK_SECRET_KEY to .env");
+      throw new Error(
+        "Paystack secret key is not configured. Please add PAYSTACK_SECRET_KEY to .env",
+      );
     }
 
     const resp = await fetch(

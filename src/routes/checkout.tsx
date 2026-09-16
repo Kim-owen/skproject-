@@ -67,9 +67,7 @@ function Checkout() {
   const [gpsCoordinates, setGpsCoordinates] = useState("");
   const [locating, setLocating] = useState(false);
   const [notes, setNotes] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "wallet">(
-    "paystack",
-  );
+  const [paymentMethod, setPaymentMethod] = useState<"paystack" | "wallet">("paystack");
   const [submitting, setSubmitting] = useState(false);
 
   // User Auth & Wallet State
@@ -171,7 +169,7 @@ function Checkout() {
   const [subscriptionFreq, setSubscriptionFreq] = useState<"weekly" | "biweekly" | "monthly">(
     "weekly",
   );
-  const total = subtotal + deliveryFee;
+  const total = subtotal;
 
   if (count === 0) {
     return (
@@ -739,9 +737,7 @@ function Checkout() {
             <h2 className="text-lg font-semibold">Payment Method</h2>
             <RadioGroup
               value={paymentMethod}
-              onValueChange={(v) =>
-                setPaymentMethod(v as "paystack" | "wallet")
-              }
+              onValueChange={(v) => setPaymentMethod(v as "paystack" | "wallet")}
               className="mt-4 grid gap-3 sm:grid-cols-2"
             >
               <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-4 has-data-[state=checked]:border-amber-500 has-data-[state=checked]:bg-amber-500/10 has-data-[state=checked]:shadow-sm transition-all">
@@ -813,12 +809,16 @@ function Checkout() {
               <dt>Subtotal</dt>
               <dd>{formatGHS(subtotal)}</dd>
             </div>
-            <div className="flex justify-between">
-              <dt>Delivery</dt>
-              <dd>{deliveryType === "pickup" ? "Free" : formatGHS(deliveryFee)}</dd>
+            <div className="flex justify-between text-muted-foreground text-xs">
+              <dt>Est. Delivery Fee</dt>
+              <dd>
+                {deliveryType === "pickup"
+                  ? "Free (Pickup)"
+                  : `${formatGHS(deliveryFee)} (Paid on delivery)`}
+              </dd>
             </div>
             <div className="flex justify-between border-t pt-2 text-base font-semibold">
-              <dt>Total</dt>
+              <dt>Checkout Total</dt>
               <dd>{formatGHS(total)}</dd>
             </div>
           </dl>
