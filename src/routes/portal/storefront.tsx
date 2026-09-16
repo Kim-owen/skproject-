@@ -164,7 +164,7 @@ function StorefrontBuilderPage() {
         setIsInitialized(true);
       }
     }
-  }, [serverConfig]);
+  }, [serverConfig, isDirty, isInitialized]);
 
   const saveMutation = useMutation({
     mutationFn: async (updated: StorefrontConfig) => {

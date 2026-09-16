@@ -173,7 +173,6 @@
 
 @utility hairline {
   border: 1px solid hsl(var(--primary) / 0.1);
-  border: 1px solid color-mix(in oklab, var(--primary) 10%, transparent);
 }
 
 @keyframes fadeInUp {
