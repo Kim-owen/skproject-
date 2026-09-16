@@ -34,6 +34,7 @@ import {
   DEFAULT_HERO_SETTINGS,
   PRO_VIDEO_PRESETS,
   type HeroMediaSettings,
+  type HeroMediaPreset,
 } from "@/lib/settings.functions";
 import { HeroMedia } from "@/components/shop/HeroMedia";
 import { supabase } from "@/integrations/supabase/client";
