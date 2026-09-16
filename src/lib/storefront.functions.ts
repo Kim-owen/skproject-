@@ -38,6 +38,15 @@ export const getStorefrontConfig = createServerFn({ method: "GET" }).handler(
         config.hero.video_url = "";
       }
 
+      if (
+        config.hero.poster_url &&
+        (config.hero.poster_url.includes("hero-foods-spread") ||
+          config.hero.poster_url.includes("spicy-african-bg") ||
+          config.hero.poster_url.includes("shito-animi"))
+      ) {
+        config.hero.poster_url = "";
+      }
+
       if (heroRes.data?.value) {
         const hm = heroRes.data.value as any;
         const cleanedVideoUrl =

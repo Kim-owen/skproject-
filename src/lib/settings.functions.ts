@@ -92,6 +92,14 @@ export const getHeroSettings = createServerFn({ method: "GET" }).handler(async (
     ) {
       val.video_url = "";
     }
+    if (
+      val.poster_url &&
+      (val.poster_url.includes("hero-foods-spread") ||
+        val.poster_url.includes("spicy-african-bg") ||
+        val.poster_url.includes("shito-animi"))
+    ) {
+      val.poster_url = "";
+    }
     if (val.presets && Array.isArray(val.presets)) {
       val.presets = val.presets
         .filter((p) => !p.video_url || !p.video_url.includes("shito-animi"))

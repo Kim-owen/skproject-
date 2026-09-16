@@ -185,18 +185,32 @@ function Home() {
         // 2. HERO SHOWCASE SECTION
         if (sectionId === "hero" && safeConfig?.hero?.enabled) {
           const hero = safeConfig.hero;
+          const cleanPoster =
+            hero.poster_url &&
+            !hero.poster_url.includes("hero-foods-spread") &&
+            !hero.poster_url.includes("spicy-african-bg") &&
+            !hero.poster_url.includes("shito-animi")
+              ? hero.poster_url
+              : "";
+
+          const hasVideo =
+            hero.media_type === "video" &&
+            hero.video_url &&
+            !hero.video_url.includes("shito-animi") &&
+            !hero.video_url.includes("mixkit.co");
+
           return (
             <section
               key="hero"
               className="relative w-full overflow-hidden bg-black min-h-[80vh] sm:min-h-[88vh]"
             >
               {/* Background Ambient Video or High-Res Photography */}
-              {hero.media_type === "video" && hero.video_url ? (
+              {hasVideo ? (
                 <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                   <video
                     ref={videoRef}
                     src={hero.video_url}
-                    poster={hero.poster_url}
+                    poster={cleanPoster}
                     autoPlay={hero.autoplay}
                     muted={isMuted}
                     loop={hero.loop}
@@ -204,13 +218,18 @@ function Home() {
                     className="h-full w-full object-cover opacity-95 sm:opacity-100 brightness-105 contrast-105 scale-105 transition-opacity duration-700"
                   />
                 </div>
-              ) : (
+              ) : cleanPoster ? (
                 <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                   <img
-                    src={hero.poster_url || "/images/hero-foods-spread.png"}
+                    src={cleanPoster}
                     alt="Ambient Background"
                     className="h-full w-full object-cover opacity-90 sm:opacity-95 brightness-105 scale-105"
                   />
+                </div>
+              ) : (
+                <div className="absolute inset-0 z-0 bg-linear-to-br from-zinc-950 via-zinc-900 to-black overflow-hidden pointer-events-none">
+                  <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-amber-500/15 blur-3xl" />
+                  <div className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-amber-600/10 blur-3xl" />
                 </div>
               )}
 
