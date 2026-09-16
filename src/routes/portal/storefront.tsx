@@ -476,7 +476,7 @@ function StorefrontBuilderPage() {
                             </div>
                             {isSelected ? (
                               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-black">
-                                <Check className="h-3 w-3 stroke-[3]" />
+                                <Check className="h-3 w-3 stroke-3" />
                               </span>
                             ) : (
                               <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground border border-border">
