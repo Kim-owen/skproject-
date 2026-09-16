@@ -51,7 +51,7 @@ function AdminMediaPage() {
   const [activeTab, setActiveTab] = useState<"products" | "hero_bg" | "storage">("products");
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [customUrls, setCustomUrls] = useState<Record<string, string>>({});
-  const [bgImageUrl, setBgImageUrl] = useState("/images/barima-ba-foods-design.png");
+  const [bgImageUrl, setBgImageUrl] = useState("/images/spicy-african-bg.png");
   const [uploadingBg, setUploadingBg] = useState(false);
 
   // Storage bucket browser state
@@ -515,7 +515,7 @@ function AdminMediaPage() {
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => setBgImageUrl("/images/barima-ba-foods-design.png")}
+                    onClick={() => setBgImageUrl("/images/spicy-african-bg.png")}
                     className="rounded-xl text-xs"
                   >
                     Reset to Default
