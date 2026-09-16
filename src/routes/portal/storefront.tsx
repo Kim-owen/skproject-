@@ -126,7 +126,7 @@ function StorefrontBuilderPage() {
   const fetchProducts = useServerFn(listAdminProducts);
 
   const [config, setConfig] = useState<StorefrontConfig>(() =>
-    normalizeStorefrontConfig(DEFAULT_STOREFRONT_CONFIG)
+    normalizeStorefrontConfig(DEFAULT_STOREFRONT_CONFIG),
   );
   const [activeTab, setActiveTab] = useState<string>("sections");
   const [showPreview, setShowPreview] = useState<boolean>(true);
