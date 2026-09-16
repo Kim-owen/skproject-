@@ -552,7 +552,7 @@ function AdminHeroSettings() {
                     id="poster_url"
                     value={form.poster_url}
                     onChange={(e) => handleFieldChange("poster_url", e.target.value)}
-                    placeholder="https://images.unsplash.com/..."
+                    placeholder="/images/hero-foods-spread.png or upload image"
                     className="rounded-xl font-mono text-xs"
                   />
                   <label className="cursor-pointer">

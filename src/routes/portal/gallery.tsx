@@ -618,7 +618,7 @@ function AdminGalleryPage() {
                         onError={(e) => {
                           (e.target as HTMLElement).setAttribute(
                             "src",
-                            "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800",
+                            "/images/catering-jollof-feast.png",
                           );
                         }}
                       />

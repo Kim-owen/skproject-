@@ -30,24 +30,21 @@ export const PRO_VIDEO_PRESETS = [
     title: "Fresh Farm Harvest",
     video_url:
       "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyTouches.mp4",
-    poster_url:
-      "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800",
+    poster_url: "/images/catering-jollof-feast.png",
   },
   {
     id: "fresh-cooking",
     title: "Gourmet Kitchen Prep",
     video_url:
       "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    poster_url:
-      "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=800",
+    poster_url: "/images/catering-wedding-table.png",
   },
   {
     id: "organic-store",
     title: "Pantry & Groceries",
     video_url:
       "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-    poster_url:
-      "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?auto=format&fit=crop&q=80&w=800",
+    poster_url: "/images/product-shito-jars.png",
   },
 ];
 

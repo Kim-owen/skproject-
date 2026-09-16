@@ -143,12 +143,12 @@ function AboutPage() {
 
             <div className="md:col-span-6 grid grid-cols-2 gap-4">
               <img
-                src="/images/spicy-african-bg.png"
+                src="/images/product-shito-jars.png"
                 alt="Shito Kitchen"
                 className="rounded-2xl object-cover h-52 w-full border border-amber-500/20 shadow-lg"
               />
               <img
-                src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=600"
+                src="/images/catering-wedding-table.png"
                 alt="Authentic Spices"
                 className="rounded-2xl object-cover h-52 w-full border border-amber-500/20 shadow-lg"
               />
