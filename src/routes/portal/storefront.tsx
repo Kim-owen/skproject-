@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { supabase } from "@/integrations/supabase/client";
 import {
   getStorefrontConfig,
   updateStorefrontConfig,
@@ -1701,15 +1702,30 @@ function StorefrontBuilderPage() {
                     </div>
 
                     {/* Collage Images */}
-                    <div className="sm:col-span-2 space-y-2 pt-2 border-t border-border">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">
-                        Gallery Collage Images (3 Images)
-                      </Label>
+                    <div className="sm:col-span-2 space-y-3 pt-3 border-t border-border">
+                      <div>
+                        <Label className="text-xs font-bold text-muted-foreground uppercase">
+                          Catering & Event Photo Collage (3 Images)
+                        </Label>
+                        <p className="text-[11px] text-muted-foreground">
+                          Image #1 (Top Left), Image #2 (Top Right), Image #3 (Bottom Wide Platter)
+                        </p>
+                      </div>
+
                       {config.promotional_banner.images.map((img, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <span className="text-xs font-mono font-bold text-muted-foreground w-6">
+                        <div key={idx} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2 rounded-xl border border-border bg-muted/20">
+                          <span className="text-xs font-mono font-bold text-amber-500 w-8 shrink-0">
                             #{idx + 1}
                           </span>
+
+                          {img && (
+                            <img
+                              src={img}
+                              alt={`Collage #${idx + 1}`}
+                              className="h-10 w-14 rounded-lg object-cover border border-border shrink-0"
+                            />
+                          )}
+
                           <Input
                             value={img}
                             onChange={(e) => {
@@ -1721,9 +1737,48 @@ function StorefrontBuilderPage() {
                               }));
                               setIsDirty(true);
                             }}
-                            className="rounded-xl font-mono text-xs"
-                            placeholder="Image URL..."
+                            className="rounded-xl font-mono text-xs flex-1"
+                            placeholder="Image URL or upload file..."
                           />
+
+                          <label className="cursor-pointer shrink-0">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                try {
+                                  const fileExt = file.name.split(".").pop();
+                                  const fileName = `promo_collage_${idx + 1}_${Date.now()}.${fileExt}`;
+                                  const filePath = `promos/${fileName}`;
+                                  const { error: uploadErr } = await supabase.storage
+                                    .from("media")
+                                    .upload(filePath, file, { upsert: true });
+                                  if (uploadErr) throw uploadErr;
+
+                                  const { data: publicUrlData } = supabase.storage
+                                    .from("media")
+                                    .getPublicUrl(filePath);
+
+                                  const newImgs = [...config.promotional_banner.images];
+                                  newImgs[idx] = publicUrlData.publicUrl;
+                                  setConfig((p) => ({
+                                    ...p,
+                                    promotional_banner: { ...p.promotional_banner, images: newImgs },
+                                  }));
+                                  setIsDirty(true);
+                                  toast.success(`Image #${idx + 1} uploaded! Click 'Save Storefront' top right to publish.`);
+                                } catch (err: any) {
+                                  toast.error("Upload failed: " + err.message);
+                                }
+                              }}
+                            />
+                            <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all border border-primary/20">
+                              <Upload className="h-3.5 w-3.5" /> Upload
+                            </div>
+                          </label>
                         </div>
                       ))}
                     </div>
