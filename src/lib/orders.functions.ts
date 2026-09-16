@@ -491,7 +491,10 @@ export const getOrderByNumber = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (error) {
-      console.warn("[getOrderByNumber] Query with fullCols failed, trying baseCols:", error.message);
+      console.warn(
+        "[getOrderByNumber] Query with fullCols failed, trying baseCols:",
+        error.message,
+      );
       const retry = await supabaseAdmin
         .from("orders")
         .select(baseCols)
@@ -854,9 +857,8 @@ export async function triggerOrderPaymentConfirmedNotifications(orderId: string)
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { getNotificationSettings } = await import("./settings.functions");
-    const { sendNewOrderAlertToAdmin, sendOrderConfirmationEmailToCustomer } = await import(
-      "./email.functions"
-    );
+    const { sendNewOrderAlertToAdmin, sendOrderConfirmationEmailToCustomer } =
+      await import("./email.functions");
 
     const fullCols =
       "id, order_number, customer_name, customer_phone, customer_email, delivery_type, dispatch_partner, delivery_address, ghana_post_gps, gps_coordinates, payment_method, payment_status, payment_reference, subtotal_ghs, delivery_fee_ghs, total_ghs, notes, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
@@ -864,13 +866,15 @@ export async function triggerOrderPaymentConfirmedNotifications(orderId: string)
     const baseCols =
       "id, order_number, customer_name, customer_phone, customer_email, delivery_type, delivery_address, ghana_post_gps, gps_coordinates, payment_method, payment_status, payment_reference, subtotal_ghs, delivery_fee_ghs, total_ghs, notes, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
 
-    let { data: order, error } = await supabaseAdmin
+    const { data: initialOrder, error: queryError } = await supabaseAdmin
       .from("orders")
       .select(fullCols)
       .eq("id", orderId)
       .maybeSingle();
 
-    if (error) {
+    let order = initialOrder;
+
+    if (queryError) {
       const retry = await supabaseAdmin
         .from("orders")
         .select(baseCols)
@@ -910,9 +914,7 @@ export async function triggerOrderPaymentConfirmedNotifications(orderId: string)
         .map((it: any) => `${it.quantity}x ${it.product_name}`)
         .join(", ");
       const adminSmsMsg = `🚨 PAYMENT CONFIRMED! Order #${order.order_number} paid via ${order.payment_method}. Total: ₵${Number(order.total_ghs).toFixed(2)}. Customer: ${order.customer_name} (${order.customer_phone}). Delivery: ${order.delivery_type === "delivery" ? order.delivery_address || "Doorstep" : "Branch Pickup"}. Items: ${itemsSummary}`;
-      sendSMSNotification(notifSettings.admin_notification_phone, adminSmsMsg).catch(
-        console.error,
-      );
+      sendSMSNotification(notifSettings.admin_notification_phone, adminSmsMsg).catch(console.error);
     }
 
     // 4. Send Admin Email Alert with EVERY detail
