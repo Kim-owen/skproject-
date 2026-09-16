@@ -338,8 +338,39 @@ export const createOrder = createServerFn({ method: "POST" })
           console.error,
         );
       }
+
+      // Trigger Resend HTML Emails (Customer receipt & Admin kitchen alert)
+      import("./email.functions")
+        .then(({ sendOrderConfirmationEmailToCustomer, sendNewOrderAlertToAdmin }) => {
+          sendOrderConfirmationEmailToCustomer({
+            order_number: order.order_number,
+            customer_name: data.customer_name,
+            customer_email: (data as any).customer_email || context.user?.email || null,
+            total_ghs: total,
+            delivery_type: data.delivery_type,
+            delivery_address: data.delivery_address,
+            items: orderItems.map((it) => ({
+              product_name: it.product_name,
+              quantity: it.quantity,
+              unit_price_ghs: Number(it.unit_price_ghs),
+            })),
+          }).catch(console.error);
+
+          sendNewOrderAlertToAdmin({
+            order_number: order.order_number,
+            customer_name: data.customer_name,
+            customer_phone: data.customer_phone,
+            total_ghs: total,
+            delivery_type: data.delivery_type,
+            items: orderItems.map((it) => ({
+              product_name: it.product_name,
+              quantity: it.quantity,
+            })),
+          }).catch(console.error);
+        })
+        .catch((emailErr) => console.error("Email notification import error:", emailErr));
     } catch (notifErr) {
-      console.error("SMS notification triggers failed:", notifErr);
+      console.error("Notification triggers failed:", notifErr);
     }
 
     if (data.payment_method === "paystack") {
