@@ -339,7 +339,7 @@ export const createOrder = createServerFn({ method: "POST" })
         );
       }
 
-      // Trigger Resend HTML Emails (Customer receipt & Admin kitchen alert)
+      // Trigger Resend HTML Emails (Customer receipt & Admin kitchen alert with EVERY detail)
       import("./email.functions")
         .then(({ sendOrderConfirmationEmailToCustomer, sendNewOrderAlertToAdmin }) => {
           sendOrderConfirmationEmailToCustomer({
@@ -360,11 +360,27 @@ export const createOrder = createServerFn({ method: "POST" })
             order_number: order.order_number,
             customer_name: data.customer_name,
             customer_phone: data.customer_phone,
-            total_ghs: total,
+            customer_email: (data as any).customer_email || context.user?.email || null,
             delivery_type: data.delivery_type,
+            dispatch_partner: data.dispatch_partner,
+            delivery_address: data.delivery_address,
+            ghana_post_gps: data.ghana_post_gps,
+            gps_coordinates: data.gps_coordinates,
+            payment_method: data.payment_method,
+            payment_status: initialPaymentStatus,
+            subtotal_ghs: subtotal,
+            delivery_fee_ghs: deliveryFee,
+            total_ghs: total,
+            notes: data.notes,
+            scheduled_delivery_date: data.scheduled_delivery_date,
+            is_subscription: data.is_subscription,
+            subscription_frequency: data.subscription_frequency,
             items: orderItems.map((it) => ({
               product_name: it.product_name,
               quantity: it.quantity,
+              unit: it.unit,
+              unit_price_ghs: Number(it.unit_price_ghs),
+              line_total_ghs: Number(it.line_total_ghs),
             })),
           }).catch(console.error);
         })
@@ -660,17 +676,10 @@ export const verifyPaystackPayment = createServerFn({ method: "POST" })
 
     if (updateErr) throw new Error(updateErr.message);
 
-    // Send SMS confirmation async
-    try {
-      const { getNotificationSettings } = await import("./settings.functions");
-      const notifSettings = await getNotificationSettings();
-      if (notifSettings.enable_customer_alerts && order.customer_phone) {
-        const msg = `Barima Ba Foods: Payment of ₵${Number(order.total_ghs).toFixed(2)} for Order #${order.order_number} confirmed! Our kitchen is preparing your authentic meal.`;
-        sendSMSNotification(order.customer_phone, msg).catch(console.error);
-      }
-    } catch (smsErr) {
-      console.error("Payment confirmation SMS notification error:", smsErr);
-    }
+    // Trigger full SMS and Email notifications (Admin & Customer) upon payment confirmation
+    triggerOrderPaymentConfirmedNotifications(order.id).catch((err) =>
+      console.error("Payment confirmation notification trigger failed:", err),
+    );
 
     return {
       success: true,
@@ -840,3 +849,102 @@ export const listCustomerOrders = createServerFn({ method: "POST" })
 
     return res.data ?? [];
   });
+
+export async function triggerOrderPaymentConfirmedNotifications(orderId: string) {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { getNotificationSettings } = await import("./settings.functions");
+    const { sendNewOrderAlertToAdmin, sendOrderConfirmationEmailToCustomer } = await import(
+      "./email.functions"
+    );
+
+    const fullCols =
+      "id, order_number, customer_name, customer_phone, customer_email, delivery_type, dispatch_partner, delivery_address, ghana_post_gps, gps_coordinates, payment_method, payment_status, payment_reference, subtotal_ghs, delivery_fee_ghs, total_ghs, notes, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
+
+    const baseCols =
+      "id, order_number, customer_name, customer_phone, customer_email, delivery_type, delivery_address, ghana_post_gps, gps_coordinates, payment_method, payment_status, payment_reference, subtotal_ghs, delivery_fee_ghs, total_ghs, notes, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
+
+    let { data: order, error } = await supabaseAdmin
+      .from("orders")
+      .select(fullCols)
+      .eq("id", orderId)
+      .maybeSingle();
+
+    if (error) {
+      const retry = await supabaseAdmin
+        .from("orders")
+        .select(baseCols)
+        .eq("id", orderId)
+        .maybeSingle();
+      order = retry.data as any;
+    }
+
+    if (!order) return;
+
+    const notifSettings = await getNotificationSettings();
+
+    // 1. Send Customer SMS
+    if (notifSettings.enable_customer_alerts && order.customer_phone) {
+      const customerMsg = `Barima Ba Foods: Payment of ₵${Number(order.total_ghs).toFixed(2)} for Order #${order.order_number} confirmed! Our kitchen is preparing your authentic meal.`;
+      sendSMSNotification(order.customer_phone, customerMsg).catch(console.error);
+    }
+
+    // 2. Send Customer Email Receipt
+    sendOrderConfirmationEmailToCustomer({
+      order_number: order.order_number,
+      customer_name: order.customer_name,
+      customer_email: order.customer_email,
+      total_ghs: Number(order.total_ghs),
+      delivery_type: order.delivery_type,
+      delivery_address: order.delivery_address,
+      items: (order.order_items || []).map((it: any) => ({
+        product_name: it.product_name,
+        quantity: it.quantity,
+        unit_price_ghs: Number(it.unit_price_ghs || 0),
+      })),
+    }).catch(console.error);
+
+    // 3. Send Admin SMS Alert with order details
+    if (notifSettings.enable_admin_alerts && notifSettings.admin_notification_phone) {
+      const itemsSummary = (order.order_items || [])
+        .map((it: any) => `${it.quantity}x ${it.product_name}`)
+        .join(", ");
+      const adminSmsMsg = `🚨 PAYMENT CONFIRMED! Order #${order.order_number} paid via ${order.payment_method}. Total: ₵${Number(order.total_ghs).toFixed(2)}. Customer: ${order.customer_name} (${order.customer_phone}). Delivery: ${order.delivery_type === "delivery" ? order.delivery_address || "Doorstep" : "Branch Pickup"}. Items: ${itemsSummary}`;
+      sendSMSNotification(notifSettings.admin_notification_phone, adminSmsMsg).catch(
+        console.error,
+      );
+    }
+
+    // 4. Send Admin Email Alert with EVERY detail
+    sendNewOrderAlertToAdmin({
+      order_number: order.order_number,
+      customer_name: order.customer_name,
+      customer_phone: order.customer_phone,
+      customer_email: order.customer_email,
+      delivery_type: order.delivery_type,
+      dispatch_partner: (order as any).dispatch_partner,
+      delivery_address: order.delivery_address,
+      ghana_post_gps: (order as any).ghana_post_gps,
+      gps_coordinates: (order as any).gps_coordinates,
+      payment_method: order.payment_method,
+      payment_status: order.payment_status,
+      payment_reference: order.payment_reference,
+      subtotal_ghs: Number(order.subtotal_ghs || order.total_ghs),
+      delivery_fee_ghs: Number(order.delivery_fee_ghs || 0),
+      total_ghs: Number(order.total_ghs),
+      notes: (order as any).notes,
+      scheduled_delivery_date: (order as any).scheduled_delivery_date,
+      is_subscription: (order as any).is_subscription,
+      subscription_frequency: (order as any).subscription_frequency,
+      items: (order.order_items || []).map((it: any) => ({
+        product_name: it.product_name,
+        quantity: it.quantity,
+        unit: it.unit,
+        unit_price_ghs: Number(it.unit_price_ghs || 0),
+        line_total_ghs: Number(it.line_total_ghs || 0),
+      })),
+    }).catch(console.error);
+  } catch (err) {
+    console.error("[triggerOrderPaymentConfirmedNotifications] Error:", err);
+  }
+}

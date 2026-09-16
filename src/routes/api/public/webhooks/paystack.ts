@@ -66,15 +66,12 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
           .eq("id", order.id);
 
         try {
-          const { getNotificationSettings } = await import("@/lib/settings.functions");
-          const { sendSMSNotification } = await import("@/lib/orders.functions");
-          const notifSettings = await getNotificationSettings();
-          if (notifSettings.enable_customer_alerts && order.customer_phone) {
-            const msg = `Barima Ba Foods: Payment of ₵${Number(order.total_ghs).toFixed(2)} for Order #${order.order_number} confirmed via Paystack! We are preparing your order.`;
-            sendSMSNotification(order.customer_phone, msg).catch(console.error);
-          }
-        } catch (smsErr) {
-          console.error("Paystack webhook SMS notification error:", smsErr);
+          const { triggerOrderPaymentConfirmedNotifications } = await import("@/lib/orders.functions");
+          triggerOrderPaymentConfirmedNotifications(order.id).catch((err) =>
+            console.error("Paystack webhook payment notification trigger failed:", err),
+          );
+        } catch (notifErr) {
+          console.error("Paystack webhook notification error:", notifErr);
         }
 
         return new Response("ok");
