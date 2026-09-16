@@ -107,10 +107,7 @@ export const deleteDeliveryZone = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { error } = await supabaseAdmin
-      .from("delivery_zones")
-      .delete()
-      .eq("id", data.id);
+    const { error } = await supabaseAdmin.from("delivery_zones").delete().eq("id", data.id);
 
     if (error) throw new Error(error.message);
     return { ok: true };

@@ -36,9 +36,11 @@ function GalleryPage() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
-        supabase.rpc("has_role", { _user_id: data.user.id, _role: "admin" }).then(({ data: hasRole }) => {
-          setIsAdmin(!!hasRole);
-        });
+        supabase
+          .rpc("has_role", { _user_id: data.user.id, _role: "admin" })
+          .then(({ data: hasRole }) => {
+            setIsAdmin(!!hasRole);
+          });
       }
     });
   }, []);
@@ -50,9 +52,7 @@ function GalleryPage() {
   ];
 
   const filtered =
-    activeTab === "All"
-      ? galleryItems
-      : galleryItems.filter((item) => item.category === activeTab);
+    activeTab === "All" ? galleryItems : galleryItems.filter((item) => item.category === activeTab);
 
   return (
     <ShopLayout>
@@ -82,7 +82,8 @@ function GalleryPage() {
           </h1>
 
           <p className="mt-4 text-base sm:text-lg text-zinc-300 max-w-xl mx-auto">
-            Take a peak inside our kitchen, product packaging, and live catering events across Accra.
+            Take a peak inside our kitchen, product packaging, and live catering events across
+            Accra.
           </p>
 
           {/* Category Filter Tabs */}
@@ -257,4 +258,3 @@ function GalleryPage() {
     </ShopLayout>
   );
 }
-

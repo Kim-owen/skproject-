@@ -91,7 +91,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg border border-border">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 rounded-lg border border-border"
+              >
                 <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>
@@ -186,7 +190,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <Link
             to="/portal/orders"
             className={`flex flex-col items-center justify-center py-1 text-[10px] transition-all ${
-              pathname === "/portal/orders" ? "text-amber-500 font-extrabold" : "text-muted-foreground"
+              pathname === "/portal/orders"
+                ? "text-amber-500 font-extrabold"
+                : "text-muted-foreground"
             }`}
           >
             <ShoppingBag className="h-4 w-4 mb-0.5" />
@@ -196,7 +202,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <Link
             to="/portal/products"
             className={`flex flex-col items-center justify-center py-1 text-[10px] transition-all ${
-              pathname === "/portal/products" ? "text-amber-500 font-extrabold" : "text-muted-foreground"
+              pathname === "/portal/products"
+                ? "text-amber-500 font-extrabold"
+                : "text-muted-foreground"
             }`}
           >
             <Package className="h-4 w-4 mb-0.5" />
@@ -206,7 +214,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <Link
             to="/portal/storefront"
             className={`flex flex-col items-center justify-center py-1 text-[10px] transition-all ${
-              pathname === "/portal/storefront" ? "text-amber-500 font-extrabold" : "text-muted-foreground"
+              pathname === "/portal/storefront"
+                ? "text-amber-500 font-extrabold"
+                : "text-muted-foreground"
             }`}
           >
             <LayoutTemplate className="h-4 w-4 mb-0.5" />

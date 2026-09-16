@@ -106,7 +106,9 @@ function OrderPage() {
         })
         .catch((err) => {
           console.error(err);
-          toast.error(err instanceof Error ? err.message : "Failed to verify payment with Paystack");
+          toast.error(
+            err instanceof Error ? err.message : "Failed to verify payment with Paystack",
+          );
         })
         .finally(() => {
           setVerifying(false);
@@ -192,9 +194,7 @@ function OrderPage() {
                   : "bg-amber-500/20 text-amber-400 border-amber-500/40"
               }`}
             >
-              {order.payment_status === "paid"
-                ? "✓ Paid"
-                : "Payment Pending"}
+              {order.payment_status === "paid" ? "✓ Paid" : "Payment Pending"}
             </span>
 
             <span className="px-3 py-1 rounded-full bg-zinc-800 text-zinc-200 border border-zinc-700 font-bold">
@@ -234,7 +234,9 @@ function OrderPage() {
                 </div>
               </div>
               <div className="sm:text-right">
-                <div className="text-[11px] text-zinc-400 uppercase font-semibold">Total Amount</div>
+                <div className="text-[11px] text-zinc-400 uppercase font-semibold">
+                  Total Amount
+                </div>
                 <div className="text-xl font-mono font-extrabold text-amber-400">
                   {formatGHS(Number(order.total_ghs))}
                 </div>

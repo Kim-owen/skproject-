@@ -143,7 +143,7 @@ function AdminGalleryPage() {
       const fileName = `gallery-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const filePath = `gallery/${fileName}`;
 
-      let uploadRes = await supabase.storage.from("media").upload(filePath, file, { upsert: true });
+      const uploadRes = await supabase.storage.from("media").upload(filePath, file, { upsert: true });
       let publicUrl = "";
 
       if (uploadRes.error) {
@@ -193,11 +193,15 @@ function AdminGalleryPage() {
       const filePath = `videos/${fileName}`;
 
       // Upload to 'hero-media' or 'media' bucket
-      let uploadRes = await supabase.storage.from("hero-media").upload(filePath, file, { upsert: true });
+      const uploadRes = await supabase.storage
+        .from("hero-media")
+        .upload(filePath, file, { upsert: true });
       let publicUrl = "";
 
       if (uploadRes.error) {
-        const fallbackRes = await supabase.storage.from("media").upload(filePath, file, { upsert: true });
+        const fallbackRes = await supabase.storage
+          .from("media")
+          .upload(filePath, file, { upsert: true });
         if (fallbackRes.error) {
           throw new Error(uploadRes.error.message || fallbackRes.error.message);
         }
@@ -406,8 +410,8 @@ function AdminGalleryPage() {
               Food, Event & Video Gallery
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground max-w-xl">
-              Upload photos and video reels of your signature dishes, catering events, and
-              kitchen preparations.
+              Upload photos and video reels of your signature dishes, catering events, and kitchen
+              preparations.
             </p>
           </div>
 
@@ -843,7 +847,12 @@ function AdminGalleryPage() {
 
                 {videoUrl && (
                   <div className="relative mt-2 h-36 w-full overflow-hidden rounded-xl border border-amber-500/30 bg-black">
-                    <video src={videoUrl} controls playsInline className="h-full w-full object-contain" />
+                    <video
+                      src={videoUrl}
+                      controls
+                      playsInline
+                      className="h-full w-full object-contain"
+                    />
                   </div>
                 )}
               </div>
@@ -899,7 +908,11 @@ function AdminGalleryPage() {
               <Label className="text-xs font-bold">Title</Label>
               <Input
                 required
-                placeholder={mediaType === "video" ? "e.g. Shito Bubbling Hot in Kitchen" : "e.g. Golden Jollof Feast Bowl"}
+                placeholder={
+                  mediaType === "video"
+                    ? "e.g. Shito Bubbling Hot in Kitchen"
+                    : "e.g. Golden Jollof Feast Bowl"
+                }
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="text-xs"

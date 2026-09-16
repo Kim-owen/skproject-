@@ -148,7 +148,7 @@ function AuthPage() {
     if (password.length < 6 || !hasLower || !hasUpper || !hasDigit || !hasSymbol) {
       setBusy(false);
       setAuthError(
-        "Password must be at least 6 characters and contain an uppercase letter (A-Z), lowercase letter (a-z), number (0-9), and symbol (e.g. BarimaBa2026!)."
+        "Password must be at least 6 characters and contain an uppercase letter (A-Z), lowercase letter (a-z), number (0-9), and symbol (e.g. BarimaBa2026!).",
       );
       return toast.error("Password is missing required characters (A-Z, a-z, 0-9, symbol).");
     }
@@ -180,7 +180,7 @@ function AuthPage() {
         error.message.toLowerCase().includes("weak password")
       ) {
         setAuthError(
-          "Password is too weak. Please ensure your password includes uppercase & lowercase letters, numbers, and symbols (e.g. BarimaBa2026!), or relax password rules in your Supabase project settings."
+          "Password is too weak. Please ensure your password includes uppercase & lowercase letters, numbers, and symbols (e.g. BarimaBa2026!), or relax password rules in your Supabase project settings.",
         );
         return toast.error("Password is too weak. See requirements below.");
       } else {
@@ -783,25 +783,37 @@ function AuthPage() {
                     {/* LIVE PASSWORD REQUIREMENT CHECKLIST */}
                     {password && (
                       <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 text-xs space-y-1.5">
-                        <div className="text-[11px] font-bold text-zinc-400">Password requirements:</div>
+                        <div className="text-[11px] font-bold text-zinc-400">
+                          Password requirements:
+                        </div>
                         <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                          <div className={`flex items-center gap-1.5 ${password.length >= 6 ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}>
+                          <div
+                            className={`flex items-center gap-1.5 ${password.length >= 6 ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}
+                          >
                             <span>{password.length >= 6 ? "✓" : "○"}</span>
                             <span>Min 6 characters</span>
                           </div>
-                          <div className={`flex items-center gap-1.5 ${/[A-Z]/.test(password) ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}>
+                          <div
+                            className={`flex items-center gap-1.5 ${/[A-Z]/.test(password) ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}
+                          >
                             <span>{/[A-Z]/.test(password) ? "✓" : "○"}</span>
                             <span>Uppercase (A-Z)</span>
                           </div>
-                          <div className={`flex items-center gap-1.5 ${/[a-z]/.test(password) ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}>
+                          <div
+                            className={`flex items-center gap-1.5 ${/[a-z]/.test(password) ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}
+                          >
                             <span>{/[a-z]/.test(password) ? "✓" : "○"}</span>
                             <span>Lowercase (a-z)</span>
                           </div>
-                          <div className={`flex items-center gap-1.5 ${/[0-9]/.test(password) ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}>
+                          <div
+                            className={`flex items-center gap-1.5 ${/[0-9]/.test(password) ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}
+                          >
                             <span>{/[0-9]/.test(password) ? "✓" : "○"}</span>
                             <span>Number (0-9)</span>
                           </div>
-                          <div className={`flex items-center gap-1.5 ${/[^a-zA-Z0-9]/.test(password) ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}>
+                          <div
+                            className={`flex items-center gap-1.5 ${/[^a-zA-Z0-9]/.test(password) ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}
+                          >
                             <span>{/[^a-zA-Z0-9]/.test(password) ? "✓" : "○"}</span>
                             <span>Symbol (!@#$...)</span>
                           </div>
