@@ -15,16 +15,6 @@ export interface GalleryItem {
 
 export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = [
   {
-    id: "gal-vid-1",
-    title: "Signature Shito Animi Cooking Reel",
-    category: "Shito",
-    media_type: "video",
-    video_url: "/videos/shito-animi.mp4",
-    img: "/images/product-shito-jars.png",
-    description: "Watch our slow-stirred signature Shito Animi bubbling hot with aromatic smoked shrimp and spices.",
-    created_at: new Date().toISOString(),
-  },
-  {
     id: "gal-1",
     title: "Signature Shito Animi Jars",
     category: "Shito",
@@ -75,7 +65,8 @@ export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = [
     category: "Catering",
     media_type: "image",
     img: "/images/catering-chafing-buffet.png",
-    description: "Chafing dish setup with fragrant Jollof rice, waakye, and assorted grilled proteins.",
+    description:
+      "Chafing dish setup with fragrant Jollof rice, waakye, and assorted grilled proteins.",
     created_at: new Date().toISOString(),
   },
 ];
@@ -225,7 +216,8 @@ export const updateGalleryItem = createServerFn({ method: "POST" })
       title: data.title,
       category: data.category,
       img: data.img,
-      media_type: data.media_type || (data.video_url ? "video" : currentList[index].media_type || "image"),
+      media_type:
+        data.media_type || (data.video_url ? "video" : currentList[index].media_type || "image"),
       video_url: data.video_url !== undefined ? data.video_url : currentList[index].video_url,
       description: data.description || "",
     };

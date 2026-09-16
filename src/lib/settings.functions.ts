@@ -26,13 +26,6 @@ export interface HeroMediaSettings {
 
 export const PRO_VIDEO_PRESETS = [
   {
-    id: "shito-animi",
-    title: "Signature Shito Animi",
-    video_url: "/videos/shito-animi.mp4",
-    poster_url:
-      "https://images.unsplash.com/photo-1599043513900-ed6fe01d3833?auto=format&fit=crop&q=80&w=800",
-  },
-  {
     id: "fresh-harvest",
     title: "Fresh Farm Harvest",
     video_url:
@@ -60,7 +53,7 @@ export const PRO_VIDEO_PRESETS = [
 
 export const DEFAULT_HERO_SETTINGS: HeroMediaSettings = {
   media_type: "video",
-  video_url: "/videos/shito-animi.mp4",
+  video_url: "",
   poster_url: "/images/hero-foods-spread.png",
   badge_text: "Nationwide Delivery Across Ghana",
   headline_main: "BARIMA BA FOODS",
@@ -70,7 +63,7 @@ export const DEFAULT_HERO_SETTINGS: HeroMediaSettings = {
   autoplay: true,
   muted: true,
   loop: true,
-  overlay_text: "Signature Shito Animi Reel",
+  overlay_text: "",
   presets: PRO_VIDEO_PRESETS,
 };
 
@@ -93,15 +86,18 @@ export const getHeroSettings = createServerFn({ method: "GET" }).handler(async (
       return DEFAULT_HERO_SETTINGS;
     }
     const val = data.value as Partial<HeroMediaSettings>;
-    if (val.video_url && val.video_url.includes("mixkit.co")) {
-      val.video_url = "/videos/shito-animi.mp4";
+    if (
+      val.video_url &&
+      (val.video_url.includes("mixkit.co") || val.video_url.includes("shito-animi"))
+    ) {
+      val.video_url = "";
     }
     if (val.presets && Array.isArray(val.presets)) {
-      val.presets = val.presets.map((p) =>
-        p.video_url && p.video_url.includes("mixkit.co")
-          ? { ...p, video_url: "/videos/shito-animi.mp4" }
-          : p,
-      );
+      val.presets = val.presets
+        .filter((p) => !p.video_url || !p.video_url.includes("shito-animi"))
+        .map((p) =>
+          p.video_url && p.video_url.includes("mixkit.co") ? { ...p, video_url: "" } : p,
+        );
     }
     return { ...DEFAULT_HERO_SETTINGS, ...val };
   } catch (err) {
@@ -417,4 +413,3 @@ export const updateAdminSecurity = createServerFn({ method: "POST" })
 
     return { success: true };
   });
-

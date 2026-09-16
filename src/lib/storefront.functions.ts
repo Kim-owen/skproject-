@@ -23,24 +23,27 @@ export const getStorefrontConfig = createServerFn({ method: "GET" }).handler(
           .select("value")
           .eq("key", "storefront_config")
           .maybeSingle(),
-        supabaseAdmin
-          .from("site_settings")
-          .select("value")
-          .eq("key", "hero_media")
-          .maybeSingle(),
+        supabaseAdmin.from("site_settings").select("value").eq("key", "hero_media").maybeSingle(),
       ]);
 
-      let config = sfRes.data?.value ? normalizeStorefrontConfig(sfRes.data.value) : DEFAULT_STOREFRONT_CONFIG;
+      let config = sfRes.data?.value
+        ? normalizeStorefrontConfig(sfRes.data.value)
+        : DEFAULT_STOREFRONT_CONFIG;
 
-      if (config.hero.video_url && config.hero.video_url.includes("mixkit.co")) {
-        config.hero.video_url = "/videos/shito-animi.mp4";
+      if (
+        config.hero.video_url &&
+        (config.hero.video_url.includes("mixkit.co") ||
+          config.hero.video_url.includes("shito-animi"))
+      ) {
+        config.hero.video_url = "";
       }
 
       if (heroRes.data?.value) {
         const hm = heroRes.data.value as any;
         const cleanedVideoUrl =
-          hm.video_url && hm.video_url.includes("mixkit.co")
-            ? "/videos/shito-animi.mp4"
+          hm.video_url &&
+          (hm.video_url.includes("mixkit.co") || hm.video_url.includes("shito-animi"))
+            ? ""
             : hm.video_url;
 
         config = {
@@ -111,30 +114,28 @@ export const updateStorefrontConfig = createServerFn({ method: "POST" })
     return { success: true };
   });
 
-export const listCategoriesWithCounts = createServerFn({ method: "GET" }).handler(
-  async () => {
-    try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const [catRes, prodRes] = await Promise.all([
-        supabaseAdmin.from("categories").select("*").order("sort_order", { ascending: true }),
-        supabaseAdmin.from("products").select("id, category_id, is_active"),
-      ]);
+export const listCategoriesWithCounts = createServerFn({ method: "GET" }).handler(async () => {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const [catRes, prodRes] = await Promise.all([
+      supabaseAdmin.from("categories").select("*").order("sort_order", { ascending: true }),
+      supabaseAdmin.from("products").select("id, category_id, is_active"),
+    ]);
 
-      if (catRes.error) throw catRes.error;
+    if (catRes.error) throw catRes.error;
 
-      const categories = catRes.data ?? [];
-      const products = prodRes.data ?? [];
+    const categories = catRes.data ?? [];
+    const products = prodRes.data ?? [];
 
-      return categories.map((cat) => ({
-        ...cat,
-        products_count: products.filter((p) => p.category_id === cat.id && p.is_active).length,
-      }));
-    } catch (err: any) {
-      console.error("[Storefront] Failed to list categories:", err);
-      return [];
-    }
-  },
-);
+    return categories.map((cat) => ({
+      ...cat,
+      products_count: products.filter((p) => p.category_id === cat.id && p.is_active).length,
+    }));
+  } catch (err: any) {
+    console.error("[Storefront] Failed to list categories:", err);
+    return [];
+  }
+});
 
 export const upsertCategory = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

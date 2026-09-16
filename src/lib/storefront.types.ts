@@ -1,7 +1,4 @@
-import {
-  type StorefrontThemeConfig,
-  DEFAULT_THEME_CONFIG,
-} from "./theme-presets";
+import { type StorefrontThemeConfig, DEFAULT_THEME_CONFIG } from "./theme-presets";
 export {
   type StorefrontThemeConfig,
   type ThemeColorPreset,
@@ -148,7 +145,7 @@ export const DEFAULT_STOREFRONT_CONFIG: StorefrontConfig = {
   hero: {
     enabled: true,
     media_type: "video",
-    video_url: "/videos/shito-animi.mp4",
+    video_url: "",
     poster_url: "/images/hero-foods-spread.png",
     badge_text: "Nationwide Express Delivery Across Ghana",
     headline_main: "BARIMA BA FOODS",
@@ -252,9 +249,10 @@ export function normalizeStorefrontConfig(input?: any): StorefrontConfig {
     return DEFAULT_STOREFRONT_CONFIG;
   }
   return {
-    section_order: Array.isArray(input.section_order) && input.section_order.length > 0
-      ? input.section_order
-      : DEFAULT_STOREFRONT_CONFIG.section_order,
+    section_order:
+      Array.isArray(input.section_order) && input.section_order.length > 0
+        ? input.section_order
+        : DEFAULT_STOREFRONT_CONFIG.section_order,
     announcement: {
       ...DEFAULT_STOREFRONT_CONFIG.announcement,
       ...(input.announcement || {}),
