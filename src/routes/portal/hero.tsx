@@ -93,6 +93,68 @@ function AdminHeroSettings() {
     },
   });
 
+  const deleteOldStorageFile = async (url: string) => {
+    if (!url || typeof url !== "string") return;
+    if (!url.includes("/storage/v1/object/public/")) return;
+    const match = url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
+    if (!match) return;
+    const bucket = match[1];
+    const filePath = match[2];
+    try {
+      const { error } = await supabase.storage.from(bucket).remove([filePath]);
+      if (error) {
+        console.warn(`Storage notice (${bucket}/${filePath}):`, error.message);
+      } else {
+        console.log(`Deleted old storage file '${filePath}' from bucket '${bucket}'`);
+      }
+    } catch (err) {
+      console.warn("Storage deletion error:", err);
+    }
+  };
+
+  const [purging, setPurging] = useState<boolean>(false);
+
+  const handlePurgeUnusedStorageFiles = async () => {
+    setPurging(true);
+    try {
+      let deletedCount = 0;
+      const activeUrls = new Set<string>();
+      if (form.video_url) activeUrls.add(form.video_url);
+      if (form.poster_url) activeUrls.add(form.poster_url);
+      presets.forEach((p) => {
+        if (p.video_url) activeUrls.add(p.video_url);
+        if (p.poster_url) activeUrls.add(p.poster_url);
+      });
+
+      for (const bucket of ["hero-media", "media"]) {
+        const { data: files } = await supabase.storage
+          .from(bucket)
+          .list(bucket === "media" ? "hero" : "");
+        if (files && files.length > 0) {
+          for (const file of files) {
+            if (file.name === ".emptyFolderPlaceholder") continue;
+            const filePath = bucket === "media" ? `hero/${file.name}` : file.name;
+            const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
+            if (data?.publicUrl && !activeUrls.has(data.publicUrl)) {
+              await supabase.storage.from(bucket).remove([filePath]);
+              deletedCount++;
+            }
+          }
+        }
+      }
+
+      toast.success(
+        deletedCount > 0
+          ? `Purged ${deletedCount} unused old video/media file(s) from Supabase Storage!`
+          : "Storage clean! All stored video files are currently active.",
+      );
+    } catch (err: any) {
+      toast.error("Purge error: " + err.message);
+    } finally {
+      setPurging(false);
+    }
+  };
+
   const handleFieldChange = (key: keyof HeroMediaSettings, value: any) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
@@ -106,6 +168,7 @@ function AdminHeroSettings() {
 
     setUploading(true);
     try {
+      const oldUrl = form[field];
       const fileExt = file.name.split(".").pop();
       const fileName = `hero_${field}_${Date.now()}.${fileExt}`;
       const filePath = `hero/${fileName}`;
@@ -117,6 +180,7 @@ function AdminHeroSettings() {
           upsert: true,
         });
 
+      let newPublicUrl = "";
       if (uploadError) {
         const { error: fallbackErr } = await supabase.storage
           .from("media")
@@ -124,17 +188,21 @@ function AdminHeroSettings() {
         if (fallbackErr) throw fallbackErr;
 
         const { data: publicUrlData } = supabase.storage.from("media").getPublicUrl(filePath);
-        handleFieldChange(field, publicUrlData.publicUrl);
-        toast.success("File uploaded to Storage!", {
-          description: "Click 'Save Live Changes' top right to publish to the storefront.",
-        });
+        newPublicUrl = publicUrlData.publicUrl;
       } else {
         const { data: publicUrlData } = supabase.storage.from("hero-media").getPublicUrl(filePath);
-        handleFieldChange(field, publicUrlData.publicUrl);
-        toast.success("File uploaded to Storage!", {
-          description: "Click 'Save Live Changes' top right to publish to the storefront.",
-        });
+        newPublicUrl = publicUrlData.publicUrl;
       }
+
+      // Automatically delete old storage file if replacing an uploaded video/image
+      if (oldUrl && oldUrl !== newPublicUrl) {
+        await deleteOldStorageFile(oldUrl);
+      }
+
+      handleFieldChange(field, newPublicUrl);
+      toast.success("New video/media uploaded! Old storage file removed.", {
+        description: "Click 'Save Live Changes' top right to publish to the storefront.",
+      });
     } catch (err: any) {
       toast.error("Upload error: " + err.message);
     } finally {
@@ -142,18 +210,25 @@ function AdminHeroSettings() {
     }
   };
 
-  const handleClearHeroBg = () => {
+  const handleClearHeroBg = async () => {
+    if (form.video_url) await deleteOldStorageFile(form.video_url);
+    if (form.poster_url) await deleteOldStorageFile(form.poster_url);
     setForm((p) => ({ ...p, video_url: "", poster_url: "" }));
-    toast.success("Hero background cleared!", {
+    toast.success("Hero background cleared and old files deleted from storage!", {
       description: "Click 'Save Live Changes' top right to make this permanent.",
     });
   };
 
-  const handleRemovePreset = (id: string) => {
+  const handleRemovePreset = async (id: string) => {
+    const target = presets.find((p) => p.id === id);
+    if (target) {
+      if (target.video_url) await deleteOldStorageFile(target.video_url);
+      if (target.poster_url) await deleteOldStorageFile(target.poster_url);
+    }
     const nextPresets = presets.filter((item) => item.id !== id);
     setPresets(nextPresets);
     setForm((p) => ({ ...p, presets: nextPresets }));
-    toast.success("Preset removed from list!", {
+    toast.success("Preset removed and storage files deleted!", {
       description: "Click 'Save Live Changes' top right to delete permanently.",
     });
   };
@@ -263,15 +338,29 @@ function AdminHeroSettings() {
                   <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2">
                     <Sparkles className="h-4 w-4 text-primary" /> Pro Video Presets & Backgrounds
                   </h3>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClearHeroBg}
-                    className="text-xs text-destructive hover:bg-destructive/10 h-7 rounded-lg"
-                  >
-                    <Trash2 className="h-3.5 w-3.5 mr-1" /> Clear Background
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePurgeUnusedStorageFiles}
+                      disabled={purging}
+                      className="text-xs text-amber-500 hover:bg-amber-500/10 h-7 rounded-lg border-amber-500/30"
+                      title="Delete all unused old video files from Supabase Storage"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      {purging ? "Purging..." : "Purge Unused Videos"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClearHeroBg}
+                      className="text-xs text-destructive hover:bg-destructive/10 h-7 rounded-lg"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" /> Clear Background
+                    </Button>
+                  </div>
                 </div>
                 <p className="text-xs text-muted-foreground mb-4">
                   Select a video theme, remove unwanted presets, or click "No Background" to clear:
