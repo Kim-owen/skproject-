@@ -69,7 +69,7 @@ export const uploadHeroMediaFile = createServerFn({ method: "POST" })
     const fileBuffer = Buffer.from(data.fileBase64, "base64");
 
     let targetBucket = "hero-media";
-    let { error: uploadErr } = await supabaseAdmin.storage
+    const { error: uploadErr } = await supabaseAdmin.storage
       .from(targetBucket)
       .upload(filePath, fileBuffer, {
         contentType: data.contentType,

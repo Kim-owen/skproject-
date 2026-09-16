@@ -281,9 +281,7 @@ function AdminUsersPage() {
                   </tr>
                 ) : (
                   filteredUsers.map((u) => {
-                    const initials = (u.full_name || u.email)
-                      .slice(0, 2)
-                      .toUpperCase();
+                    const initials = (u.full_name || u.email).slice(0, 2).toUpperCase();
 
                     return (
                       <tr key={u.id} className="hover:bg-muted/20 transition-colors">
@@ -349,10 +347,16 @@ function AdminUsersPage() {
                               <SelectItem value="customer" className="text-xs font-semibold">
                                 Customer
                               </SelectItem>
-                              <SelectItem value="staff" className="text-xs font-semibold text-sky-500">
+                              <SelectItem
+                                value="staff"
+                                className="text-xs font-semibold text-sky-500"
+                              >
                                 Staff
                               </SelectItem>
-                              <SelectItem value="admin" className="text-xs font-bold text-amber-500">
+                              <SelectItem
+                                value="admin"
+                                className="text-xs font-bold text-amber-500"
+                              >
                                 Admin
                               </SelectItem>
                             </SelectContent>
@@ -418,10 +422,7 @@ function AdminUsersPage() {
       </div>
 
       {/* Direct SMS Modal */}
-      <Dialog
-        open={Boolean(smsModalUser)}
-        onOpenChange={(open) => !open && setSmsModalUser(null)}
-      >
+      <Dialog open={Boolean(smsModalUser)} onOpenChange={(open) => !open && setSmsModalUser(null)}>
         <DialogContent className="max-w-md rounded-2xl border-border bg-card">
           <DialogHeader>
             <DialogTitle className="font-display text-lg font-bold flex items-center gap-2">
@@ -438,7 +439,9 @@ function AdminUsersPage() {
 
           <form onSubmit={handleSendSMS} className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-xs font-bold text-muted-foreground uppercase">Recipient Phone</Label>
+              <Label className="text-xs font-bold text-muted-foreground uppercase">
+                Recipient Phone
+              </Label>
               <Input
                 value={smsModalUser?.phone || ""}
                 disabled

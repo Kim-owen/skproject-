@@ -46,7 +46,9 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
         const { data: order } = await supabaseAdmin
           .from("orders")
           .select("id, order_number, total_ghs, payment_status, customer_name, customer_phone")
-          .or(`payment_reference.eq.${payload.data.reference},order_number.eq.${payload.data.reference}`)
+          .or(
+            `payment_reference.eq.${payload.data.reference},order_number.eq.${payload.data.reference}`,
+          )
           .maybeSingle();
         if (!order) return new Response("Order not found", { status: 404 });
         if (order.payment_status === "paid") return new Response("ok");
@@ -66,7 +68,8 @@ export const Route = createFileRoute("/api/public/webhooks/paystack")({
           .eq("id", order.id);
 
         try {
-          const { triggerOrderPaymentConfirmedNotifications } = await import("@/lib/orders.functions");
+          const { triggerOrderPaymentConfirmedNotifications } =
+            await import("@/lib/orders.functions");
           triggerOrderPaymentConfirmedNotifications(order.id).catch((err) =>
             console.error("Paystack webhook payment notification trigger failed:", err),
           );

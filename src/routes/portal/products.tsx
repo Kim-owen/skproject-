@@ -203,7 +203,9 @@ function AdminProductsPage() {
     try {
       await toggleStatus({ data: { id: product.id, is_active: !currentActive } });
       toast.success(
-        !currentActive ? `${product.name} activated for customers` : `${product.name} hidden from store`,
+        !currentActive
+          ? `${product.name} activated for customers`
+          : `${product.name} hidden from store`,
       );
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       qc.invalidateQueries({ queryKey: ["admin-stats"] });
@@ -429,7 +431,9 @@ function AdminProductsPage() {
                 <div className="space-y-2">
                   <Label className="text-xs font-bold text-muted-foreground uppercase flex items-center justify-between">
                     <span>Product Image</span>
-                    <span className="text-[10px] text-muted-foreground font-normal">PNG, JPG, WebP up to 10MB</span>
+                    <span className="text-[10px] text-muted-foreground font-normal">
+                      PNG, JPG, WebP up to 10MB
+                    </span>
                   </Label>
 
                   <div className="flex gap-3 items-start">

@@ -390,7 +390,8 @@ function AdminHeroSettings() {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mb-4">
-                  Upload your MP4 video files below to add them to your hero gallery. Select a video to publish live on the homepage:
+                  Upload your MP4 video files below to add them to your hero gallery. Select a video
+                  to publish live on the homepage:
                 </p>
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -434,7 +435,8 @@ function AdminHeroSettings() {
                           type="button"
                           onClick={() => {
                             handleFieldChange("video_url", preset.video_url);
-                            if (preset.poster_url) handleFieldChange("poster_url", preset.poster_url);
+                            if (preset.poster_url)
+                              handleFieldChange("poster_url", preset.poster_url);
                           }}
                           className="w-full text-left"
                         >

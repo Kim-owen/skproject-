@@ -18,12 +18,7 @@ export type FontHeadingPreset =
   | "Space Grotesk"
   | "Inter";
 
-export type FontBodyPreset =
-  | "Inter"
-  | "Plus Jakarta Sans"
-  | "DM Sans"
-  | "Poppins"
-  | "Roboto";
+export type FontBodyPreset = "Inter" | "Plus Jakarta Sans" | "DM Sans" | "Poppins" | "Roboto";
 
 export type BorderRadiusPreset = "sharp" | "rounded" | "curved" | "pill";
 
@@ -121,7 +116,11 @@ export interface FontOption {
 
 export const HEADING_FONT_OPTIONS: FontOption[] = [
   { name: "Outfit", category: "Geometric Sans", previewText: "AUTHENTIC GHANAIAN TASTE" },
-  { name: "Playfair Display", category: "Editorial Serif", previewText: "Artisanal Gourmet Flavors" },
+  {
+    name: "Playfair Display",
+    category: "Editorial Serif",
+    previewText: "Artisanal Gourmet Flavors",
+  },
   { name: "Plus Jakarta Sans", category: "Modern Grotesk", previewText: "FRESH ESSENTIALS DAILY" },
   { name: "Cinzel", category: "Regal Classical", previewText: "ROYAL HERITAGE FOODS" },
   { name: "Bebas Neue", category: "Punchy Display", previewText: "BARIMA BA EXPRESS" },
@@ -132,10 +131,26 @@ export const HEADING_FONT_OPTIONS: FontOption[] = [
 
 export const BODY_FONT_OPTIONS: FontOption[] = [
   { name: "Inter", category: "Modern UI", previewText: "Crafted with authentic ingredients." },
-  { name: "Plus Jakarta Sans", category: "Crisp & Clean", previewText: "Every meal delivered fresh and hot." },
-  { name: "DM Sans", category: "Friendly High-Readability", previewText: "Enjoy nationwide delivery across Ghana." },
-  { name: "Poppins", category: "Warm Geometric", previewText: "Made with 100% natural, fresh spices." },
-  { name: "Roboto", category: "Classic Neutral", previewText: "Reliable quality and fast customer support." },
+  {
+    name: "Plus Jakarta Sans",
+    category: "Crisp & Clean",
+    previewText: "Every meal delivered fresh and hot.",
+  },
+  {
+    name: "DM Sans",
+    category: "Friendly High-Readability",
+    previewText: "Enjoy nationwide delivery across Ghana.",
+  },
+  {
+    name: "Poppins",
+    category: "Warm Geometric",
+    previewText: "Made with 100% natural, fresh spices.",
+  },
+  {
+    name: "Roboto",
+    category: "Classic Neutral",
+    previewText: "Reliable quality and fast customer support.",
+  },
 ];
 
 export interface FontPairing {

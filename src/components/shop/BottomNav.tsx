@@ -70,7 +70,8 @@ export function BottomNav() {
       to: user ? (isAdmin ? "/portal" : "/profile") : "/auth",
       label: user ? (isAdmin ? "Portal" : "Account") : "Sign In",
       icon: isAdmin ? ShieldCheck : User,
-      match: (p: string) => p === "/profile" || p === "/auth" || p === "/orders" || p.startsWith("/portal"),
+      match: (p: string) =>
+        p === "/profile" || p === "/auth" || p === "/orders" || p.startsWith("/portal"),
     },
   ];
 
@@ -89,15 +90,15 @@ export function BottomNav() {
               key={item.label}
               to={item.to}
               className={`relative flex flex-col items-center justify-center py-1 transition-all active:scale-95 ${
-                isActive ? "text-amber-500 font-extrabold" : "text-muted-foreground hover:text-foreground"
+                isActive
+                  ? "text-amber-500 font-extrabold"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <div className="relative">
                 <div
                   className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all ${
-                    isActive
-                      ? "bg-amber-500/20 text-amber-500 shadow-sm shadow-amber-500/30"
-                      : ""
+                    isActive ? "bg-amber-500/20 text-amber-500 shadow-sm shadow-amber-500/30" : ""
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -110,7 +111,9 @@ export function BottomNav() {
                 )}
               </div>
 
-              <span className={`text-[10px] tracking-tight mt-0.5 ${isActive ? "font-bold text-amber-500" : "font-medium"}`}>
+              <span
+                className={`text-[10px] tracking-tight mt-0.5 ${isActive ? "font-bold text-amber-500" : "font-medium"}`}
+              >
                 {item.label}
               </span>
 

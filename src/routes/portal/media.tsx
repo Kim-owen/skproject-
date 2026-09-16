@@ -284,8 +284,8 @@ function AdminMediaPage() {
               Manage & Remove All Images
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Upload, replace, and remove product photos, background textures, hero media, and
-              cloud storage files.
+              Upload, replace, and remove product photos, background textures, hero media, and cloud
+              storage files.
             </p>
           </div>
 
@@ -336,7 +336,11 @@ function AdminMediaPage() {
                   <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted/40 mb-4 group">
                     {p.image_url ? (
                       <>
-                        <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
+                        <img
+                          src={p.image_url}
+                          alt={p.name}
+                          className="h-full w-full object-cover"
+                        />
                         <button
                           type="button"
                           onClick={() => handleRemoveProductImage(p)}
@@ -463,7 +467,11 @@ function AdminMediaPage() {
 
               <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted/40">
                 {bgImageUrl ? (
-                  <img src={bgImageUrl} alt="Spicy Backdrop" className="h-full w-full object-cover" />
+                  <img
+                    src={bgImageUrl}
+                    alt="Spicy Backdrop"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full text-xs text-muted-foreground">
                     <ImageIcon className="h-8 w-8 mb-1 opacity-30" />
@@ -629,7 +637,9 @@ function AdminMediaPage() {
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                 {storageFiles.map((file) => {
-                  const filePath = file.name.startsWith("uploads/") ? file.name : `uploads/${file.name}`;
+                  const filePath = file.name.startsWith("uploads/")
+                    ? file.name
+                    : `uploads/${file.name}`;
                   const { data: pubData } = supabase.storage
                     .from(selectedBucket)
                     .getPublicUrl(filePath);

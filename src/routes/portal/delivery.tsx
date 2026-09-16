@@ -105,9 +105,7 @@ function AdminDeliveryPage() {
   );
 
   const activeZonesCount = zones.filter((z) => z.is_active).length;
-  const avgFee = zones.length
-    ? zones.reduce((acc, z) => acc + z.fee_ghs, 0) / zones.length
-    : 0;
+  const avgFee = zones.length ? zones.reduce((acc, z) => acc + z.fee_ghs, 0) / zones.length : 0;
 
   const handleOpenAddZone = () => {
     setZoneForm({ name: "", fee_ghs: 25, is_active: true });
@@ -319,8 +317,8 @@ function AdminDeliveryPage() {
                     ) : filteredZones.length === 0 ? (
                       <tr>
                         <td colSpan={4} className="px-5 py-12 text-center text-muted-foreground">
-                          No delivery zones configured yet. Click "Add Delivery Zone" above to create
-                          one.
+                          No delivery zones configured yet. Click "Add Delivery Zone" above to
+                          create one.
                         </td>
                       </tr>
                     ) : (

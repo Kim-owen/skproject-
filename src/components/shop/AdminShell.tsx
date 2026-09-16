@@ -181,7 +181,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <Link
             to="/portal"
             className={`flex flex-col items-center justify-center py-1 text-[10px] transition-all ${
-              pathname === "/portal" ? "text-amber-500 font-extrabold scale-105" : "text-muted-foreground"
+              pathname === "/portal"
+                ? "text-amber-500 font-extrabold scale-105"
+                : "text-muted-foreground"
             }`}
           >
             <LayoutDashboard className="h-4.5 w-4.5 mb-0.5" />

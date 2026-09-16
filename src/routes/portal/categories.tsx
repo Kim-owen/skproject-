@@ -115,9 +115,10 @@ function CategoriesPage() {
   });
 
   const filteredCategories = useMemo(() => {
-    return categories.filter((c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.slug.toLowerCase().includes(search.toLowerCase()),
+    return categories.filter(
+      (c) =>
+        c.name.toLowerCase().includes(search.toLowerCase()) ||
+        c.slug.toLowerCase().includes(search.toLowerCase()),
     );
   }, [categories, search]);
 
@@ -186,7 +187,8 @@ function CategoriesPage() {
               Categories Manager
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Organize products, set display ordering, and control which categories appear on the storefront.
+              Organize products, set display ordering, and control which categories appear on the
+              storefront.
             </p>
           </div>
 
@@ -225,7 +227,8 @@ function CategoriesPage() {
               <Layers className="h-10 w-10 text-muted-foreground mx-auto opacity-50" />
               <p className="text-base font-semibold text-foreground">No categories found</p>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                Create categories to group your provisions and make them easy to browse on the frontend.
+                Create categories to group your provisions and make them easy to browse on the
+                frontend.
               </p>
             </div>
           ) : (
@@ -311,7 +314,10 @@ function CategoriesPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4 py-2">
               <div className="space-y-2">
-                <Label htmlFor="cat_name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <Label
+                  htmlFor="cat_name"
+                  className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                >
                   Category Name <span className="text-rose-500">*</span>
                 </Label>
                 <Input
@@ -325,7 +331,10 @@ function CategoriesPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="cat_slug" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <Label
+                  htmlFor="cat_slug"
+                  className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                >
                   URL Slug <span className="text-rose-500">*</span>
                 </Label>
                 <Input
@@ -339,14 +348,19 @@ function CategoriesPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="cat_order" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                <Label
+                  htmlFor="cat_order"
+                  className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                >
                   Sort Order
                 </Label>
                 <Input
                   id="cat_order"
                   type="number"
                   value={form.sort_order}
-                  onChange={(e) => setForm((p) => ({ ...p, sort_order: parseInt(e.target.value) || 0 }))}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, sort_order: parseInt(e.target.value) || 0 }))
+                  }
                   className="rounded-xl"
                 />
                 <p className="text-[11px] text-muted-foreground">
@@ -368,7 +382,11 @@ function CategoriesPage() {
                   disabled={upsertMutation.isPending}
                   className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-bold"
                 >
-                  {upsertMutation.isPending ? "Saving..." : form.id ? "Update Category" : "Create Category"}
+                  {upsertMutation.isPending
+                    ? "Saving..."
+                    : form.id
+                      ? "Update Category"
+                      : "Create Category"}
                 </Button>
               </DialogFooter>
             </form>
@@ -383,7 +401,8 @@ function CategoriesPage() {
                 Delete Category?
               </DialogTitle>
               <DialogDescription className="text-xs text-muted-foreground">
-                Are you sure you want to delete this category? Any products assigned to it will become uncategorized.
+                Are you sure you want to delete this category? Any products assigned to it will
+                become uncategorized.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="pt-3">

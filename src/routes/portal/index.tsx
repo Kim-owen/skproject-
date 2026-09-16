@@ -142,10 +142,19 @@ function AdminDashboard() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="sm" className="rounded-xl font-semibold flex-1 sm:flex-none text-xs">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="rounded-xl font-semibold flex-1 sm:flex-none text-xs"
+            >
               <Link to="/portal/orders">Orders</Link>
             </Button>
-            <Button asChild size="sm" className="rounded-xl font-semibold flex-1 sm:flex-none text-xs">
+            <Button
+              asChild
+              size="sm"
+              className="rounded-xl font-semibold flex-1 sm:flex-none text-xs"
+            >
               <Link to="/portal/products">Inventory</Link>
             </Button>
           </div>
@@ -170,7 +179,9 @@ function AdminDashboard() {
                 <p className="font-display text-lg sm:text-3xl font-extrabold tracking-tight text-foreground truncate">
                   {kpi.value}
                 </p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">{kpi.subtext}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">
+                  {kpi.subtext}
+                </p>
               </div>
             </div>
           ))}
@@ -259,7 +270,10 @@ function AdminDashboard() {
 
               <div className="divide-y divide-border/60">
                 {data.recentOrders.slice(0, 5).map((o) => (
-                  <div key={o.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-2.5 sm:py-3 gap-1.5 sm:gap-2">
+                  <div
+                    key={o.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between py-2.5 sm:py-3 gap-1.5 sm:gap-2"
+                  >
                     <div className="flex items-center justify-between sm:justify-start gap-2">
                       <span className="font-mono text-xs font-bold text-foreground">
                         {o.order_number}
