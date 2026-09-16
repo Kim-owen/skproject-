@@ -70,6 +70,7 @@ import {
   Type,
   Check,
   Upload,
+  Trash2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/portal/storefront")({
@@ -1921,29 +1922,59 @@ function StorefrontBuilderPage() {
                             placeholder="Image URL or upload file..."
                           />
 
-                          <label className="cursor-pointer shrink-0">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-                                try {
-                                  const fileExt = file.name.split(".").pop();
-                                  const fileName = `promo_collage_${idx + 1}_${Date.now()}.${fileExt}`;
-                                  const filePath = `promos/${fileName}`;
-                                  const { error: uploadErr } = await supabase.storage
-                                    .from("media")
-                                    .upload(filePath, file, { upsert: true });
-                                  if (uploadErr) throw uploadErr;
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <label className="cursor-pointer shrink-0">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  try {
+                                    const fileExt = file.name.split(".").pop();
+                                    const fileName = `promo_collage_${idx + 1}_${Date.now()}.${fileExt}`;
+                                    const filePath = `promos/${fileName}`;
+                                    const { error: uploadErr } = await supabase.storage
+                                      .from("media")
+                                      .upload(filePath, file, { upsert: true });
+                                    if (uploadErr) throw uploadErr;
 
-                                  const { data: publicUrlData } = supabase.storage
-                                    .from("media")
-                                    .getPublicUrl(filePath);
+                                    const { data: publicUrlData } = supabase.storage
+                                      .from("media")
+                                      .getPublicUrl(filePath);
 
+                                    const newImgs = [...config.promotional_banner.images];
+                                    newImgs[idx] = publicUrlData.publicUrl;
+                                    setConfig((p) => ({
+                                      ...p,
+                                      promotional_banner: {
+                                        ...p.promotional_banner,
+                                        images: newImgs,
+                                      },
+                                    }));
+                                    setIsDirty(true);
+                                    toast.success(
+                                      `Image #${idx + 1} uploaded! Click 'Save Storefront' top right to publish.`,
+                                    );
+                                  } catch (err: any) {
+                                    toast.error("Upload failed: " + err.message);
+                                  }
+                                }}
+                              />
+                              <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all border border-primary/20">
+                                <Upload className="h-3.5 w-3.5" /> Upload
+                              </div>
+                            </label>
+
+                            {img && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
                                   const newImgs = [...config.promotional_banner.images];
-                                  newImgs[idx] = publicUrlData.publicUrl;
+                                  newImgs[idx] = "";
                                   setConfig((p) => ({
                                     ...p,
                                     promotional_banner: {
@@ -1952,18 +1983,16 @@ function StorefrontBuilderPage() {
                                     },
                                   }));
                                   setIsDirty(true);
-                                  toast.success(
-                                    `Image #${idx + 1} uploaded! Click 'Save Storefront' top right to publish.`,
-                                  );
-                                } catch (err: any) {
-                                  toast.error("Upload failed: " + err.message);
-                                }
-                              }}
-                            />
-                            <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 text-xs font-bold transition-all border border-primary/20">
-                              <Upload className="h-3.5 w-3.5" /> Upload
-                            </div>
-                          </label>
+                                  toast.info(`Cleared Image #${idx + 1}`);
+                                }}
+                                className="rounded-xl border-destructive/30 text-destructive hover:bg-destructive/10 text-xs font-bold h-9 px-2.5 shrink-0"
+                                title="Clear this image"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">Delete</span>
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
