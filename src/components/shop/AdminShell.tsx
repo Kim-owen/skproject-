@@ -74,7 +74,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               className="h-full w-full object-contain rounded-md"
             />
           </div>
-          <span className="font-display text-sm font-extrabold tracking-tight text-foreground truncate max-w-[140px] sm:max-w-none">
+          <span className="font-display text-sm font-extrabold tracking-tight text-foreground truncate max-w-35 sm:max-w-none">
             BARIMA BA <span className="text-amber-500">· Portal</span>
           </span>
         </Link>

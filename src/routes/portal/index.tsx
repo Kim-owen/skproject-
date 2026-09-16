@@ -199,7 +199,7 @@ function AdminDashboard() {
               className="rounded-2xl border border-border bg-card p-3.5 sm:p-5 shadow-xs flex flex-col justify-between"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground truncate max-w-[90px] sm:max-w-none">
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground truncate max-w-22.5 sm:max-w-none">
                   {kpi.label}
                 </span>
                 <div className={`rounded-lg p-1.5 sm:p-2 ${kpi.color}`}>
@@ -234,7 +234,7 @@ function AdminDashboard() {
             </span>
           </div>
 
-          <div className="h-64 sm:h-80 w-full min-h-[220px]">
+          <div className="h-64 sm:h-80 w-full min-h-55">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                 <defs>

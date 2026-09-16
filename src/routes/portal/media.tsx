@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Image as ImageIcon,
   Upload,
@@ -63,7 +63,7 @@ function AdminMediaPage() {
   const [uploadingStorage, setUploadingStorage] = useState(false);
 
   // Load storage files when storage tab or bucket changes
-  const loadStorageFiles = async () => {
+  const loadStorageFiles = useCallback(async () => {
     setLoadingFiles(true);
     try {
       const { data, error } = await supabase.storage.from(selectedBucket).list("uploads", {
@@ -85,13 +85,13 @@ function AdminMediaPage() {
     } finally {
       setLoadingFiles(false);
     }
-  };
+  }, [selectedBucket]);
 
   useEffect(() => {
     if (activeTab === "storage") {
       loadStorageFiles();
     }
-  }, [activeTab, selectedBucket]);
+  }, [activeTab, loadStorageFiles]);
 
   // Upload product image file directly to Supabase storage bucket
   const handleProductFileUpload = async (productId: string, file: File) => {
