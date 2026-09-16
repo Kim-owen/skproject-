@@ -3,13 +3,46 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sendSMSNotification } from "./orders.functions";
 
-async function assertAdmin(supabase: any, userId: string, user?: any) {
-  if (user?.email === "admin@barimaba.com") {
+export async function assertAdmin(supabase: any, userId: string, user?: any) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  if (
+    user?.email === "admin@barimaba.com" ||
+    user?.email === "barimabafoods@gmail.com" ||
+    user?.email === "sunumanfred14@gmail.com"
+  ) {
     return;
   }
-  const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-  if (error || !data) throw new Error("Forbidden");
+
+  const { data: roleRow } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  if (roleRow) return;
+
+  const { data: rpcData } = await supabaseAdmin.rpc("has_role", {
+    _user_id: userId,
+    _role: "admin",
+  });
+
+  if (!rpcData) {
+    throw new Error("Forbidden: Admin privileges required");
+  }
 }
+
+export const verifyAdminAccess = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    try {
+      await assertAdmin(context.supabase, context.userId, context.user);
+      return { isAdmin: true, email: context.user?.email || "" };
+    } catch {
+      return { isAdmin: false, email: context.user?.email || "" };
+    }
+  });
 
 export const getAdminStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])

@@ -34,20 +34,51 @@ export const Route = createFileRoute("/portal/")({
 function AdminDashboard() {
   const guard = useAdminGuard();
   const fetcher = useServerFn(getAdminStats);
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: () => fetcher(),
     enabled: guard === "ok",
-    refetchInterval: 30_000,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: 15_000,
   });
 
   if (guard !== "ok") {
     return (
       <AdminShell>
-        <div className="flex h-[50vh] items-center justify-center">
+        <div className="flex h-[50vh] flex-col items-center justify-center text-center p-4">
           <p className="text-sm font-semibold text-muted-foreground animate-pulse">
-            {guard === "loading" ? "Verifying authorization..." : "Access denied."}
+            {guard === "loading"
+              ? "Verifying admin access..."
+              : "Access denied. Sign in as admin to view dashboard."}
           </p>
+        </div>
+      </AdminShell>
+    );
+  }
+
+  if (isError) {
+    return (
+      <AdminShell>
+        <div className="flex min-h-[50vh] flex-col items-center justify-center p-6 text-center space-y-4 rounded-3xl border border-destructive/20 bg-card">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="font-display text-lg font-bold text-foreground">
+              Failed to load Dashboard Data
+            </h3>
+            <p className="mt-1 text-xs text-muted-foreground max-w-sm">
+              {(error as any)?.message ||
+                "An unexpected error occurred while fetching real-time stats."}
+            </p>
+          </div>
+          <Button
+            onClick={() => refetch()}
+            className="rounded-xl font-bold bg-amber-500 text-black hover:bg-amber-600"
+          >
+            Refresh Dashboard Data
+          </Button>
         </div>
       </AdminShell>
     );
@@ -62,12 +93,12 @@ function AdminDashboard() {
             <div className="h-7 w-32 animate-pulse rounded bg-muted" />
             <div className="h-4 w-48 animate-pulse rounded bg-muted" />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-28 animate-pulse rounded-xl border bg-card" />
+              <div key={i} className="h-28 animate-pulse rounded-2xl border bg-card" />
             ))}
           </div>
-          <div className="h-80 animate-pulse rounded-xl border bg-card" />
+          <div className="h-64 sm:h-80 animate-pulse rounded-2xl border bg-card" />
         </div>
       </AdminShell>
     );

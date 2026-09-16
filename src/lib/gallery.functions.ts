@@ -71,15 +71,7 @@ export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = [
   },
 ];
 
-async function assertAdmin(supabase: any, userId: string) {
-  const { data: hasAdmin, error } = await supabase.rpc("has_role", {
-    _user_id: userId,
-    _role: "admin",
-  });
-  if (error || !hasAdmin) {
-    throw new Error("Unauthorized: Admin privileges required.");
-  }
-}
+import { assertAdmin } from "./admin.functions";
 
 export const getGalleryItems = createServerFn({ method: "GET" }).handler(async () => {
   try {

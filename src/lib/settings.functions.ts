@@ -42,11 +42,7 @@ export const DEFAULT_HERO_SETTINGS: HeroMediaSettings = {
   presets: [],
 };
 
-async function assertAdmin(supabase: any, userId: string) {
-  const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-  if (error) throw new Error(error.message);
-  if (!data) throw new Error("Forbidden");
-}
+import { assertAdmin } from "./admin.functions";
 
 export const uploadHeroMediaFile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
