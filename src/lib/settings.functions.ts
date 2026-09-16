@@ -33,10 +33,10 @@ export const PRO_VIDEO_PRESETS = [
       "https://images.unsplash.com/photo-1599043513900-ed6fe01d3833?auto=format&fit=crop&q=80&w=800",
   },
   {
-    id: "produce-market",
-    title: "Fresh Produce & Market",
+    id: "fresh-harvest",
+    title: "Fresh Farm Harvest",
     video_url:
-      "https://assets.mixkit.co/videos/preview/mixkit-fresh-vegetables-and-fruits-in-a-market-42847-large.mp4",
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyTouches.mp4",
     poster_url:
       "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800",
   },
@@ -44,7 +44,7 @@ export const PRO_VIDEO_PRESETS = [
     id: "fresh-cooking",
     title: "Gourmet Kitchen Prep",
     video_url:
-      "https://assets.mixkit.co/videos/preview/mixkit-cutting-fresh-vegetables-on-a-wooden-board-43093-large.mp4",
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
     poster_url:
       "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80&w=800",
   },
@@ -52,17 +52,9 @@ export const PRO_VIDEO_PRESETS = [
     id: "organic-store",
     title: "Pantry & Groceries",
     video_url:
-      "https://assets.mixkit.co/videos/preview/mixkit-woman-choosing-fruits-in-a-supermarket-42848-large.mp4",
+      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
     poster_url:
       "https://images.unsplash.com/photo-1588964895597-cfccd6e2dbf9?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: "fresh-fruit-harvest",
-    title: "Fresh Harvest & Orchard",
-    video_url:
-      "https://assets.mixkit.co/videos/preview/mixkit-hands-selecting-ripe-oranges-in-a-market-42849-large.mp4",
-    poster_url:
-      "https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&q=80&w=800",
   },
 ];
 
