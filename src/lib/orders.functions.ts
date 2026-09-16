@@ -465,8 +465,8 @@ export const getOrderByNumber = createServerFn({ method: "POST" })
     const fullCols =
       "id, order_number, status, payment_status, payment_method, payment_reference, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, customer_email, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
 
-    const fallbackCols =
-      "id, order_number, status, payment_status, payment_method, payment_reference, delivery_type, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, customer_email, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
+    const baseCols =
+      "id, order_number, status, payment_status, payment_method, payment_reference, delivery_type, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, customer_email, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
 
     let { data: order, error } = await supabaseAdmin
       .from("orders")
@@ -475,10 +475,10 @@ export const getOrderByNumber = createServerFn({ method: "POST" })
       .maybeSingle();
 
     if (error) {
-      console.warn("[getOrderByNumber] Query with fullCols failed, trying fallbackCols:", error.message);
+      console.warn("[getOrderByNumber] Query with fullCols failed, trying baseCols:", error.message);
       const retry = await supabaseAdmin
         .from("orders")
-        .select(fallbackCols)
+        .select(baseCols)
         .eq("order_number", data.order_number.trim().toUpperCase())
         .maybeSingle();
       order = retry.data as any;
@@ -710,26 +710,36 @@ export const getUserAccountDetails = createServerFn({ method: "GET" })
 
     let orders: any[] = [];
     try {
-      let q = supabaseAdmin
-        .from("orders")
-        .select(
-          "id, order_number, status, payment_status, payment_method, delivery_type, total_ghs, created_at, delivery_address, uber_tracking_url, rider_name, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_id, product_name, quantity, unit, unit_price_ghs)",
-        )
-        .order("created_at", { ascending: false })
-        .limit(50);
+      const fullCols =
+        "id, order_number, status, payment_status, payment_method, delivery_type, total_ghs, created_at, delivery_address, uber_tracking_url, rider_name, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_id, product_name, quantity, unit, unit_price_ghs)";
+      const baseCols =
+        "id, order_number, status, payment_status, payment_method, delivery_type, total_ghs, created_at, delivery_address, order_items(product_id, product_name, quantity, unit, unit_price_ghs)";
 
-      if (last9Digits) {
-        if (authEmail) {
-          q = q.or(`customer_phone.ilike.%${last9Digits}%,customer_email.ilike.${authEmail}`);
-        } else {
-          q = q.ilike("customer_phone", `%${last9Digits}%`);
+      const runOrderQuery = async (selectCols: string) => {
+        let q = supabaseAdmin
+          .from("orders")
+          .select(selectCols)
+          .order("created_at", { ascending: false })
+          .limit(50);
+
+        if (last9Digits) {
+          if (authEmail) {
+            q = q.or(`customer_phone.ilike.%${last9Digits}%,customer_email.ilike.${authEmail}`);
+          } else {
+            q = q.ilike("customer_phone", `%${last9Digits}%`);
+          }
+        } else if (authEmail) {
+          q = q.ilike("customer_email", authEmail);
         }
-      } else if (authEmail) {
-        q = q.ilike("customer_email", authEmail);
-      }
+        return await q;
+      };
 
-      const { data: userOrders } = await q;
-      orders = userOrders ?? [];
+      let res = await runOrderQuery(fullCols);
+      if (res.error) {
+        console.warn("[getUserAccountDetails] Retrying with base columns:", res.error.message);
+        res = await runOrderQuery(baseCols);
+      }
+      orders = res.data ?? [];
     } catch (err) {
       console.error("[getUserAccountDetails] Error fetching user orders:", err);
     }
@@ -814,13 +824,13 @@ export const listCustomerOrders = createServerFn({ method: "POST" })
     const fullCols =
       "id, order_number, status, payment_status, payment_method, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, customer_email, delivery_address, ghana_post_gps, gps_coordinates, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_id, product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
 
-    const fallbackCols =
-      "id, order_number, status, payment_status, payment_method, delivery_type, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, customer_email, delivery_address, ghana_post_gps, gps_coordinates, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_id, product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
+    const baseCols =
+      "id, order_number, status, payment_status, payment_method, delivery_type, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, customer_email, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_id, product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
 
     let res = await runQuery(fullCols);
     if (res.error) {
-      console.warn("[listCustomerOrders] Retrying with fallback columns:", res.error.message);
-      res = await runQuery(fallbackCols);
+      console.warn("[listCustomerOrders] Retrying with base columns:", res.error.message);
+      res = await runQuery(baseCols);
     }
 
     if (res.error) {
