@@ -191,11 +191,6 @@ function AdminHeroSettings() {
 
           const newPublicUrl = res.publicUrl;
 
-          // Automatically delete old storage file if replacing an uploaded video/image
-          if (oldUrl && oldUrl !== newPublicUrl) {
-            await deleteOldStorageFile(oldUrl);
-          }
-
           if (field === "video_url") {
             const videoName = file.name.replace(/\.[^/.]+$/, "");
             const newPreset: HeroMediaPreset = {
