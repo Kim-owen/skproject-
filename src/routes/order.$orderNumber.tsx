@@ -114,7 +114,7 @@ function OrderPage() {
           setVerifying(false);
         });
     }
-  }, [reference, order?.payment_status, order?.order_number, verifyFn, queryClient, orderNumber]);
+  }, [reference, order, verifyFn, queryClient, orderNumber]);
 
   const handlePayNow = async () => {
     setPaying(true);
