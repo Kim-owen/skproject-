@@ -46,6 +46,64 @@ export async function sendResendEmail(params: {
   return { success: true, data };
 }
 
+export async function sendResendPrivateBroadcast(params: {
+  recipients: string[];
+  subject: string;
+  html: string;
+  text?: string;
+}) {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    console.warn("[Resend] RESEND_API_KEY not found in environment.");
+    return { success: false, sentCount: 0 };
+  }
+
+  const validRecipients = params.recipients.filter(
+    (e): e is string =>
+      Boolean(e) && typeof e === "string" && !e.includes("@guest.barimabafoods.shop"),
+  );
+
+  if (validRecipients.length === 0) return { success: true, sentCount: 0 };
+
+  let sentCount = 0;
+  const chunkSize = 5;
+
+  for (let i = 0; i < validRecipients.length; i += chunkSize) {
+    const chunk = validRecipients.slice(i, i + chunkSize);
+    await Promise.all(
+      chunk.map(async (email) => {
+        try {
+          const response = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: "Barima Ba Foods <notifications@barimabafoods.shop>",
+              to: [email],
+              subject: params.subject,
+              html: params.html,
+              text: params.text,
+            }),
+          });
+          if (response.ok) {
+            sentCount++;
+          } else {
+            const errData = await response.json();
+            console.error(`[Resend] Failed to send email to ${email}:`, errData);
+          }
+        } catch (err) {
+          console.error(`[Resend] Network error sending to ${email}:`, err);
+        }
+      }),
+    );
+  }
+
+  return { success: true, sentCount };
+}
+
 export async function notifyAllUsersNewItem(item: {
   title: string;
   type: "product" | "package" | "catering";
@@ -127,21 +185,14 @@ export async function notifyAllUsersNewItem(item: {
       </div>
     `;
 
-    // Send emails in batches of 50 to respect rate limits
-    const batchSize = 50;
-    for (let i = 0; i < userEmails.length; i += batchSize) {
-      const batch = userEmails.slice(i, i + batchSize);
-      await sendResendEmail({
-        to: batch,
-        subject,
-        html: htmlContent,
-      });
-    }
+    const res = await sendResendPrivateBroadcast({
+      recipients: userEmails,
+      subject,
+      html: htmlContent,
+    });
 
-    console.log(
-      `[Resend] Successfully sent product email broadcast to ${userEmails.length} users.`,
-    );
-    return { success: true, sentCount: userEmails.length };
+    console.log(`[Resend] Successfully sent private email broadcast to ${res.sentCount} users.`);
+    return { success: true, sentCount: res.sentCount };
   } catch (err: any) {
     console.error("[Resend Broadcast Error]:", err);
     return { success: false, error: err.message };
@@ -202,17 +253,13 @@ export const sendAdminEmailBroadcast = createServerFn({ method: "POST" })
       </div>
     `;
 
-    const batchSize = 50;
-    for (let i = 0; i < userEmails.length; i += batchSize) {
-      const batch = userEmails.slice(i, i + batchSize);
-      await sendResendEmail({
-        to: batch,
-        subject: data.subject,
-        html: htmlContent,
-      });
-    }
+    const res = await sendResendPrivateBroadcast({
+      recipients: userEmails,
+      subject: data.subject,
+      html: htmlContent,
+    });
 
-    return { success: true, sentCount: userEmails.length };
+    return { success: true, sentCount: res.sentCount };
   });
 
 export async function sendOrderConfirmationEmailToCustomer(order: {
