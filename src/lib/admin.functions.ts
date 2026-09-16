@@ -3,9 +3,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { sendSMSNotification } from "./orders.functions";
 
-async function assertAdmin(supabase: any, userId: string) {
-  const { data: userRes } = await supabase.auth.getUser();
-  if (userRes?.user?.email === "admin@barimaba.com") {
+async function assertAdmin(supabase: any, userId: string, user?: any) {
+  if (user?.email === "admin@barimaba.com") {
     return;
   }
   const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
@@ -15,7 +14,7 @@ async function assertAdmin(supabase: any, userId: string) {
 export const getAdminStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.user);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [orders, products, lowStock] = await Promise.all([
       supabaseAdmin
@@ -51,7 +50,7 @@ export const getAdminStats = createServerFn({ method: "GET" })
 export const listAdminOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.user);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data, error } = await supabaseAdmin
@@ -84,7 +83,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.user);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Fetch order first to get details for SMS
@@ -157,7 +156,7 @@ export const updateOrderDispatchDetails = createServerFn({ method: "POST" })
     }),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.user);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const updatePayload: Record<string, unknown> = {};
@@ -222,7 +221,7 @@ export const updateOrderDispatchDetails = createServerFn({ method: "POST" })
 export const listAdminProducts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.user);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const [{ data: products }, { data: categories }] = await Promise.all([
       supabaseAdmin.from("products").select("*").order("name"),
@@ -253,7 +252,7 @@ export const upsertProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(productInput)
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.user);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const row = {
       name: data.name,
@@ -280,7 +279,7 @@ export const deleteProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.user);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("products")
@@ -294,7 +293,7 @@ export const permanentlyDeleteProduct = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(z.object({ id: z.string().uuid() }))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.user);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("products")
@@ -308,7 +307,7 @@ export const toggleProductStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(z.object({ id: z.string().uuid(), is_active: z.boolean() }))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.supabase, context.userId, context.user);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("products")
