@@ -313,57 +313,55 @@ function StorefrontBuilderPage() {
     <AdminShell>
       <div className="space-y-6 max-w-7xl mx-auto pb-24">
         {/* Top Header & Publishing Controls */}
-        <div className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-card/90 p-4 backdrop-blur-xl shadow-lg">
+        <div className="sticky top-0 z-30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-2xl border border-border bg-card/90 backdrop-blur-xl shadow-lg">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-500 mb-1">
-              <LayoutTemplate className="h-3.5 w-3.5" />
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[10px] sm:text-xs font-bold text-amber-500 mb-1">
+              <LayoutTemplate className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
               <span>STOREFRONT CMS BUILDER</span>
             </div>
-            <h1 className="font-display text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            <h1 className="font-display text-lg sm:text-2xl font-bold tracking-tight text-foreground">
               Plug & Play Storefront Builder
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[11px] sm:text-xs text-muted-foreground">
               Toggle sections, rearrange layout order, and edit frontend content with instant live
               preview.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowPreview(!showPreview)}
-              className="rounded-xl border-border"
+              className="rounded-xl border-border text-xs px-2.5 sm:px-3 h-8 sm:h-9"
             >
-              <Eye className="mr-1.5 h-4 w-4 text-amber-500" />
-              {showPreview ? "Hide Preview" : "Show Live Preview"}
+              <Eye className="mr-1 sm:mr-1.5 h-3.5 w-3.5 text-amber-500" />
+              <span>{showPreview ? "Hide Preview" : "Preview"}</span>
             </Button>
 
             <Button
               variant="outline"
               size="sm"
               onClick={handleResetToDefaults}
-              className="rounded-xl border-border hover:text-amber-500"
+              className="rounded-xl border-border hover:text-amber-500 text-xs px-2.5 sm:px-3 h-8 sm:h-9"
             >
-              <RotateCcw className="mr-1.5 h-4 w-4" />
-              Reset Defaults
+              <RotateCcw className="mr-1 sm:mr-1.5 h-3.5 w-3.5" />
+              <span>Reset</span>
             </Button>
 
             <Button
               size="sm"
               onClick={() => saveMutation.mutate(config)}
               disabled={saveMutation.isPending}
-              className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md shadow-amber-500/20"
+              className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md shadow-amber-500/20 text-xs px-3 sm:px-4 h-8 sm:h-9"
             >
-              <Save className="mr-1.5 h-4 w-4" />
-              {saveMutation.isPending
-                ? "Publishing..."
-                : isDirty
-                  ? "Publish Changes *"
-                  : "Published"}
+              <Save className="mr-1 sm:mr-1.5 h-3.5 w-3.5" />
+              <span>
+                {saveMutation.isPending ? "Publishing..." : isDirty ? "Publish *" : "Published"}
+              </span>
             </Button>
 
-            <Button asChild size="sm" variant="ghost" className="rounded-xl">
+            <Button asChild size="sm" variant="ghost" className="rounded-xl h-8 sm:h-9 px-2">
               <Link to="/" target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-4 w-4 text-muted-foreground" />
               </Link>
@@ -1999,50 +1997,67 @@ function StorefrontBuilderPage() {
                     {config.trust_ribbon.items.map((item, idx) => (
                       <div
                         key={idx}
-                        className="grid grid-cols-3 gap-2 p-2.5 rounded-xl border border-border bg-background"
+                        className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-3 rounded-xl border border-border bg-background"
                       >
-                        <Input
-                          value={item.icon}
-                          onChange={(e) => {
-                            const items = [...config.trust_ribbon.items];
-                            items[idx].icon = e.target.value;
-                            setConfig((p) => ({
-                              ...p,
-                              trust_ribbon: { ...p.trust_ribbon, items },
-                            }));
-                            setIsDirty(true);
-                          }}
-                          placeholder="Icon (e.g. Leaf, Shield, Flame)"
-                          className="rounded-lg text-xs"
-                        />
-                        <Input
-                          value={item.title}
-                          onChange={(e) => {
-                            const items = [...config.trust_ribbon.items];
-                            items[idx].title = e.target.value;
-                            setConfig((p) => ({
-                              ...p,
-                              trust_ribbon: { ...p.trust_ribbon, items },
-                            }));
-                            setIsDirty(true);
-                          }}
-                          placeholder="Title"
-                          className="rounded-lg text-xs font-bold"
-                        />
-                        <Input
-                          value={item.desc}
-                          onChange={(e) => {
-                            const items = [...config.trust_ribbon.items];
-                            items[idx].desc = e.target.value;
-                            setConfig((p) => ({
-                              ...p,
-                              trust_ribbon: { ...p.trust_ribbon, items },
-                            }));
-                            setIsDirty(true);
-                          }}
-                          placeholder="Description"
-                          className="rounded-lg text-xs"
-                        />
+                        <div className="space-y-1">
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase sm:hidden">
+                            Icon
+                          </Label>
+                          <Input
+                            value={item.icon}
+                            onChange={(e) => {
+                              const items = [...config.trust_ribbon.items];
+                              items[idx].icon = e.target.value;
+                              setConfig((p) => ({
+                                ...p,
+                                trust_ribbon: { ...p.trust_ribbon, items },
+                              }));
+                              setIsDirty(true);
+                            }}
+                            placeholder="Icon (e.g. Leaf, Shield, Flame)"
+                            className="rounded-lg text-xs"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase sm:hidden">
+                            Title
+                          </Label>
+                          <Input
+                            value={item.title}
+                            onChange={(e) => {
+                              const items = [...config.trust_ribbon.items];
+                              items[idx].title = e.target.value;
+                              setConfig((p) => ({
+                                ...p,
+                                trust_ribbon: { ...p.trust_ribbon, items },
+                              }));
+                              setIsDirty(true);
+                            }}
+                            placeholder="Title"
+                            className="rounded-lg text-xs font-bold"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label className="text-[10px] font-bold text-muted-foreground uppercase sm:hidden">
+                            Description
+                          </Label>
+                          <Input
+                            value={item.desc}
+                            onChange={(e) => {
+                              const items = [...config.trust_ribbon.items];
+                              items[idx].desc = e.target.value;
+                              setConfig((p) => ({
+                                ...p,
+                                trust_ribbon: { ...p.trust_ribbon, items },
+                              }));
+                              setIsDirty(true);
+                            }}
+                            placeholder="Description"
+                            className="rounded-lg text-xs"
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
