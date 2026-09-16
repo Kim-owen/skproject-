@@ -66,11 +66,11 @@ export const VIDEO_PRESETS = [
   },
   {
     title: "Fresh Vegetables & Market Produce",
-    url: "https://assets.mixkit.co/videos/preview/mixkit-fresh-vegetables-and-fruits-in-a-market-42847-large.mp4",
+    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyTouches.mp4",
   },
   {
     title: "Gourmet Kitchen Food Prep",
-    url: "https://assets.mixkit.co/videos/preview/mixkit-cutting-fresh-vegetables-on-a-wooden-board-43093-large.mp4",
+    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
   },
 ];
 

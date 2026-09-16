@@ -92,7 +92,18 @@ export const getHeroSettings = createServerFn({ method: "GET" }).handler(async (
     if (error || !data || !data.value) {
       return DEFAULT_HERO_SETTINGS;
     }
-    return { ...DEFAULT_HERO_SETTINGS, ...(data.value as Partial<HeroMediaSettings>) };
+    const val = data.value as Partial<HeroMediaSettings>;
+    if (val.video_url && val.video_url.includes("mixkit.co")) {
+      val.video_url = "/videos/shito-animi.mp4";
+    }
+    if (val.presets && Array.isArray(val.presets)) {
+      val.presets = val.presets.map((p) =>
+        p.video_url && p.video_url.includes("mixkit.co")
+          ? { ...p, video_url: "/videos/shito-animi.mp4" }
+          : p,
+      );
+    }
+    return { ...DEFAULT_HERO_SETTINGS, ...val };
   } catch (err) {
     console.error("Error fetching hero settings:", err);
     return DEFAULT_HERO_SETTINGS;

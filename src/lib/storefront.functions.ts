@@ -32,14 +32,23 @@ export const getStorefrontConfig = createServerFn({ method: "GET" }).handler(
 
       let config = sfRes.data?.value ? normalizeStorefrontConfig(sfRes.data.value) : DEFAULT_STOREFRONT_CONFIG;
 
+      if (config.hero.video_url && config.hero.video_url.includes("mixkit.co")) {
+        config.hero.video_url = "/videos/shito-animi.mp4";
+      }
+
       if (heroRes.data?.value) {
         const hm = heroRes.data.value as any;
+        const cleanedVideoUrl =
+          hm.video_url && hm.video_url.includes("mixkit.co")
+            ? "/videos/shito-animi.mp4"
+            : hm.video_url;
+
         config = {
           ...config,
           hero: {
             ...config.hero,
             media_type: hm.media_type ?? config.hero.media_type,
-            video_url: hm.video_url ?? config.hero.video_url,
+            video_url: cleanedVideoUrl ?? config.hero.video_url,
             poster_url: hm.poster_url ?? config.hero.poster_url,
             badge_text: hm.badge_text ?? config.hero.badge_text,
             headline_main: hm.headline_main ?? config.hero.headline_main,
