@@ -13,7 +13,7 @@ export async function sendResendEmail(params: {
   html: string;
   text?: string;
 }) {
-  const apiKey = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY;
+  const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
     console.warn("[Resend] RESEND_API_KEY not found in environment.");

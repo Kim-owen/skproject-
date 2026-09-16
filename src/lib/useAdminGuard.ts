@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export function useAdminGuard() {
   const navigate = useNavigate();
@@ -11,7 +12,11 @@ export function useAdminGuard() {
     (async () => {
       const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) {
-        navigate({ to: "/auth" });
+        if (!cancelled) {
+          setState("denied");
+          toast.error("Please sign in to access the admin portal.");
+          navigate({ to: "/auth", replace: true });
+        }
         return;
       }
 
@@ -25,8 +30,14 @@ export function useAdminGuard() {
         _role: "admin",
       });
       if (cancelled) return;
-      if (error || !data) setState("denied");
-      else setState("ok");
+
+      if (error || !data) {
+        setState("denied");
+        toast.error("Access Denied: Admin privileges required.");
+        navigate({ to: "/", replace: true });
+      } else {
+        setState("ok");
+      }
     })();
     return () => {
       cancelled = true;
