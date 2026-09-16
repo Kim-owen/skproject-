@@ -30,6 +30,7 @@ import {
 import {
   getHeroSettings,
   updateHeroSettings,
+  uploadHeroMediaFile,
   DEFAULT_HERO_SETTINGS,
   PRO_VIDEO_PRESETS,
   type HeroMediaSettings,
@@ -54,6 +55,7 @@ function AdminHeroSettings() {
 
   const fetcher = useServerFn(getHeroSettings);
   const updater = useServerFn(updateHeroSettings);
+  const mediaUploader = useServerFn(uploadHeroMediaFile);
 
   const { data: initialData, isLoading } = useQuery({
     queryKey: ["hero-settings"],
@@ -69,26 +71,9 @@ function AdminHeroSettings() {
 
   useEffect(() => {
     if (initialData) {
-      const cleanForm = { ...initialData };
-      if (
-        cleanForm.poster_url &&
-        (cleanForm.poster_url.includes("hero-foods-spread") ||
-          cleanForm.poster_url.includes("spicy-african-bg") ||
-          cleanForm.poster_url.includes("shito-animi"))
-      ) {
-        cleanForm.poster_url = "";
-      }
-      if (
-        cleanForm.video_url &&
-        (cleanForm.video_url.includes("shito-animi") || cleanForm.video_url.includes("mixkit.co"))
-      ) {
-        cleanForm.video_url = "";
-      }
-      setForm(cleanForm);
+      setForm(initialData);
       if (initialData.presets && Array.isArray(initialData.presets)) {
-        setPresets(
-          initialData.presets.filter((p) => !p.video_url || !p.video_url.includes("shito-animi")),
-        );
+        setPresets(initialData.presets);
       }
       setIsInitialized(true);
     }
@@ -186,43 +171,49 @@ function AdminHeroSettings() {
     setUploading(true);
     try {
       const oldUrl = form[field];
-      const fileExt = file.name.split(".").pop();
-      const fileName = `hero_${field}_${Date.now()}.${fileExt}`;
-      const filePath = `hero/${fileName}`;
+      const reader = new FileReader();
 
-      // Upload to supabase storage bucket 'hero-media' with fallback to 'media'
-      const { error: uploadError } = await supabase.storage
-        .from("hero-media")
-        .upload(filePath, file, {
-          upsert: true,
-        });
+      reader.onload = async () => {
+        try {
+          const resultStr = reader.result as string;
+          const base64Content = resultStr.split(",")[1];
+          if (!base64Content) throw new Error("Could not read file data");
 
-      let newPublicUrl = "";
-      if (uploadError) {
-        const { error: fallbackErr } = await supabase.storage
-          .from("media")
-          .upload(filePath, file, { upsert: true });
-        if (fallbackErr) throw fallbackErr;
+          const res = await mediaUploader({
+            data: {
+              fileName: file.name,
+              fileBase64: base64Content,
+              contentType: file.type || (field === "video_url" ? "video/mp4" : "image/png"),
+              field,
+            },
+          });
 
-        const { data: publicUrlData } = supabase.storage.from("media").getPublicUrl(filePath);
-        newPublicUrl = publicUrlData.publicUrl;
-      } else {
-        const { data: publicUrlData } = supabase.storage.from("hero-media").getPublicUrl(filePath);
-        newPublicUrl = publicUrlData.publicUrl;
-      }
+          const newPublicUrl = res.publicUrl;
 
-      // Automatically delete old storage file if replacing an uploaded video/image
-      if (oldUrl && oldUrl !== newPublicUrl) {
-        await deleteOldStorageFile(oldUrl);
-      }
+          // Automatically delete old storage file if replacing an uploaded video/image
+          if (oldUrl && oldUrl !== newPublicUrl) {
+            await deleteOldStorageFile(oldUrl);
+          }
 
-      handleFieldChange(field, newPublicUrl);
-      toast.success("New video/media uploaded! Old storage file removed.", {
-        description: "Click 'Save Live Changes' top right to publish to the storefront.",
-      });
+          handleFieldChange(field, newPublicUrl);
+          toast.success("New video/media uploaded successfully!", {
+            description: "Click 'Save Live Changes' top right to publish to the storefront.",
+          });
+        } catch (uploadErr: any) {
+          toast.error("Upload error: " + (uploadErr.message || "Failed to upload file"));
+        } finally {
+          setUploading(false);
+        }
+      };
+
+      reader.onerror = () => {
+        toast.error("Failed to read file from disk");
+        setUploading(false);
+      };
+
+      reader.readAsDataURL(file);
     } catch (err: any) {
       toast.error("Upload error: " + err.message);
-    } finally {
       setUploading(false);
     }
   };

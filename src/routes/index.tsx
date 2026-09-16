@@ -185,19 +185,8 @@ function Home() {
         // 2. HERO SHOWCASE SECTION
         if (sectionId === "hero" && safeConfig?.hero?.enabled) {
           const hero = safeConfig.hero;
-          const cleanPoster =
-            hero.poster_url &&
-            !hero.poster_url.includes("hero-foods-spread") &&
-            !hero.poster_url.includes("spicy-african-bg") &&
-            !hero.poster_url.includes("shito-animi")
-              ? hero.poster_url
-              : "";
-
-          const hasVideo =
-            hero.media_type === "video" &&
-            hero.video_url &&
-            !hero.video_url.includes("shito-animi") &&
-            !hero.video_url.includes("mixkit.co");
+          const cleanPoster = hero.poster_url || "";
+          const hasVideo = hero.media_type === "video" && Boolean(hero.video_url?.trim());
 
           return (
             <section

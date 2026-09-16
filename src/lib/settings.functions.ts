@@ -70,6 +70,53 @@ async function assertAdmin(supabase: any, userId: string) {
   if (!data) throw new Error("Forbidden");
 }
 
+export const uploadHeroMediaFile = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(
+    z.object({
+      fileName: z.string().min(1),
+      fileBase64: z.string().min(1),
+      contentType: z.string().min(1),
+      field: z.enum(["video_url", "poster_url"]),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const ext = data.fileName.split(".").pop() || (data.field === "video_url" ? "mp4" : "png");
+    const cleanFileName = `hero_${data.field}_${Date.now()}.${ext}`;
+    const filePath = `hero/${cleanFileName}`;
+
+    const fileBuffer = Buffer.from(data.fileBase64, "base64");
+
+    let targetBucket = "hero-media";
+    let { error: uploadErr } = await supabaseAdmin.storage
+      .from(targetBucket)
+      .upload(filePath, fileBuffer, {
+        contentType: data.contentType,
+        upsert: true,
+      });
+
+    if (uploadErr) {
+      targetBucket = "media";
+      const { error: fallbackErr } = await supabaseAdmin.storage
+        .from(targetBucket)
+        .upload(filePath, fileBuffer, {
+          contentType: data.contentType,
+          upsert: true,
+        });
+
+      if (fallbackErr) {
+        throw new Error(fallbackErr.message || "Failed to upload media file to storage");
+      }
+    }
+
+    const { data: pubUrlData } = supabaseAdmin.storage.from(targetBucket).getPublicUrl(filePath);
+
+    return { publicUrl: pubUrlData.publicUrl };
+  });
+
 export const getHeroSettings = createServerFn({ method: "GET" }).handler(async () => {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -83,27 +130,6 @@ export const getHeroSettings = createServerFn({ method: "GET" }).handler(async (
       return DEFAULT_HERO_SETTINGS;
     }
     const val = data.value as Partial<HeroMediaSettings>;
-    if (
-      val.video_url &&
-      (val.video_url.includes("mixkit.co") || val.video_url.includes("shito-animi"))
-    ) {
-      val.video_url = "";
-    }
-    if (
-      val.poster_url &&
-      (val.poster_url.includes("hero-foods-spread") ||
-        val.poster_url.includes("spicy-african-bg") ||
-        val.poster_url.includes("shito-animi"))
-    ) {
-      val.poster_url = "";
-    }
-    if (val.presets && Array.isArray(val.presets)) {
-      val.presets = val.presets
-        .filter((p) => !p.video_url || !p.video_url.includes("shito-animi"))
-        .map((p) =>
-          p.video_url && p.video_url.includes("mixkit.co") ? { ...p, video_url: "" } : p,
-        );
-    }
     return { ...DEFAULT_HERO_SETTINGS, ...val };
   } catch (err) {
     console.error("Error fetching hero settings:", err);
