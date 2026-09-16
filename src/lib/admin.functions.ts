@@ -48,15 +48,29 @@ export const listAdminOrders = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+
+    const fullCols =
+      "id, order_number, customer_name, customer_phone, total_ghs, status, payment_status, payment_method, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, delivery_address, ghana_post_gps, gps_coordinates, created_at";
+    const fallbackCols =
+      "id, order_number, customer_name, customer_phone, total_ghs, status, payment_status, payment_method, delivery_type, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, delivery_address, ghana_post_gps, gps_coordinates, created_at";
+
+    let res = await supabaseAdmin
       .from("orders")
-      .select(
-        "id, order_number, customer_name, customer_phone, total_ghs, status, payment_status, payment_method, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, delivery_address, ghana_post_gps, gps_coordinates, created_at",
-      )
+      .select(fullCols)
       .order("created_at", { ascending: false })
       .limit(200);
-    if (error) throw new Error(error.message);
-    return data ?? [];
+
+    if (res.error) {
+      console.warn("[listAdminOrders] Retrying with fallback columns:", res.error.message);
+      res = await supabaseAdmin
+        .from("orders")
+        .select(fallbackCols)
+        .order("created_at", { ascending: false })
+        .limit(200);
+    }
+
+    if (res.error) throw new Error(res.error.message);
+    return res.data ?? [];
   });
 
 export const updateOrderStatus = createServerFn({ method: "POST" })

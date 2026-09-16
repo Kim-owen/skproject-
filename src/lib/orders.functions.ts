@@ -633,14 +633,15 @@ export const getUserAccountDetails = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const userId = context.userId;
 
-    const [profileRes, txRes] = await Promise.all([
+    const [{ data: profile }, authUserRes, txRes] = await Promise.all([
       supabaseAdmin
         .from("profiles")
         .select(
           "id, full_name, phone, delivery_address, ghana_post_gps, gps_coordinates, wallet_balance_ghs, created_at",
         )
         .eq("id", userId)
-        .single(),
+        .maybeSingle(),
+      supabaseAdmin.auth.admin.getUserById(userId).catch(() => ({ data: { user: null } })),
       supabaseAdmin
         .from("wallet_transactions")
         .select("*")
@@ -649,22 +650,39 @@ export const getUserAccountDetails = createServerFn({ method: "GET" })
         .limit(30),
     ]);
 
-    // Fetch user orders based on profile phone
+    const authEmail = authUserRes?.data?.user?.email;
+    const phone = profile?.phone ? profile.phone.trim() : "";
+    const digitsOnly = phone.replace(/\D/g, "");
+    const last9Digits = digitsOnly.length >= 9 ? digitsOnly.slice(-9) : digitsOnly;
+
     let orders: any[] = [];
-    if (profileRes.data?.phone) {
-      const { data: userOrders } = await supabaseAdmin
+    try {
+      let q = supabaseAdmin
         .from("orders")
         .select(
-          "id, order_number, status, payment_status, payment_method, delivery_type, dispatch_partner, total_ghs, created_at, delivery_address, uber_tracking_url, rider_name, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_id, product_name, quantity, unit, unit_price_ghs)",
+          "id, order_number, status, payment_status, payment_method, delivery_type, total_ghs, created_at, delivery_address, uber_tracking_url, rider_name, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_id, product_name, quantity, unit, unit_price_ghs)",
         )
-        .eq("customer_phone", profileRes.data.phone)
         .order("created_at", { ascending: false })
         .limit(50);
+
+      if (last9Digits) {
+        if (authEmail) {
+          q = q.or(`customer_phone.ilike.%${last9Digits}%,customer_email.ilike.${authEmail}`);
+        } else {
+          q = q.ilike("customer_phone", `%${last9Digits}%`);
+        }
+      } else if (authEmail) {
+        q = q.ilike("customer_email", authEmail);
+      }
+
+      const { data: userOrders } = await q;
       orders = userOrders ?? [];
+    } catch (err) {
+      console.error("[getUserAccountDetails] Error fetching user orders:", err);
     }
 
     return {
-      profile: profileRes.data,
+      profile: profile || null,
       transactions: txRes.data ?? [],
       orders: orders,
     };
@@ -710,29 +728,52 @@ export const listCustomerOrders = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const userId = context.userId;
 
-    // Get user profile first
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("phone")
-      .eq("id", userId)
-      .single();
-    const targetPhone = data.phone || profile?.phone;
+    const [{ data: profile }, authUserRes] = await Promise.all([
+      supabaseAdmin.from("profiles").select("phone").eq("id", userId).maybeSingle(),
+      supabaseAdmin.auth.admin.getUserById(userId).catch(() => ({ data: { user: null } })),
+    ]);
 
-    let query = supabaseAdmin
-      .from("orders")
-      .select(
-        "id, order_number, status, payment_status, payment_method, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, delivery_address, ghana_post_gps, gps_coordinates, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_id, product_name, quantity, unit, unit_price_ghs, line_total_ghs)",
-      )
-      .order("created_at", { ascending: false })
-      .limit(100);
+    const authEmail = authUserRes?.data?.user?.email;
+    const targetPhone = (data.phone || profile?.phone || "").trim();
+    const targetEmail = (data.email || authEmail || "").trim().toLowerCase();
 
-    if (targetPhone) {
-      query = query.eq("customer_phone", targetPhone);
-    } else if (data.email) {
-      query = query.eq("customer_email", data.email);
+    const digitsOnly = targetPhone.replace(/\D/g, "");
+    const last9Digits = digitsOnly.length >= 9 ? digitsOnly.slice(-9) : digitsOnly;
+
+    const runQuery = async (selectCols: string) => {
+      let q = supabaseAdmin
+        .from("orders")
+        .select(selectCols)
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+      if (last9Digits && targetEmail) {
+        q = q.or(`customer_phone.ilike.%${last9Digits}%,customer_email.ilike.${targetEmail}`);
+      } else if (last9Digits) {
+        q = q.ilike("customer_phone", `%${last9Digits}%`);
+      } else if (targetEmail) {
+        q = q.ilike("customer_email", targetEmail);
+      }
+
+      return await q;
+    };
+
+    const fullCols =
+      "id, order_number, status, payment_status, payment_method, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, customer_email, delivery_address, ghana_post_gps, gps_coordinates, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_id, product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
+
+    const fallbackCols =
+      "id, order_number, status, payment_status, payment_method, delivery_type, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, customer_email, delivery_address, ghana_post_gps, gps_coordinates, scheduled_delivery_date, is_subscription, subscription_frequency, order_items(product_id, product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
+
+    let res = await runQuery(fullCols);
+    if (res.error) {
+      console.warn("[listCustomerOrders] Retrying with fallback columns:", res.error.message);
+      res = await runQuery(fallbackCols);
     }
 
-    const { data: orders, error } = await query;
-    if (error) throw new Error(error.message);
-    return orders ?? [];
+    if (res.error) {
+      console.error("[listCustomerOrders] Error:", res.error);
+      return [];
+    }
+
+    return res.data ?? [];
   });
