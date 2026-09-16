@@ -69,9 +69,26 @@ function AdminHeroSettings() {
 
   useEffect(() => {
     if (initialData) {
-      setForm(initialData);
+      const cleanForm = { ...initialData };
+      if (
+        cleanForm.poster_url &&
+        (cleanForm.poster_url.includes("hero-foods-spread") ||
+          cleanForm.poster_url.includes("spicy-african-bg") ||
+          cleanForm.poster_url.includes("shito-animi"))
+      ) {
+        cleanForm.poster_url = "";
+      }
+      if (
+        cleanForm.video_url &&
+        (cleanForm.video_url.includes("shito-animi") || cleanForm.video_url.includes("mixkit.co"))
+      ) {
+        cleanForm.video_url = "";
+      }
+      setForm(cleanForm);
       if (initialData.presets && Array.isArray(initialData.presets)) {
-        setPresets(initialData.presets);
+        setPresets(
+          initialData.presets.filter((p) => !p.video_url || !p.video_url.includes("shito-animi")),
+        );
       }
       setIsInitialized(true);
     }

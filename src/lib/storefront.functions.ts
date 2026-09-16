@@ -55,13 +55,21 @@ export const getStorefrontConfig = createServerFn({ method: "GET" }).handler(
             ? ""
             : hm.video_url;
 
+        const cleanedPosterUrl =
+          hm.poster_url &&
+          (hm.poster_url.includes("hero-foods-spread") ||
+            hm.poster_url.includes("spicy-african-bg") ||
+            hm.poster_url.includes("shito-animi"))
+            ? ""
+            : hm.poster_url;
+
         config = {
           ...config,
           hero: {
             ...config.hero,
             media_type: hm.media_type ?? config.hero.media_type,
             video_url: cleanedVideoUrl ?? config.hero.video_url,
-            poster_url: hm.poster_url ?? config.hero.poster_url,
+            poster_url: cleanedPosterUrl ?? config.hero.poster_url,
             badge_text: hm.badge_text ?? config.hero.badge_text,
             headline_main: hm.headline_main ?? config.hero.headline_main,
             headline_highlight: hm.headline_highlight ?? config.hero.headline_highlight,
@@ -71,6 +79,28 @@ export const getStorefrontConfig = createServerFn({ method: "GET" }).handler(
             loop: hm.loop ?? config.hero.loop,
           },
         };
+
+        // Auto-fix DB rows if they contain legacy image links
+        if (hm.poster_url !== cleanedPosterUrl || hm.video_url !== cleanedVideoUrl) {
+          await supabaseAdmin.from("site_settings").upsert({
+            key: "hero_media",
+            value: { ...hm, video_url: cleanedVideoUrl, poster_url: cleanedPosterUrl },
+            updated_at: new Date().toISOString(),
+          });
+        }
+      }
+
+      // Auto-fix storefront_config DB row if needed
+      const sfVal = sfRes.data?.value as any;
+      if (
+        sfVal?.hero?.poster_url?.includes("hero-foods-spread") ||
+        sfVal?.hero?.poster_url?.includes("spicy-african-bg")
+      ) {
+        await supabaseAdmin.from("site_settings").upsert({
+          key: "storefront_config",
+          value: config as any,
+          updated_at: new Date().toISOString(),
+        });
       }
 
       return config;
