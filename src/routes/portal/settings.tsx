@@ -34,9 +34,10 @@ import {
   AlertTriangle,
   Loader2,
   KeyRound,
-  Users,
-  CheckCircle2,
   Mail,
+  Sparkles,
+  Eye,
+  CheckCircle2,
 } from "lucide-react";
 import { sendAdminEmailBroadcast } from "@/lib/email.functions";
 import {
@@ -460,14 +461,91 @@ function AdminSettings() {
           {/* TAB: Resend Email Broadcast */}
           <TabsContent value="email_broadcast" className="space-y-6">
             <div className="grid gap-6 lg:grid-cols-12">
-              <div className="lg:col-span-8">
+              <div className="lg:col-span-8 space-y-6">
+                {/* Template Selection Cards */}
+                <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-display text-sm font-bold text-amber-500 flex items-center gap-1.5">
+                      <Sparkles className="h-4 w-4" /> Load Pre-built Email Template
+                    </h4>
+                    <span className="text-[11px] font-semibold text-muted-foreground">
+                      Click any template to auto-fill
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    {[
+                      {
+                        id: "new_menu",
+                        name: "🍲 New Menu Drop",
+                        subject: "🔥 New Menu Drop: Fresh Handmade Shito & Spiced Beef Chunks!",
+                        body: "We have just expanded our menu with authentic homemade Ghanaian dishes crafted with rich spices and local ingredients!\n\nCheck out our latest provisions including signature black pepper shito, fried gizzard, seasoned tender beef, and spicy green pepper sauce.\n\nOrder today for fast doorstep delivery across Accra and nationwide shipping.",
+                        cta_text: "Explore New Menu Items",
+                        cta_url: "https://barimabafoods.shop/shop",
+                      },
+                      {
+                        id: "flash_sale",
+                        name: "⚡ 10% Off Promo",
+                        subject: "🎉 Special Weekend Deal: Enjoy 10% Off All Provisions!",
+                        body: "Satisfy your cravings this weekend with Barima Ba Foods!\n\nUse code BARIMABA10 at checkout on barimabafoods.shop to get 10% off your entire order.\n\nValid for all provisions, shito jars, and catering packages. Don't miss out on authentic taste!",
+                        cta_text: "Claim 10% Off Now",
+                        cta_url: "https://barimabafoods.shop/shop",
+                      },
+                      {
+                        id: "catering_booking",
+                        name: "👑 Event Catering",
+                        subject: "🥂 Planning an Event? Book Barima Ba Catering Packages Today",
+                        body: "Make your wedding, corporate banquet, or family gathering unforgettable with Barima Ba Foods catering services.\n\nWe provide complete chafing dish buffet setups, fragrant Jollof feasts, fried meats, and authentic local drinks tailored for your guests.\n\nContact our team or reserve your event package directly online.",
+                        cta_text: "Book Catering Package",
+                        cta_url: "https://barimabafoods.shop/catering",
+                      },
+                      {
+                        id: "store_update",
+                        name: "🚚 Delivery & Hours",
+                        subject: "🚚 Fast Doorstep Delivery Across Accra & All Regions in Ghana",
+                        body: "Did you know we deliver fresh homemade provisions and bottled shito to your doorstep across Accra and all regions in Ghana?\n\nTrack your order live on our site with real-time dispatch updates and rider details.\n\nOur kitchen is open Monday to Saturday from 7:30 AM to 9:00 PM | Sunday: 11:00 AM to 7:00 PM.",
+                        cta_text: "Track & Order Online",
+                        cta_url: "https://barimabafoods.shop/track",
+                      },
+                      {
+                        id: "vip_thankyou",
+                        name: "🎁 VIP Appreciation",
+                        subject: "❤️ Thank You for Being a Valued Barima Ba Foods Customer",
+                        body: "We appreciate your support and trust in Barima Ba Foods!\n\nAs a special token of gratitude, your next order comes with priority dispatch and a complimentary treat from our kitchen.\n\nClick below to visit our online shop and browse our latest kitchen specials.",
+                        cta_text: "Visit Barima Ba Store",
+                        cta_url: "https://barimabafoods.shop/shop",
+                      },
+                    ].map((tpl) => (
+                      <button
+                        key={tpl.id}
+                        type="button"
+                        onClick={() => {
+                          setEmailSubject(tpl.subject);
+                          setEmailBody(tpl.body);
+                          setEmailCtaText(tpl.cta_text);
+                          setEmailCtaUrl(tpl.cta_url);
+                          toast.success(`Loaded template: ${tpl.name}`);
+                        }}
+                        className="flex flex-col text-left p-3 rounded-xl border border-border bg-card hover:bg-muted/50 hover:border-amber-500/40 transition-all text-xs group cursor-pointer"
+                      >
+                        <span className="font-bold text-foreground group-hover:text-amber-500">
+                          {tpl.name}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground truncate mt-1">
+                          {tpl.subject}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Email Form */}
                 <form
                   onSubmit={handleSendEmailBroadcast}
                   className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-5"
                 >
                   <div>
                     <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
-                      <Mail className="h-5 w-5 text-amber-500" /> Resend Email Announcement
+                      <Mail className="h-5 w-5 text-amber-500" /> Resend Email Campaign Editor
                     </h3>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Send a HTML email campaign from <code>notifications@barimabafoods.shop</code>{" "}
@@ -543,7 +621,7 @@ function AdminSettings() {
                     <Button
                       type="submit"
                       disabled={sendingEmail || !emailSubject.trim() || !emailBody.trim()}
-                      className="w-full sm:w-auto rounded-xl font-semibold bg-amber-500 hover:bg-amber-600 text-black"
+                      className="w-full sm:w-auto rounded-xl font-semibold bg-amber-500 hover:bg-amber-600 text-black shadow-md"
                     >
                       {sendingEmail ? (
                         <>
@@ -560,20 +638,60 @@ function AdminSettings() {
                 </form>
               </div>
 
-              {/* Sidebar Help */}
+              {/* Sidebar Help & Live Preview */}
               <div className="lg:col-span-4 space-y-4">
+                {/* Live Card Preview */}
+                <div className="rounded-2xl border border-amber-500/30 bg-zinc-950 p-5 shadow-lg space-y-3 text-white">
+                  <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                    <span className="text-[10px] font-mono uppercase font-bold text-amber-400 flex items-center gap-1">
+                      <Eye className="h-3.5 w-3.5" /> Inbox Live Preview
+                    </span>
+                    <span className="text-[9px] text-zinc-500">
+                      From: notifications@barimabafoods.shop
+                    </span>
+                  </div>
+
+                  <div className="text-center pt-2">
+                    <img
+                      src="/images/barima-ba-logo-blended.png"
+                      alt="Logo"
+                      className="h-10 mx-auto object-contain"
+                    />
+                  </div>
+
+                  <h5 className="font-bold text-amber-400 text-sm leading-snug text-center">
+                    {emailSubject || "🔥 Your Email Subject Line Will Appear Here"}
+                  </h5>
+
+                  <div className="text-xs text-zinc-300 whitespace-pre-wrap leading-relaxed bg-zinc-900/80 p-3 rounded-xl border border-zinc-800/80 max-h-48 overflow-y-auto">
+                    {emailBody || "Enter body text above or click a template..."}
+                  </div>
+
+                  {emailCtaText && (
+                    <div className="text-center pt-2">
+                      <span className="inline-block px-5 py-2 rounded-xl bg-amber-500 text-black text-xs font-extrabold shadow-md">
+                        {emailCtaText}
+                      </span>
+                    </div>
+                  )}
+
+                  <p className="text-[9px] text-zinc-500 text-center pt-2 border-t border-zinc-800/60">
+                    Barima Ba Foods — Taste. Quality. Trust.
+                  </p>
+                </div>
+
                 <div className="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-3">
                   <h4 className="font-display text-sm font-bold text-foreground flex items-center gap-1.5">
-                    <Mail className="h-4 w-4 text-amber-500" /> Resend Email Information
+                    <Mail className="h-4 w-4 text-amber-500" /> Resend Delivery Info
                   </h4>
                   <ul className="text-xs text-muted-foreground space-y-2 list-disc list-inside">
                     <li>
                       Sender address is set to <strong>notifications@barimabafoods.shop</strong>.
                     </li>
-                    <li>Domain is verified with DKIM, SPF & DMARC records.</li>
+                    <li>Domain verified with DKIM, SPF & DMARC records on Resend.</li>
                     <li>
-                      Automatic notifications are sent whenever a new product or catering package is
-                      added in the admin panel.
+                      Automatic notifications are also sent when new products or catering packages
+                      are added.
                     </li>
                   </ul>
                 </div>
