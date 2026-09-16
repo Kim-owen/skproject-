@@ -195,7 +195,25 @@ function AdminHeroSettings() {
             await deleteOldStorageFile(oldUrl);
           }
 
-          handleFieldChange(field, newPublicUrl);
+          if (field === "video_url") {
+            const videoName = file.name.replace(/\.[^/.]+$/, "");
+            const newPreset: HeroMediaPreset = {
+              id: `uploaded_video_${Date.now()}`,
+              title: videoName || "Uploaded Video",
+              video_url: newPublicUrl,
+              poster_url: form.poster_url || "",
+            };
+            const nextPresets = [newPreset, ...presets.filter((p) => p.video_url !== newPublicUrl)];
+            setPresets(nextPresets);
+            setForm((prev) => ({
+              ...prev,
+              video_url: newPublicUrl,
+              presets: nextPresets,
+            }));
+          } else {
+            handleFieldChange(field, newPublicUrl);
+          }
+
           toast.success("New video/media uploaded successfully!", {
             description: "Click 'Save Live Changes' top right to publish to the storefront.",
           });
@@ -344,7 +362,7 @@ function AdminHeroSettings() {
               <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
                 <div className="flex items-center justify-between mb-1">
                   <h3 className="font-display text-base font-bold text-foreground flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-primary" /> Pro Video Presets & Backgrounds
+                    <Sparkles className="h-4 w-4 text-primary" /> Admin Uploaded Hero Videos
                   </h3>
                   <div className="flex items-center gap-2">
                     <Button
@@ -371,7 +389,7 @@ function AdminHeroSettings() {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mb-4">
-                  Select a video theme, remove unwanted presets, or click "No Background" to clear:
+                  Upload your MP4 video files below to add them to your hero gallery. Select a video to publish live on the homepage:
                 </p>
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -399,7 +417,7 @@ function AdminHeroSettings() {
                     </p>
                   </button>
 
-                  {/* Curated / Uploaded Presets */}
+                  {/* Admin Uploaded Video Presets */}
                   {presets.map((preset) => {
                     const isSelected = form.video_url === preset.video_url;
                     return (
@@ -415,16 +433,25 @@ function AdminHeroSettings() {
                           type="button"
                           onClick={() => {
                             handleFieldChange("video_url", preset.video_url);
-                            handleFieldChange("poster_url", preset.poster_url);
+                            if (preset.poster_url) handleFieldChange("poster_url", preset.poster_url);
                           }}
                           className="w-full text-left"
                         >
-                          <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-                            <img
-                              src={preset.poster_url}
-                              alt={preset.title}
-                              className="h-full w-full object-cover"
-                            />
+                          <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted flex items-center justify-center">
+                            {preset.poster_url ? (
+                              <img
+                                src={preset.poster_url}
+                                alt={preset.title}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-full w-full bg-zinc-900/90 flex flex-col items-center justify-center text-amber-400 p-2 text-center">
+                                <Video className="h-5 w-5 mb-0.5" />
+                                <span className="text-[9px] font-bold text-zinc-300 truncate max-w-full">
+                                  {preset.title}
+                                </span>
+                              </div>
+                            )}
                             {isSelected && (
                               <div className="absolute inset-0 bg-primary/20 backdrop-blur-[1px] flex items-center justify-center">
                                 <CheckCircle2 className="h-5 w-5 text-white drop-shadow-md" />
@@ -444,7 +471,7 @@ function AdminHeroSettings() {
                             handleRemovePreset(preset.id);
                           }}
                           className="absolute top-2 right-2 h-5 w-5 rounded-full bg-black/70 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive"
-                          title="Remove this preset option"
+                          title="Remove this video option"
                         >
                           <X className="h-3 w-3" />
                         </button>

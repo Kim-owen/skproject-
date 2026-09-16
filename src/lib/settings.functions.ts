@@ -24,34 +24,12 @@ export interface HeroMediaSettings {
   presets?: HeroMediaPreset[];
 }
 
-export const PRO_VIDEO_PRESETS = [
-  {
-    id: "fresh-harvest",
-    title: "Fresh Farm Harvest",
-    video_url:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyTouches.mp4",
-    poster_url: "/images/catering-jollof-feast.png",
-  },
-  {
-    id: "fresh-cooking",
-    title: "Gourmet Kitchen Prep",
-    video_url:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    poster_url: "/images/catering-wedding-table.png",
-  },
-  {
-    id: "organic-store",
-    title: "Pantry & Groceries",
-    video_url:
-      "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-    poster_url: "/images/product-shito-jars.png",
-  },
-];
+export const PRO_VIDEO_PRESETS: HeroMediaPreset[] = [];
 
 export const DEFAULT_HERO_SETTINGS: HeroMediaSettings = {
   media_type: "video",
   video_url: "",
-  poster_url: "/images/hero-foods-spread.png",
+  poster_url: "",
   badge_text: "Nationwide Delivery Across Ghana",
   headline_main: "BARIMA BA FOODS",
   headline_highlight: "Taste. Quality. Trust.",
@@ -61,7 +39,7 @@ export const DEFAULT_HERO_SETTINGS: HeroMediaSettings = {
   muted: true,
   loop: true,
   overlay_text: "",
-  presets: PRO_VIDEO_PRESETS,
+  presets: [],
 };
 
 async function assertAdmin(supabase: any, userId: string) {
