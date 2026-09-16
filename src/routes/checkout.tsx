@@ -22,7 +22,7 @@ import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 import { MapPin, Compass, Navigation, ExternalLink, Calculator, Sparkles } from "lucide-react";
 
-const zonesQuery = {
+export const zonesQuery = {
   queryKey: ["zones"],
   queryFn: async () => {
     try {
