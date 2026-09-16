@@ -63,19 +63,19 @@ export function AdminShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-background font-sans">
+    <div className="min-h-screen bg-background font-sans overflow-x-hidden">
       {/* Mobile Sticky Header */}
-      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-card/85 px-4 backdrop-blur-md md:hidden">
-        <Link to="/" className="flex items-center gap-2.5">
-          <div className="flex h-9 w-12 items-center justify-center rounded-lg bg-white border border-amber-500/40 p-0.5 shadow-sm overflow-hidden shrink-0">
+      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-card/90 px-3.5 backdrop-blur-xl md:hidden">
+        <Link to="/portal" className="flex items-center gap-2">
+          <div className="flex h-9 w-11 items-center justify-center rounded-lg bg-white border border-amber-500/40 p-0.5 shadow-xs overflow-hidden shrink-0">
             <img
               src="/images/barima-ba-logo.png"
               alt="Barima Ba Shito Logo"
               className="h-full w-full object-contain rounded-md"
             />
           </div>
-          <span className="font-display text-base font-bold tracking-tight text-foreground">
-            BARIMA BA <span className="text-amber-500">· Admin</span>
+          <span className="font-display text-sm font-extrabold tracking-tight text-foreground truncate max-w-[140px] sm:max-w-none">
+            BARIMA BA <span className="text-amber-500">· Portal</span>
           </span>
         </Link>
 
@@ -83,10 +83,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
           <Link
             to="/"
             target="_blank"
-            className="flex items-center gap-1 rounded-lg border border-border bg-secondary/50 px-2.5 py-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+            className="flex items-center gap-1 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-bold text-amber-500 hover:bg-amber-500/20"
           >
-            <Store className="h-3.5 w-3.5 text-amber-500" />
-            <span>Store</span>
+            <Store className="h-3.5 w-3.5" />
+            <span>Storefront</span>
           </Link>
 
           <Sheet open={open} onOpenChange={setOpen}>
@@ -95,13 +95,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 variant="ghost"
                 size="icon"
                 className="h-9 w-9 rounded-lg border border-border"
+                aria-label="Open Navigation Drawer"
               >
                 <Menu className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-80 flex flex-col justify-between p-0">
-              <div className="flex-1 overflow-y-auto p-6">
-                <SheetHeader className="pb-5 border-b text-left">
+            <SheetContent side="left" className="w-80 flex flex-col justify-between p-0 z-50">
+              <div className="flex-1 overflow-y-auto p-5">
+                <SheetHeader className="pb-4 border-b text-left">
                   <SheetTitle className="flex items-center gap-2.5 text-left">
                     <div className="flex h-9 w-12 items-center justify-center rounded-lg bg-white border border-amber-500/40 p-0.5 shadow-sm overflow-hidden shrink-0">
                       <img
@@ -115,7 +116,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                     </span>
                   </SheetTitle>
                 </SheetHeader>
-                <nav className="mt-5 flex flex-col gap-1.5">
+                <nav className="mt-4 flex flex-col gap-1.5">
                   {navItems.map((item) =>
                     renderLink(item.to, item.label, item.Icon, () => setOpen(false)),
                   )}
@@ -140,7 +141,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         {/* Desktop Sidebar */}
         <aside className="hidden w-64 shrink-0 md:flex flex-col justify-between h-[calc(100vh-4rem)] sticky top-24 pb-4">
           <div>
-            <Link to="/" className="mb-8 flex items-center gap-3 px-3">
+            <Link to="/portal" className="mb-8 flex items-center gap-3 px-3">
               <div className="flex h-10 w-14 items-center justify-center rounded-xl bg-white border border-amber-500/40 p-0.5 shadow-sm overflow-hidden shrink-0">
                 <img
                   src="/images/barima-ba-logo.png"
@@ -168,22 +169,22 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </aside>
 
         {/* Content Box with safe mobile bottom spacing */}
-        <main className="min-w-0 flex-1 pb-20 md:pb-0">{children}</main>
+        <main className="min-w-0 flex-1 pb-24 md:pb-0">{children}</main>
       </div>
 
       {/* Mobile Admin Bottom Bar for Quick 1-Tap Access */}
       <nav
         aria-label="Admin Mobile Quick Bar"
-        className="fixed bottom-0 left-0 right-0 z-40 block border-t border-border bg-card/95 pb-safe backdrop-blur-xl md:hidden shadow-[0_-8px_20px_rgba(0,0,0,0.2)]"
+        className="fixed bottom-0 left-0 right-0 z-50 block border-t border-border bg-card/95 pb-safe backdrop-blur-2xl md:hidden shadow-[0_-8px_20px_rgba(0,0,0,0.3)]"
       >
-        <div className="grid h-15 grid-cols-5 items-center px-1">
+        <div className="grid h-16 grid-cols-5 items-center px-1">
           <Link
             to="/portal"
             className={`flex flex-col items-center justify-center py-1 text-[10px] transition-all ${
-              pathname === "/portal" ? "text-amber-500 font-extrabold" : "text-muted-foreground"
+              pathname === "/portal" ? "text-amber-500 font-extrabold scale-105" : "text-muted-foreground"
             }`}
           >
-            <LayoutDashboard className="h-4 w-4 mb-0.5" />
+            <LayoutDashboard className="h-4.5 w-4.5 mb-0.5" />
             <span>Dashboard</span>
           </Link>
 
@@ -191,11 +192,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
             to="/portal/orders"
             className={`flex flex-col items-center justify-center py-1 text-[10px] transition-all ${
               pathname === "/portal/orders"
-                ? "text-amber-500 font-extrabold"
+                ? "text-amber-500 font-extrabold scale-105"
                 : "text-muted-foreground"
             }`}
           >
-            <ShoppingBag className="h-4 w-4 mb-0.5" />
+            <ShoppingBag className="h-4.5 w-4.5 mb-0.5" />
             <span>Orders</span>
           </Link>
 
@@ -203,11 +204,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
             to="/portal/products"
             className={`flex flex-col items-center justify-center py-1 text-[10px] transition-all ${
               pathname === "/portal/products"
-                ? "text-amber-500 font-extrabold"
+                ? "text-amber-500 font-extrabold scale-105"
                 : "text-muted-foreground"
             }`}
           >
-            <Package className="h-4 w-4 mb-0.5" />
+            <Package className="h-4.5 w-4.5 mb-0.5" />
             <span>Products</span>
           </Link>
 
@@ -215,11 +216,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
             to="/portal/storefront"
             className={`flex flex-col items-center justify-center py-1 text-[10px] transition-all ${
               pathname === "/portal/storefront"
-                ? "text-amber-500 font-extrabold"
+                ? "text-amber-500 font-extrabold scale-105"
                 : "text-muted-foreground"
             }`}
           >
-            <LayoutTemplate className="h-4 w-4 mb-0.5" />
+            <LayoutTemplate className="h-4.5 w-4.5 mb-0.5" />
             <span>Storefront</span>
           </Link>
 
@@ -228,8 +229,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
             onClick={() => setOpen(true)}
             className="flex flex-col items-center justify-center py-1 text-[10px] text-muted-foreground hover:text-foreground"
           >
-            <Menu className="h-4 w-4 mb-0.5 text-amber-500" />
-            <span>More Menu</span>
+            <Menu className="h-4.5 w-4.5 mb-0.5 text-amber-500" />
+            <span>Menu</span>
           </button>
         </div>
       </nav>

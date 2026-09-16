@@ -130,71 +130,71 @@ function AdminDashboard() {
 
   return (
     <AdminShell>
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         {/* Header Block */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
+            <h1 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
               Dashboard
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Real-time analytical overview of your grocery store operations.
+            <p className="mt-0.5 text-xs sm:text-sm text-muted-foreground">
+              Real-time analytical overview of your store operations.
             </p>
           </div>
-          <div className="flex gap-2.5">
-            <Button asChild variant="outline" className="rounded-xl font-semibold">
-              <Link to="/portal/orders">Manage Orders</Link>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm" className="rounded-xl font-semibold flex-1 sm:flex-none text-xs">
+              <Link to="/portal/orders">Orders</Link>
             </Button>
-            <Button asChild className="rounded-xl font-semibold">
-              <Link to="/portal/products">Manage Inventory</Link>
+            <Button asChild size="sm" className="rounded-xl font-semibold flex-1 sm:flex-none text-xs">
+              <Link to="/portal/products">Inventory</Link>
             </Button>
           </div>
         </div>
 
-        {/* KPI Grid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* KPI Grid - 2 columns on mobile */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {kpis.map((kpi) => (
             <div
               key={kpi.label}
-              className="rounded-2xl border border-border bg-card p-6 shadow-xs flex flex-col justify-between"
+              className="rounded-2xl border border-border bg-card p-3.5 sm:p-5 shadow-xs flex flex-col justify-between"
             >
-              <div className="flex items-start justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground truncate max-w-[90px] sm:max-w-none">
                   {kpi.label}
                 </span>
-                <div className={`rounded-lg p-2 ${kpi.color}`}>
-                  <kpi.icon className="h-4.5 w-4.5" />
+                <div className={`rounded-lg p-1.5 sm:p-2 ${kpi.color}`}>
+                  <kpi.icon className="h-3.5 w-3.5 sm:h-4.5 sm:w-4.5" />
                 </div>
               </div>
-              <div className="mt-4">
-                <p className="font-display text-3xl font-bold tracking-tight text-foreground">
+              <div className="mt-3 sm:mt-4">
+                <p className="font-display text-lg sm:text-3xl font-extrabold tracking-tight text-foreground truncate">
                   {kpi.value}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">{kpi.subtext}</p>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">{kpi.subtext}</p>
               </div>
             </div>
           ))}
         </div>
 
         {/* Analytics Chart */}
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
-          <div className="mb-6 flex items-center justify-between">
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-xs">
+          <div className="mb-4 sm:mb-6 flex items-center justify-between">
             <div>
-              <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+              <h3 className="font-display text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" /> Sales Trend
               </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Value of the 10 most recent transactions.
+              <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                10 most recent transactions.
               </p>
             </div>
-            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-lg">
+            <span className="text-[10px] sm:text-xs font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-lg">
               Live Feed
             </span>
           </div>
 
-          <div className="h-80 w-full">
+          <div className="h-64 sm:h-80 w-full min-h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.2} />
@@ -210,12 +210,12 @@ function AdminDashboard() {
                   dataKey="name"
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+                  tick={{ fill: "var(--color-muted-foreground)", fontSize: 10 }}
                 />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+                  tick={{ fill: "var(--color-muted-foreground)", fontSize: 10 }}
                 />
                 <Tooltip
                   contentStyle={{
@@ -223,6 +223,7 @@ function AdminDashboard() {
                     borderColor: "var(--color-border)",
                     borderRadius: "0.75rem",
                     color: "var(--color-foreground)",
+                    fontSize: "12px",
                   }}
                   itemStyle={{ color: "var(--color-primary)" }}
                 />
@@ -242,11 +243,11 @@ function AdminDashboard() {
         {/* Double Column Grid: Recent Activity & Low Stock */}
         <div className="grid gap-6 lg:grid-cols-12">
           {/* Left Column: Recent Orders */}
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-xs lg:col-span-7 flex flex-col justify-between">
+          <div className="rounded-2xl border border-border bg-card p-4 sm:p-6 shadow-xs lg:col-span-7 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
-                  <Activity className="h-4.5 w-4.5 text-primary" /> Recent Activity
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 className="font-display text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-primary" /> Recent Activity
                 </h3>
                 <Link
                   to="/portal/orders"
@@ -258,27 +259,26 @@ function AdminDashboard() {
 
               <div className="divide-y divide-border/60">
                 {data.recentOrders.slice(0, 5).map((o) => (
-                  <div key={o.id} className="flex items-center justify-between py-3">
-                    <div>
-                      <p className="font-mono text-xs font-semibold text-foreground">
+                  <div key={o.id} className="flex flex-col sm:flex-row sm:items-center justify-between py-2.5 sm:py-3 gap-1.5 sm:gap-2">
+                    <div className="flex items-center justify-between sm:justify-start gap-2">
+                      <span className="font-mono text-xs font-bold text-foreground">
                         {o.order_number}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {new Date(o.created_at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}{" "}
-                        · {o.payment_status}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-display text-sm font-bold text-foreground">
-                        {formatGHS(Number(o.total_ghs))}
                       </span>
                       <span
                         className={`rounded-md border px-2 py-0.5 text-[10px] font-bold capitalize tracking-wide ${getStatusBadgeClass(o.status)}`}
                       >
                         {o.status.replace(/_/g, " ")}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between sm:justify-end gap-3 text-xs">
+                      <span className="text-[11px] text-muted-foreground">
+                        {new Date(o.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                      <span className="font-display font-extrabold text-foreground">
+                        {formatGHS(Number(o.total_ghs))}
                       </span>
                     </div>
                   </div>
