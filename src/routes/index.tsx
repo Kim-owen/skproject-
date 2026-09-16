@@ -502,30 +502,35 @@ function Home() {
                     )}
                   </div>
 
-                  {/* Collage Images */}
-                  <div className="md:col-span-6 grid grid-cols-2 gap-4">
-                    <img
-                      src={promo.images?.[0] || "/images/spicy-african-bg.png"}
-                      alt="Catering Dish 1"
-                      className="rounded-2xl object-cover h-44 w-full border border-amber-500/20 shadow-md"
-                    />
-                    <img
-                      src={
-                        promo.images?.[1] ||
-                        "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=600"
-                      }
-                      alt="Catering Dish 2"
-                      className="rounded-2xl object-cover h-44 w-full border border-amber-500/20 shadow-md"
-                    />
-                    <img
-                      src={
-                        promo.images?.[2] ||
-                        "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=600"
-                      }
-                      alt="Catering Dish 3"
-                      className="col-span-2 rounded-2xl object-cover h-52 w-full border border-amber-500/20 shadow-md"
-                    />
-                  </div>
+                  {/* Collage Images (Render only active uploaded images, respecting deletions) */}
+                  {(() => {
+                    const validImgs = (promo.images || []).filter(
+                      (img) =>
+                        img &&
+                        !img.includes("spicy-african-bg") &&
+                        !img.includes("photo-1555396273") &&
+                        !img.includes("photo-1544025162"),
+                    );
+                    if (validImgs.length === 0) return null;
+                    return (
+                      <div className="md:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {validImgs.map((img, idx) => (
+                          <img
+                            key={idx}
+                            src={img}
+                            alt={`Catering Photo #${idx + 1}`}
+                            className={`rounded-2xl object-cover border border-amber-500/20 shadow-md w-full ${
+                              validImgs.length === 1
+                                ? "h-64 sm:col-span-2"
+                                : validImgs.length === 3 && idx === 2
+                                  ? "col-span-2 h-52"
+                                  : "h-44"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </section>

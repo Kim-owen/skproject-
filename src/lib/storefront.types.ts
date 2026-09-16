@@ -205,9 +205,9 @@ export const DEFAULT_STOREFRONT_CONFIG: StorefrontConfig = {
     cta_text: "BOOK OUR CATERING",
     cta_link: "/catering",
     images: [
-      "/images/spicy-african-bg.png",
-      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=600",
-      "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=600",
+      "/images/product-shito-jars.png",
+      "/images/catering-wedding-table.png",
+      "/images/catering-chafing-buffet.png",
     ],
   },
   value_props: {
