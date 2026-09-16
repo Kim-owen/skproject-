@@ -36,7 +36,9 @@ import {
   KeyRound,
   Users,
   CheckCircle2,
+  Mail,
 } from "lucide-react";
+import { sendAdminEmailBroadcast } from "@/lib/email.functions";
 import {
   getNotificationSettings,
   updateNotificationSettings,
@@ -101,7 +103,7 @@ function AdminSettings() {
   );
   const [savingGeneral, setSavingGeneral] = useState(false);
 
-  // Broadcast state
+  // SMS Broadcast state
   const [broadcastMessage, setBroadcastMessage] = useState("");
   const [broadcastAudience, setBroadcastAudience] = useState<
     "all_users" | "customers_with_orders" | "phone_verified"
@@ -112,6 +114,43 @@ function AdminSettings() {
     sent: number;
     failed: number;
   } | null>(null);
+
+  // Resend Email Broadcast state
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [emailCtaText, setEmailCtaText] = useState("Order Now on Barima Ba Foods");
+  const [emailCtaUrl, setEmailCtaUrl] = useState("https://barimabafoods.shop/shop");
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailResult, setEmailResult] = useState<number | null>(null);
+  const broadcastEmail = useServerFn(sendAdminEmailBroadcast);
+
+  const handleSendEmailBroadcast = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailSubject.trim() || !emailBody.trim()) {
+      toast.error("Please fill in both the email subject and message body.");
+      return;
+    }
+    setSendingEmail(true);
+    setEmailResult(null);
+    try {
+      const res = await broadcastEmail({
+        data: {
+          subject: emailSubject,
+          message: emailBody,
+          cta_text: emailCtaText,
+          cta_url: emailCtaUrl,
+        },
+      });
+      setEmailResult(res.sentCount);
+      toast.success(`Resend Email Broadcast sent successfully to ${res.sentCount} customers!`);
+      setEmailSubject("");
+      setEmailBody("");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send email broadcast via Resend.");
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   // Security state
   const [adminName, setAdminName] = useState("");
@@ -129,7 +168,8 @@ function AdminSettings() {
 
   // Notifications Save
   const notifMutation = useMutation({
-    mutationFn: (newSettings: NotificationSettings) => saveNotificationSettings({ data: newSettings }),
+    mutationFn: (newSettings: NotificationSettings) =>
+      saveNotificationSettings({ data: newSettings }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notification-settings"] });
       toast.success("Notification settings saved successfully!");
@@ -267,12 +307,18 @@ function AdminSettings() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-2 sm:grid-cols-4 h-auto p-1 rounded-2xl bg-muted/50 border border-border">
+          <TabsList className="grid grid-cols-2 sm:grid-cols-5 h-auto p-1 rounded-2xl bg-muted/50 border border-border">
             <TabsTrigger
               value="broadcast"
               className="rounded-xl py-2.5 text-xs font-bold gap-2 data-[state=active]:bg-card data-[state=active]:shadow-sm"
             >
               <Radio className="h-4 w-4 text-primary" /> Broadcast SMS
+            </TabsTrigger>
+            <TabsTrigger
+              value="email_broadcast"
+              className="rounded-xl py-2.5 text-xs font-bold gap-2 data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            >
+              <Mail className="h-4 w-4 text-amber-500" /> Resend Email
             </TabsTrigger>
             <TabsTrigger
               value="security"
@@ -398,9 +444,137 @@ function AdminSettings() {
                     <Smartphone className="h-4 w-4 text-primary" /> Delivery Best Practices
                   </h4>
                   <ul className="text-xs text-muted-foreground space-y-2 list-disc list-inside">
-                    <li>Include your brand name <strong>Barima Ba Foods</strong> in the text.</li>
+                    <li>
+                      Include your brand name <strong>Barima Ba Foods</strong> in the text.
+                    </li>
                     <li>Keep messages concise under 160 characters to optimize SMS credits.</li>
-                    <li>Avoid spamming: Customers appreciate timely updates 1–2 times per month.</li>
+                    <li>
+                      Avoid spamming: Customers appreciate timely updates 1–2 times per month.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* TAB: Resend Email Broadcast */}
+          <TabsContent value="email_broadcast" className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-12">
+              <div className="lg:col-span-8">
+                <form
+                  onSubmit={handleSendEmailBroadcast}
+                  className="rounded-2xl border border-border bg-card p-6 shadow-sm space-y-5"
+                >
+                  <div>
+                    <h3 className="font-display text-lg font-bold text-foreground flex items-center gap-2">
+                      <Mail className="h-5 w-5 text-amber-500" /> Resend Email Announcement
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Send a HTML email campaign from <code>notifications@barimabafoods.shop</code>{" "}
+                      directly to all registered customer accounts.
+                    </p>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase">
+                      Email Subject Line
+                    </Label>
+                    <Input
+                      required
+                      value={emailSubject}
+                      onChange={(e) => setEmailSubject(e.target.value)}
+                      placeholder="e.g. 🔥 New Weekend Deals: Authentic Ghanaian Shito & Catering Packages!"
+                      className="rounded-xl font-semibold"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-bold text-muted-foreground uppercase">
+                      Email Message / Body Text
+                    </Label>
+                    <Textarea
+                      rows={6}
+                      required
+                      value={emailBody}
+                      onChange={(e) => setEmailBody(e.target.value)}
+                      placeholder="Enter the main body of your email announcement here..."
+                      className="rounded-xl font-sans"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Button Label (CTA)
+                      </Label>
+                      <Input
+                        value={emailCtaText}
+                        onChange={(e) => setEmailCtaText(e.target.value)}
+                        placeholder="e.g. Order Now on Barima Ba Foods"
+                        className="rounded-xl text-xs font-semibold"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Button Link (URL)
+                      </Label>
+                      <Input
+                        value={emailCtaUrl}
+                        onChange={(e) => setEmailCtaUrl(e.target.value)}
+                        placeholder="https://barimabafoods.shop/shop"
+                        className="rounded-xl text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  {emailResult !== null && (
+                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-emerald-600 dark:text-emerald-400 space-y-1">
+                      <p className="font-bold text-sm flex items-center gap-1.5">
+                        <CheckCircle2 className="h-4 w-4" /> Resend Email Dispatch Complete
+                      </p>
+                      <p className="text-xs">
+                        Successfully dispatched email to <strong>{emailResult}</strong> registered
+                        customers from <code>notifications@barimabafoods.shop</code>!
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="pt-2">
+                    <Button
+                      type="submit"
+                      disabled={sendingEmail || !emailSubject.trim() || !emailBody.trim()}
+                      className="w-full sm:w-auto rounded-xl font-semibold bg-amber-500 hover:bg-amber-600 text-black"
+                    >
+                      {sendingEmail ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Dispatching Emails via
+                          Resend...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="mr-2 h-4 w-4" /> Send Email Announcement to All Users
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Sidebar Help */}
+              <div className="lg:col-span-4 space-y-4">
+                <div className="rounded-2xl border border-border bg-card p-5 shadow-sm space-y-3">
+                  <h4 className="font-display text-sm font-bold text-foreground flex items-center gap-1.5">
+                    <Mail className="h-4 w-4 text-amber-500" /> Resend Email Information
+                  </h4>
+                  <ul className="text-xs text-muted-foreground space-y-2 list-disc list-inside">
+                    <li>
+                      Sender address is set to <strong>notifications@barimabafoods.shop</strong>.
+                    </li>
+                    <li>Domain is verified with DKIM, SPF & DMARC records.</li>
+                    <li>
+                      Automatic notifications are sent whenever a new product or catering package is
+                      added in the admin panel.
+                    </li>
                   </ul>
                 </div>
               </div>

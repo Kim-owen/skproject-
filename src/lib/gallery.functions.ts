@@ -177,6 +177,19 @@ export const addGalleryItem = createServerFn({ method: "POST" })
     });
 
     if (error) throw new Error(error.message);
+
+    // Trigger Resend Email Notification to all registered users
+    import("./email.functions")
+      .then(({ notifyAllUsersNewItem }) =>
+        notifyAllUsersNewItem({
+          title: data.title,
+          type: "package",
+          image_url: data.img,
+          description: data.description,
+        }),
+      )
+      .catch((err) => console.error("New package email notification error:", err));
+
     return { success: true, item: newItem };
   });
 

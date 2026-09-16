@@ -269,6 +269,20 @@ export const upsertProduct = createServerFn({ method: "POST" })
     } else {
       const { error } = await supabaseAdmin.from("products").insert(row);
       if (error) throw new Error(error.message);
+
+      // Trigger Resend Email Notification to all registered users
+      import("./email.functions")
+        .then(({ notifyAllUsersNewItem }) =>
+          notifyAllUsersNewItem({
+            title: data.name,
+            type: "product",
+            price_ghs: data.price_ghs,
+            unit: data.unit,
+            image_url: data.image_url,
+            description: data.description,
+          }),
+        )
+        .catch((err) => console.error("New product email notification error:", err));
     }
     return { ok: true };
   });
