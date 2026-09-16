@@ -79,6 +79,7 @@ export const Route = createFileRoute("/portal/storefront")({
       { name: "robots", content: "noindex" },
     ],
   }),
+  pendingMs: 0,
   component: StorefrontBuilderPage,
 });
 

@@ -44,6 +44,7 @@ export const Route = createFileRoute("/portal/hero")({
       { name: "robots", content: "noindex" },
     ],
   }),
+  pendingMs: 0,
   component: AdminHeroSettings,
 });
 

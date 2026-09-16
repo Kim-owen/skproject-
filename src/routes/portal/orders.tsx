@@ -65,6 +65,7 @@ function getStatusBadge(status: string) {
 
 export const Route = createFileRoute("/portal/orders")({
   head: () => ({ meta: [{ title: "Admin — Orders" }, { name: "robots", content: "noindex" }] }),
+  pendingMs: 0,
   component: AdminOrdersPage,
 });
 
