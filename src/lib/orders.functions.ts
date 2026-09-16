@@ -462,13 +462,29 @@ export const getOrderByNumber = createServerFn({ method: "POST" })
   .validator(z.object({ order_number: z.string().trim().min(3).max(50) }))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: order, error } = await supabaseAdmin
+    const fullCols =
+      "id, order_number, status, payment_status, payment_method, payment_reference, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, customer_email, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
+
+    const fallbackCols =
+      "id, order_number, status, payment_status, payment_method, payment_reference, delivery_type, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, customer_email, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)";
+
+    let { data: order, error } = await supabaseAdmin
       .from("orders")
-      .select(
-        "id, order_number, status, payment_status, payment_method, payment_reference, delivery_type, dispatch_partner, rider_name, rider_phone, rider_vehicle, uber_tracking_url, estimated_delivery_time, total_ghs, subtotal_ghs, delivery_fee_ghs, created_at, customer_name, customer_phone, customer_email, delivery_address, ghana_post_gps, gps_coordinates, order_items(product_name, quantity, unit, unit_price_ghs, line_total_ghs)",
-      )
+      .select(fullCols)
       .eq("order_number", data.order_number.trim().toUpperCase())
       .maybeSingle();
+
+    if (error) {
+      console.warn("[getOrderByNumber] Query with fullCols failed, trying fallbackCols:", error.message);
+      const retry = await supabaseAdmin
+        .from("orders")
+        .select(fallbackCols)
+        .eq("order_number", data.order_number.trim().toUpperCase())
+        .maybeSingle();
+      order = retry.data as any;
+      error = retry.error;
+    }
+
     if (error) throw new Error(error.message);
     return order;
   });

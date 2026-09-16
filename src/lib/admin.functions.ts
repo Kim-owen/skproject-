@@ -85,13 +85,24 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Fetch order first to get details for SMS
-    const { data: order, error: fErr } = await supabaseAdmin
+    let { data: order, error: fErr } = await supabaseAdmin
       .from("orders")
       .select(
         "order_number, customer_name, customer_phone, rider_name, rider_phone, dispatch_partner",
       )
       .eq("id", data.order_id)
-      .single();
+      .maybeSingle();
+
+    if (fErr && fErr.message.includes("dispatch_partner")) {
+      const retry = await supabaseAdmin
+        .from("orders")
+        .select("order_number, customer_name, customer_phone, rider_name, rider_phone")
+        .eq("id", data.order_id)
+        .maybeSingle();
+      order = retry.data as any;
+      fErr = retry.error;
+    }
+
     if (fErr || !order) throw new Error("Order not found");
 
     const { error } = await supabaseAdmin
@@ -177,10 +188,20 @@ export const updateOrderDispatchDetails = createServerFn({ method: "POST" })
       .single();
     if (fErr || !order) throw new Error("Order not found");
 
-    const { error } = await supabaseAdmin
+    let { error } = await supabaseAdmin
       .from("orders")
       .update(updatePayload as any)
       .eq("id", data.order_id);
+
+    if (error && error.message.includes("dispatch_partner")) {
+      delete updatePayload.dispatch_partner;
+      const retry = await supabaseAdmin
+        .from("orders")
+        .update(updatePayload as any)
+        .eq("id", data.order_id);
+      error = retry.error;
+    }
+
     if (error) throw new Error(error.message);
 
     // Send SMS notifications based on preferences
