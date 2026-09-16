@@ -67,11 +67,15 @@ function AdminHeroSettings() {
   useEffect(() => {
     if (initialData) {
       setForm(initialData);
+      if (initialData.presets && Array.isArray(initialData.presets)) {
+        setPresets(initialData.presets);
+      }
     }
   }, [initialData]);
 
   const updateMutation = useMutation({
-    mutationFn: (newSettings: HeroMediaSettings) => updater({ data: newSettings }),
+    mutationFn: (newSettings: HeroMediaSettings) =>
+      updater({ data: { ...newSettings, presets } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hero-settings"] });
       queryClient.invalidateQueries({ queryKey: ["storefront-config"] });
@@ -137,12 +141,18 @@ function AdminHeroSettings() {
 
   const handleClearHeroBg = () => {
     setForm((p) => ({ ...p, video_url: "", poster_url: "" }));
-    toast.success("Hero background media cleared!");
+    toast.success("Hero background cleared!", {
+      description: "Click 'Save Live Changes' top right to make this permanent.",
+    });
   };
 
   const handleRemovePreset = (id: string) => {
-    setPresets((p) => p.filter((item) => item.id !== id));
-    toast.success("Preset removed from list");
+    const nextPresets = presets.filter((item) => item.id !== id);
+    setPresets(nextPresets);
+    setForm((p) => ({ ...p, presets: nextPresets }));
+    toast.success("Preset removed from list!", {
+      description: "Click 'Save Live Changes' top right to delete permanently.",
+    });
   };
 
   if (guard !== "ok") {

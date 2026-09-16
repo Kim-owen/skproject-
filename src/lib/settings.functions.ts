@@ -2,6 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+export interface HeroMediaPreset {
+  id: string;
+  title: string;
+  video_url: string;
+  poster_url: string;
+}
+
 export interface HeroMediaSettings {
   media_type: "video" | "image";
   video_url: string;
@@ -14,6 +21,7 @@ export interface HeroMediaSettings {
   muted: boolean;
   loop: boolean;
   overlay_text?: string;
+  presets?: HeroMediaPreset[];
 }
 
 export const DEFAULT_HERO_SETTINGS: HeroMediaSettings = {
@@ -29,6 +37,7 @@ export const DEFAULT_HERO_SETTINGS: HeroMediaSettings = {
   muted: true,
   loop: true,
   overlay_text: "Signature Shito Animi Reel",
+  presets: PRO_VIDEO_PRESETS,
 };
 
 export const PRO_VIDEO_PRESETS = [
@@ -103,8 +112,8 @@ export const updateHeroSettings = createServerFn({ method: "POST" })
   .validator(
     z.object({
       media_type: z.enum(["video", "image"]),
-      video_url: z.string().url().or(z.string().min(1)),
-      poster_url: z.string().url().or(z.string().min(1)),
+      video_url: z.string().optional().or(z.literal("")),
+      poster_url: z.string().optional().or(z.literal("")),
       badge_text: z.string().min(1),
       headline_main: z.string().min(1),
       headline_highlight: z.string().min(1),
@@ -113,6 +122,16 @@ export const updateHeroSettings = createServerFn({ method: "POST" })
       muted: z.boolean(),
       loop: z.boolean(),
       overlay_text: z.string().optional(),
+      presets: z
+        .array(
+          z.object({
+            id: z.string(),
+            title: z.string(),
+            video_url: z.string(),
+            poster_url: z.string(),
+          }),
+        )
+        .optional(),
     }),
   )
   .handler(async ({ data, context }) => {
