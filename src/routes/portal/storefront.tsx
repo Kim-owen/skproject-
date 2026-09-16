@@ -69,6 +69,7 @@ import {
   Palette,
   Type,
   Check,
+  Upload,
 } from "lucide-react";
 
 export const Route = createFileRoute("/portal/storefront")({
