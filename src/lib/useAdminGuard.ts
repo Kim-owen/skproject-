@@ -6,9 +6,9 @@ import { verifyAdminAccess } from "@/lib/admin.functions";
 import { toast } from "sonner";
 
 export function useAdminGuard() {
+  const verifier = useServerFn(verifyAdminAccess);
   const navigate = useNavigate();
   const [state, setState] = useState<"loading" | "ok" | "denied">("loading");
-  const verifier = useServerFn(verifyAdminAccess);
 
   useEffect(() => {
     let cancelled = false;

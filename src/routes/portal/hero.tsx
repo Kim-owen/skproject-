@@ -573,7 +573,7 @@ function AdminHeroSettings() {
                     id="poster_url"
                     value={form.poster_url}
                     onChange={(e) => handleFieldChange("poster_url", e.target.value)}
-                    placeholder="/images/hero-foods-spread.png or upload image"
+                    placeholder="/images/catering-jollof-feast.png or upload image"
                     className="rounded-xl font-mono text-xs"
                   />
                   <label className="cursor-pointer">

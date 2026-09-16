@@ -96,7 +96,7 @@ export function HeroMedia({ settings, previewMode = false }: HeroMediaProps) {
       {/* Fallback image when video is loading, errored, or media_type is image */}
       {(!isVideo || !isLoaded || hasError) && (
         <img
-          src={settings.poster_url || "/images/hero-foods-spread.png"}
+          src={settings.poster_url || "/images/catering-jollof-feast.png"}
           alt="Hero visual"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-102"
         />
