@@ -368,25 +368,48 @@ function StorefrontBuilderPage() {
           {/* Left / Main Configuration Column */}
           <div className={showPreview ? "lg:col-span-7 space-y-6" : "space-y-6"}>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid grid-cols-3 sm:grid-cols-6 gap-1 rounded-2xl bg-muted/50 p-1.5 border border-border">
-                <TabsTrigger value="theme" className="rounded-xl text-xs font-bold flex items-center justify-center gap-1 text-amber-500">
-                  <Palette className="h-3.5 w-3.5" />
+              <TabsList className="flex w-full items-center justify-start overflow-x-auto no-scrollbar p-1.5 gap-1.5 rounded-2xl bg-muted/60 border border-border/80 shadow-xs">
+                <TabsTrigger
+                  value="theme"
+                  className="rounded-xl px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all"
+                >
+                  <Palette className="h-3.5 w-3.5 text-amber-500" />
                   <span>Theme & Fonts</span>
                 </TabsTrigger>
-                <TabsTrigger value="sections" className="rounded-xl text-xs font-bold">
-                  Layout & Order
+                <TabsTrigger
+                  value="sections"
+                  className="rounded-xl px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all"
+                >
+                  <Layers className="h-3.5 w-3.5" />
+                  <span>Layout & Order</span>
                 </TabsTrigger>
-                <TabsTrigger value="hero" className="rounded-xl text-xs font-bold">
-                  Hero & Alerts
+                <TabsTrigger
+                  value="hero"
+                  className="rounded-xl px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all"
+                >
+                  <Film className="h-3.5 w-3.5" />
+                  <span>Hero & Alerts</span>
                 </TabsTrigger>
-                <TabsTrigger value="catalog" className="rounded-xl text-xs font-bold">
-                  Products & Cats
+                <TabsTrigger
+                  value="catalog"
+                  className="rounded-xl px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all"
+                >
+                  <ShoppingBag className="h-3.5 w-3.5" />
+                  <span>Products & Cats</span>
                 </TabsTrigger>
-                <TabsTrigger value="promo" className="rounded-xl text-xs font-bold">
-                  Catering Banner
+                <TabsTrigger
+                  value="promo"
+                  className="rounded-xl px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Catering Banner</span>
                 </TabsTrigger>
-                <TabsTrigger value="trust" className="rounded-xl text-xs font-bold hidden sm:block">
-                  Trust & Contact
+                <TabsTrigger
+                  value="trust"
+                  className="rounded-xl px-3 py-2 text-xs font-bold shrink-0 flex items-center gap-1.5 transition-all"
+                >
+                  <Shield className="h-3.5 w-3.5" />
+                  <span>Trust & Contact</span>
                 </TabsTrigger>
               </TabsList>
 
