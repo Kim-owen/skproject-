@@ -137,6 +137,31 @@ function AdminOrdersPage() {
     }
   };
 
+  const handleStatusChange = async (orderId: string, newStatus: (typeof STATUSES)[number]) => {
+    const previousOrders = qc.getQueryData<any[]>(["admin-orders"]);
+
+    // Optimistically update React Query cache for instantaneous UI feedback
+    if (previousOrders) {
+      qc.setQueryData<any[]>(["admin-orders"], (old) =>
+        old ? old.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)) : [],
+      );
+    }
+
+    try {
+      await update({
+        data: { order_id: orderId, status: newStatus },
+      });
+      toast.success(`Order status updated to ${newStatus.replace(/_/g, " ").toUpperCase()}`);
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+      qc.invalidateQueries({ queryKey: ["admin-stats"] });
+    } catch (e) {
+      if (previousOrders) {
+        qc.setQueryData(["admin-orders"], previousOrders);
+      }
+      toast.error(e instanceof Error ? e.message : "Failed to update order status");
+    }
+  };
+
   const filteredOrders = useMemo(() => {
     if (!orders) return [];
     return orders.filter((o) => {
@@ -337,18 +362,7 @@ function AdminOrdersPage() {
                 <div className="pt-1">
                   <Select
                     value={o.status}
-                    onValueChange={async (v) => {
-                      try {
-                        await update({
-                          data: { order_id: o.id, status: v as (typeof STATUSES)[number] },
-                        });
-                        toast.success("Status updated");
-                        qc.invalidateQueries({ queryKey: ["admin-orders"] });
-                        qc.invalidateQueries({ queryKey: ["admin-stats"] });
-                      } catch (e) {
-                        toast.error(e instanceof Error ? e.message : "Failed to update status");
-                      }
-                    }}
+                    onValueChange={(v) => handleStatusChange(o.id, v as (typeof STATUSES)[number])}
                   >
                     <SelectTrigger
                       className={`w-full h-9 rounded-xl text-xs font-bold capitalize ${getStatusBadge(o.status)}`}
@@ -481,20 +495,9 @@ function AdminOrdersPage() {
                         <td className="px-5 py-4.5">
                           <Select
                             value={o.status}
-                            onValueChange={async (v) => {
-                              try {
-                                await update({
-                                  data: { order_id: o.id, status: v as (typeof STATUSES)[number] },
-                                });
-                                toast.success("Order status updated successfully");
-                                qc.invalidateQueries({ queryKey: ["admin-orders"] });
-                                qc.invalidateQueries({ queryKey: ["admin-stats"] });
-                              } catch (e) {
-                                toast.error(
-                                  e instanceof Error ? e.message : "Failed to update order status",
-                                );
-                              }
-                            }}
+                            onValueChange={(v) =>
+                              handleStatusChange(o.id, v as (typeof STATUSES)[number])
+                            }
                           >
                             <SelectTrigger
                               className={`w-40 rounded-xl text-xs font-bold capitalize border-0 shadow-xs ${getStatusBadge(o.status)}`}
