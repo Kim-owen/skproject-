@@ -145,7 +145,7 @@ export const DEFAULT_STOREFRONT_CONFIG: StorefrontConfig = {
   hero: {
     enabled: true,
     media_type: "video",
-    video_url: "",
+    video_url: "/videos/shito-animi.mp4",
     poster_url: "/images/catering-jollof-feast.png",
     badge_text: "Nationwide Express Delivery Across Ghana",
     headline_main: "BARIMA BA FOODS",

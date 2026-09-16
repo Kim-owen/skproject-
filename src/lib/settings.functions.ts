@@ -28,7 +28,7 @@ export const PRO_VIDEO_PRESETS: HeroMediaPreset[] = [];
 
 export const DEFAULT_HERO_SETTINGS: HeroMediaSettings = {
   media_type: "video",
-  video_url: "",
+  video_url: "/videos/shito-animi.mp4",
   poster_url: "",
   badge_text: "Nationwide Delivery Across Ghana",
   headline_main: "BARIMA BA FOODS",

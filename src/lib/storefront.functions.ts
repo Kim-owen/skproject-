@@ -33,7 +33,7 @@ export const getStorefrontConfig = createServerFn({ method: "GET" }).handler(
           hero: {
             ...config.hero,
             media_type: hm.media_type ?? config.hero.media_type,
-            video_url: hm.video_url ?? config.hero.video_url,
+            video_url: hm.video_url || config.hero.video_url || "/videos/shito-animi.mp4",
             poster_url: hm.poster_url ?? config.hero.poster_url,
             badge_text: hm.badge_text ?? config.hero.badge_text,
             headline_main: hm.headline_main ?? config.hero.headline_main,
