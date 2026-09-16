@@ -75,8 +75,7 @@ function AdminHeroSettings() {
   }, [initialData]);
 
   const updateMutation = useMutation({
-    mutationFn: (newSettings: HeroMediaSettings) =>
-      updater({ data: { ...newSettings, presets } }),
+    mutationFn: (newSettings: HeroMediaSettings) => updater({ data: { ...newSettings, presets } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["hero-settings"] });
       queryClient.invalidateQueries({ queryKey: ["storefront-config"] });
@@ -109,7 +108,7 @@ function AdminHeroSettings() {
       const filePath = `hero/${fileName}`;
 
       // Upload to supabase storage bucket 'hero-media' with fallback to 'media'
-      let { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("hero-media")
         .upload(filePath, file, {
           upsert: true,
@@ -425,7 +424,9 @@ function AdminHeroSettings() {
               <div>
                 <div className="flex items-center justify-between">
                   <Label htmlFor="poster_url" className="text-xs font-semibold text-foreground">
-                    {form.media_type === "video" ? "Video Poster / Thumbnail URL" : "Hero Image URL"}
+                    {form.media_type === "video"
+                      ? "Video Poster / Thumbnail URL"
+                      : "Hero Image URL"}
                   </Label>
                   {form.poster_url && (
                     <button

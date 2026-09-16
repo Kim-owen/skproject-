@@ -288,7 +288,9 @@ function StorefrontBuilderPage() {
   };
 
   const handleResetToDefaults = () => {
-    if (window.confirm("Are you sure you want to reset all storefront settings to brand defaults?")) {
+    if (
+      window.confirm("Are you sure you want to reset all storefront settings to brand defaults?")
+    ) {
       setConfig(DEFAULT_STOREFRONT_CONFIG);
       setIsDirty(true);
       toast.info("Reset to brand defaults. Click 'Save & Publish' to make it live.");
@@ -321,7 +323,8 @@ function StorefrontBuilderPage() {
               Plug & Play Storefront Builder
             </h1>
             <p className="text-xs text-muted-foreground">
-              Toggle sections, rearrange layout order, and edit frontend content with instant live preview.
+              Toggle sections, rearrange layout order, and edit frontend content with instant live
+              preview.
             </p>
           </div>
 
@@ -353,7 +356,11 @@ function StorefrontBuilderPage() {
               className="rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md shadow-amber-500/20"
             >
               <Save className="mr-1.5 h-4 w-4" />
-              {saveMutation.isPending ? "Publishing..." : isDirty ? "Publish Changes *" : "Published"}
+              {saveMutation.isPending
+                ? "Publishing..."
+                : isDirty
+                  ? "Publish Changes *"
+                  : "Published"}
             </Button>
 
             <Button asChild size="sm" variant="ghost" className="rounded-xl">
@@ -433,13 +440,16 @@ function StorefrontBuilderPage() {
                         Storefront Color Palette & Brand Accent
                       </h3>
                       <p className="text-xs text-muted-foreground">
-                        Select a curated color palette or pick custom hex colors. Buttons, badges, and accents will update across the live preview.
+                        Select a curated color palette or pick custom hex colors. Buttons, badges,
+                        and accents will update across the live preview.
                       </p>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1.5 rounded-xl border border-border bg-muted/40 px-3 py-1.5">
-                        <span className="text-[11px] font-bold text-muted-foreground uppercase">Current:</span>
+                        <span className="text-[11px] font-bold text-muted-foreground uppercase">
+                          Current:
+                        </span>
                         <span
                           className="h-3.5 w-3.5 rounded-full border border-white/20 shadow-xs"
                           style={{ backgroundColor: config.theme?.primary_color || "#f59e0b" }}
@@ -657,7 +667,8 @@ function StorefrontBuilderPage() {
                         Heading & Body Typography
                       </h3>
                       <p className="text-xs text-muted-foreground">
-                        Choose display fonts for impact headlines and readable body fonts for product details and reviews.
+                        Choose display fonts for impact headlines and readable body fonts for
+                        product details and reviews.
                       </p>
                     </div>
                   </div>
@@ -746,7 +757,9 @@ function StorefrontBuilderPage() {
                               <div className="flex flex-col gap-0.5 text-left">
                                 <div className="flex items-center justify-between gap-3">
                                   <span className="text-xs font-bold">{f.name}</span>
-                                  <span className="text-[10px] text-muted-foreground uppercase">{f.category}</span>
+                                  <span className="text-[10px] text-muted-foreground uppercase">
+                                    {f.category}
+                                  </span>
                                 </div>
                                 <span
                                   className="text-sm text-foreground/90 truncate tracking-wide"
@@ -805,7 +818,9 @@ function StorefrontBuilderPage() {
                               <div className="flex flex-col gap-0.5 text-left">
                                 <div className="flex items-center justify-between gap-3">
                                   <span className="text-xs font-bold">{f.name}</span>
-                                  <span className="text-[10px] text-muted-foreground uppercase">{f.category}</span>
+                                  <span className="text-[10px] text-muted-foreground uppercase">
+                                    {f.category}
+                                  </span>
                                 </div>
                                 <span
                                   className="text-xs text-foreground/80 truncate"
@@ -828,7 +843,9 @@ function StorefrontBuilderPage() {
                           className="text-xs text-muted-foreground leading-relaxed"
                           style={{ fontFamily: config.theme?.font_body || "Inter" }}
                         >
-                          Premium quality homemade Ghanaian foods made with passion, rich in flavor and crafted for your satisfaction. Nationwide express delivery across Ghana.
+                          Premium quality homemade Ghanaian foods made with passion, rich in flavor
+                          and crafted for your satisfaction. Nationwide express delivery across
+                          Ghana.
                         </p>
                       </div>
                     </div>
@@ -842,7 +859,8 @@ function StorefrontBuilderPage() {
                       Button & Card Border Radius
                     </h3>
                     <p className="text-xs text-muted-foreground">
-                      Controls how sharp or curved buttons, badges, and cards feel on the storefront.
+                      Controls how sharp or curved buttons, badges, and cards feel on the
+                      storefront.
                     </p>
                   </div>
 
@@ -901,7 +919,8 @@ function StorefrontBuilderPage() {
                         Homepage Layout Order & Switchboard
                       </h3>
                       <p className="text-xs text-muted-foreground">
-                        Grab any section's grip handle (⋮⋮) to drag and drop it into place, or use the Up/Down arrows. Live preview updates immediately.
+                        Grab any section's grip handle (⋮⋮) to drag and drop it into place, or use
+                        the Up/Down arrows. Live preview updates immediately.
                       </p>
                     </div>
 
@@ -961,10 +980,10 @@ function StorefrontBuilderPage() {
                             isDragging
                               ? "opacity-30 border-dashed border-amber-500 bg-amber-500/10 scale-98 shadow-inner ring-2 ring-amber-500"
                               : isDragOver
-                              ? "border-amber-400 bg-amber-500/20 shadow-xl ring-2 ring-amber-400 -translate-y-1 scale-101"
-                              : isEnabled
-                              ? "border-border bg-background/90 shadow-xs hover:border-amber-500/40 hover:bg-card"
-                              : "border-border/40 bg-muted/20 opacity-60"
+                                ? "border-amber-400 bg-amber-500/20 shadow-xl ring-2 ring-amber-400 -translate-y-1 scale-101"
+                                : isEnabled
+                                  ? "border-border bg-background/90 shadow-xs hover:border-amber-500/40 hover:bg-card"
+                                  : "border-border/40 bg-muted/20 opacity-60"
                           }`}
                         >
                           <div className="flex items-center gap-3">
@@ -1002,7 +1021,9 @@ function StorefrontBuilderPage() {
                                   {isEnabled ? "Active" : "Disabled"}
                                 </span>
                               </div>
-                              <p className="text-xs text-muted-foreground line-clamp-1">{meta.desc}</p>
+                              <p className="text-xs text-muted-foreground line-clamp-1">
+                                {meta.desc}
+                              </p>
                             </div>
                           </div>
 
@@ -1043,7 +1064,9 @@ function StorefrontBuilderPage() {
                             <div onClick={(e) => e.stopPropagation()}>
                               <Switch
                                 checked={isEnabled}
-                                onCheckedChange={(checked) => toggleSectionEnabled(sectionId, checked)}
+                                onCheckedChange={(checked) =>
+                                  toggleSectionEnabled(sectionId, checked)
+                                }
                               />
                             </div>
                           </div>
@@ -1078,7 +1101,9 @@ function StorefrontBuilderPage() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Badge Text</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Badge Text
+                      </Label>
                       <Input
                         value={config.announcement.badge}
                         onChange={(e) => {
@@ -1093,7 +1118,9 @@ function StorefrontBuilderPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Target Link</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Target Link
+                      </Label>
                       <Input
                         value={config.announcement.link}
                         onChange={(e) => {
@@ -1108,7 +1135,9 @@ function StorefrontBuilderPage() {
                       />
                     </div>
                     <div className="sm:col-span-2 space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Announcement Message</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Announcement Message
+                      </Label>
                       <Input
                         value={config.announcement.text}
                         onChange={(e) => {
@@ -1147,7 +1176,9 @@ function StorefrontBuilderPage() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Media Type</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Media Type
+                      </Label>
                       <Select
                         value={config.hero.media_type}
                         onValueChange={(val: "video" | "image") => {
@@ -1166,11 +1197,16 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Hero Floating Badge</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Hero Floating Badge
+                      </Label>
                       <Input
                         value={config.hero.badge_text}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, hero: { ...p.hero, badge_text: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            hero: { ...p.hero, badge_text: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         placeholder="Nationwide Express Delivery"
@@ -1179,11 +1215,16 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="sm:col-span-2 space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Video URL</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Video URL
+                      </Label>
                       <Input
                         value={config.hero.video_url}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, hero: { ...p.hero, video_url: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            hero: { ...p.hero, video_url: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         placeholder="/videos/shito-animi.mp4"
@@ -1192,11 +1233,16 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="sm:col-span-2 space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Poster / Fallback Image URL</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Poster / Fallback Image URL
+                      </Label>
                       <Input
                         value={config.hero.poster_url}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, hero: { ...p.hero, poster_url: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            hero: { ...p.hero, poster_url: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         placeholder="/images/hero-foods-spread.png"
@@ -1205,11 +1251,16 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Main Headline</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Main Headline
+                      </Label>
                       <Input
                         value={config.hero.headline_main}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, hero: { ...p.hero, headline_main: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            hero: { ...p.hero, headline_main: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         placeholder="BARIMA BA FOODS"
@@ -1218,11 +1269,16 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Italic Highlight Phrase</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Italic Highlight Phrase
+                      </Label>
                       <Input
                         value={config.hero.headline_highlight}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, hero: { ...p.hero, headline_highlight: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            hero: { ...p.hero, headline_highlight: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         placeholder="Taste. Quality. Trust."
@@ -1231,11 +1287,16 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="sm:col-span-2 space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Subheading Description</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Subheading Description
+                      </Label>
                       <Textarea
                         value={config.hero.subheading}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, hero: { ...p.hero, subheading: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            hero: { ...p.hero, subheading: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         rows={2}
@@ -1245,11 +1306,16 @@ function StorefrontBuilderPage() {
 
                     {/* Primary Button */}
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Primary Button Text</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Primary Button Text
+                      </Label>
                       <Input
                         value={config.hero.primary_button_text}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, hero: { ...p.hero, primary_button_text: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            hero: { ...p.hero, primary_button_text: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         placeholder="ORDER NOW"
@@ -1257,11 +1323,16 @@ function StorefrontBuilderPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Primary Button Link</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Primary Button Link
+                      </Label>
                       <Input
                         value={config.hero.primary_button_link}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, hero: { ...p.hero, primary_button_link: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            hero: { ...p.hero, primary_button_link: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         placeholder="/shop"
@@ -1271,11 +1342,16 @@ function StorefrontBuilderPage() {
 
                     {/* Secondary Button */}
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Secondary Button Text</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Secondary Button Text
+                      </Label>
                       <Input
                         value={config.hero.secondary_button_text}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, hero: { ...p.hero, secondary_button_text: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            hero: { ...p.hero, secondary_button_text: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         placeholder="CATERING SERVICES"
@@ -1283,11 +1359,16 @@ function StorefrontBuilderPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Secondary Button Link</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Secondary Button Link
+                      </Label>
                       <Input
                         value={config.hero.secondary_button_link}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, hero: { ...p.hero, secondary_button_link: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            hero: { ...p.hero, secondary_button_link: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         placeholder="/catering"
@@ -1322,11 +1403,16 @@ function StorefrontBuilderPage() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Section Badge</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Section Badge
+                      </Label>
                       <Input
                         value={config.categories.badge}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, categories: { ...p.categories, badge: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            categories: { ...p.categories, badge: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         placeholder="QUICK SHOPPING"
@@ -1335,11 +1421,16 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Section Title</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Section Title
+                      </Label>
                       <Input
                         value={config.categories.title}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, categories: { ...p.categories, title: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            categories: { ...p.categories, title: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         placeholder="BROWSE BY CATEGORY"
@@ -1348,11 +1439,16 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="sm:col-span-2 space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Section Subtitle</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Section Subtitle
+                      </Label>
                       <Input
                         value={config.categories.subtitle}
                         onChange={(e) => {
-                          setConfig((p) => ({ ...p, categories: { ...p.categories, subtitle: e.target.value } }));
+                          setConfig((p) => ({
+                            ...p,
+                            categories: { ...p.categories, subtitle: e.target.value },
+                          }));
                           setIsDirty(true);
                         }}
                         placeholder="Discover fresh essentials and condiments..."
@@ -1366,7 +1462,10 @@ function StorefrontBuilderPage() {
                       <span className="text-xs font-bold text-muted-foreground uppercase">
                         Select Categories to Display on Homepage
                       </span>
-                      <Link to="/portal/categories" className="text-xs text-amber-500 font-bold hover:underline">
+                      <Link
+                        to="/portal/categories"
+                        className="text-xs text-amber-500 font-bold hover:underline"
+                      >
                         Manage Categories &rarr;
                       </Link>
                     </div>
@@ -1419,13 +1518,17 @@ function StorefrontBuilderPage() {
                         Featured Products Section
                       </h3>
                       <p className="text-xs text-muted-foreground">
-                        Control the showcase product carousel, headline titles, and presentation mode.
+                        Control the showcase product carousel, headline titles, and presentation
+                        mode.
                       </p>
                     </div>
                     <Switch
                       checked={config.featured_products.enabled}
                       onCheckedChange={(enabled) => {
-                        setConfig((p) => ({ ...p, featured_products: { ...p.featured_products, enabled } }));
+                        setConfig((p) => ({
+                          ...p,
+                          featured_products: { ...p.featured_products, enabled },
+                        }));
                         setIsDirty(true);
                       }}
                     />
@@ -1433,7 +1536,9 @@ function StorefrontBuilderPage() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Badge Text</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Badge Text
+                      </Label>
                       <Input
                         value={config.featured_products.badge}
                         onChange={(e) => {
@@ -1449,7 +1554,9 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Display Mode</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Display Mode
+                      </Label>
                       <Select
                         value={config.featured_products.display_mode}
                         onValueChange={(val: "slideshow" | "grid") => {
@@ -1471,7 +1578,9 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Section Title</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Section Title
+                      </Label>
                       <Input
                         value={config.featured_products.title}
                         onChange={(e) => {
@@ -1487,13 +1596,18 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Title Italic Highlight</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Title Italic Highlight
+                      </Label>
                       <Input
                         value={config.featured_products.title_highlight}
                         onChange={(e) => {
                           setConfig((p) => ({
                             ...p,
-                            featured_products: { ...p.featured_products, title_highlight: e.target.value },
+                            featured_products: {
+                              ...p.featured_products,
+                              title_highlight: e.target.value,
+                            },
                           }));
                           setIsDirty(true);
                         }}
@@ -1503,7 +1617,9 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="sm:col-span-2 space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Section Subtitle</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Section Subtitle
+                      </Label>
                       <Textarea
                         value={config.featured_products.subtitle}
                         onChange={(e) => {
@@ -1519,7 +1635,9 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Products Selection</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Products Selection
+                      </Label>
                       <Select
                         value={config.featured_products.selection_mode}
                         onValueChange={(val: "auto" | "manual") => {
@@ -1541,14 +1659,19 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Product Limit</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Product Limit
+                      </Label>
                       <Input
                         type="number"
                         value={config.featured_products.limit}
                         onChange={(e) => {
                           setConfig((p) => ({
                             ...p,
-                            featured_products: { ...p.featured_products, limit: parseInt(e.target.value) || 12 },
+                            featured_products: {
+                              ...p.featured_products,
+                              limit: parseInt(e.target.value) || 12,
+                            },
                           }));
                           setIsDirty(true);
                         }}
@@ -1561,11 +1684,14 @@ function StorefrontBuilderPage() {
                   {config.featured_products.selection_mode === "manual" && (
                     <div className="pt-3 border-t border-border space-y-2">
                       <Label className="text-xs font-bold text-muted-foreground uppercase">
-                        Select Spotlight Products ({config.featured_products.selected_product_ids.length} selected)
+                        Select Spotlight Products (
+                        {config.featured_products.selected_product_ids.length} selected)
                       </Label>
                       <div className="max-h-48 overflow-y-auto space-y-1.5 p-2 rounded-xl bg-background border border-border">
                         {products.map((p) => {
-                          const checked = config.featured_products.selected_product_ids.includes(p.id);
+                          const checked = config.featured_products.selected_product_ids.includes(
+                            p.id,
+                          );
                           return (
                             <label
                               key={p.id}
@@ -1594,7 +1720,9 @@ function StorefrontBuilderPage() {
                                 className="rounded text-amber-500"
                               />
                               <span className="font-semibold text-foreground">{p.name}</span>
-                              <span className="text-muted-foreground font-mono">GH₵ {p.price_ghs}</span>
+                              <span className="text-muted-foreground font-mono">
+                                GH₵ {p.price_ghs}
+                              </span>
                             </label>
                           );
                         })}
@@ -1613,13 +1741,17 @@ function StorefrontBuilderPage() {
                         Promotional / Catering Banner
                       </h3>
                       <p className="text-xs text-muted-foreground">
-                        Highlight custom services, party orders, wedding catering, and photo collage.
+                        Highlight custom services, party orders, wedding catering, and photo
+                        collage.
                       </p>
                     </div>
                     <Switch
                       checked={config.promotional_banner.enabled}
                       onCheckedChange={(enabled) => {
-                        setConfig((p) => ({ ...p, promotional_banner: { ...p.promotional_banner, enabled } }));
+                        setConfig((p) => ({
+                          ...p,
+                          promotional_banner: { ...p.promotional_banner, enabled },
+                        }));
                         setIsDirty(true);
                       }}
                     />
@@ -1627,7 +1759,9 @@ function StorefrontBuilderPage() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Banner Badge</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Banner Badge
+                      </Label>
                       <Input
                         value={config.promotional_banner.badge}
                         onChange={(e) => {
@@ -1643,7 +1777,9 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Headline Title</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Headline Title
+                      </Label>
                       <Input
                         value={config.promotional_banner.title}
                         onChange={(e) => {
@@ -1659,13 +1795,18 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="sm:col-span-2 space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Description</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Description
+                      </Label>
                       <Textarea
                         value={config.promotional_banner.description}
                         onChange={(e) => {
                           setConfig((p) => ({
                             ...p,
-                            promotional_banner: { ...p.promotional_banner, description: e.target.value },
+                            promotional_banner: {
+                              ...p.promotional_banner,
+                              description: e.target.value,
+                            },
                           }));
                           setIsDirty(true);
                         }}
@@ -1682,7 +1823,10 @@ function StorefrontBuilderPage() {
                       <Input
                         value={config.promotional_banner.bullet_points.join(", ")}
                         onChange={(e) => {
-                          const list = e.target.value.split(",").map((s) => s.trim()).filter(Boolean);
+                          const list = e.target.value
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean);
                           setConfig((p) => ({
                             ...p,
                             promotional_banner: { ...p.promotional_banner, bullet_points: list },
@@ -1695,13 +1839,18 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Button Text</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Button Text
+                      </Label>
                       <Input
                         value={config.promotional_banner.cta_text}
                         onChange={(e) => {
                           setConfig((p) => ({
                             ...p,
-                            promotional_banner: { ...p.promotional_banner, cta_text: e.target.value },
+                            promotional_banner: {
+                              ...p.promotional_banner,
+                              cta_text: e.target.value,
+                            },
                           }));
                           setIsDirty(true);
                         }}
@@ -1711,13 +1860,18 @@ function StorefrontBuilderPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Button Link</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Button Link
+                      </Label>
                       <Input
                         value={config.promotional_banner.cta_link}
                         onChange={(e) => {
                           setConfig((p) => ({
                             ...p,
-                            promotional_banner: { ...p.promotional_banner, cta_link: e.target.value },
+                            promotional_banner: {
+                              ...p.promotional_banner,
+                              cta_link: e.target.value,
+                            },
                           }));
                           setIsDirty(true);
                         }}
@@ -1738,7 +1892,10 @@ function StorefrontBuilderPage() {
                       </div>
 
                       {config.promotional_banner.images.map((img, idx) => (
-                        <div key={idx} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2 rounded-xl border border-border bg-muted/20">
+                        <div
+                          key={idx}
+                          className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2 rounded-xl border border-border bg-muted/20"
+                        >
                           <span className="text-xs font-mono font-bold text-amber-500 w-8 shrink-0">
                             #{idx + 1}
                           </span>
@@ -1791,10 +1948,15 @@ function StorefrontBuilderPage() {
                                   newImgs[idx] = publicUrlData.publicUrl;
                                   setConfig((p) => ({
                                     ...p,
-                                    promotional_banner: { ...p.promotional_banner, images: newImgs },
+                                    promotional_banner: {
+                                      ...p.promotional_banner,
+                                      images: newImgs,
+                                    },
                                   }));
                                   setIsDirty(true);
-                                  toast.success(`Image #${idx + 1} uploaded! Click 'Save Storefront' top right to publish.`);
+                                  toast.success(
+                                    `Image #${idx + 1} uploaded! Click 'Save Storefront' top right to publish.`,
+                                  );
                                 } catch (err: any) {
                                   toast.error("Upload failed: " + err.message);
                                 }
@@ -1835,13 +1997,19 @@ function StorefrontBuilderPage() {
 
                   <div className="space-y-3">
                     {config.trust_ribbon.items.map((item, idx) => (
-                      <div key={idx} className="grid grid-cols-3 gap-2 p-2.5 rounded-xl border border-border bg-background">
+                      <div
+                        key={idx}
+                        className="grid grid-cols-3 gap-2 p-2.5 rounded-xl border border-border bg-background"
+                      >
                         <Input
                           value={item.icon}
                           onChange={(e) => {
                             const items = [...config.trust_ribbon.items];
                             items[idx].icon = e.target.value;
-                            setConfig((p) => ({ ...p, trust_ribbon: { ...p.trust_ribbon, items } }));
+                            setConfig((p) => ({
+                              ...p,
+                              trust_ribbon: { ...p.trust_ribbon, items },
+                            }));
                             setIsDirty(true);
                           }}
                           placeholder="Icon (e.g. Leaf, Shield, Flame)"
@@ -1852,7 +2020,10 @@ function StorefrontBuilderPage() {
                           onChange={(e) => {
                             const items = [...config.trust_ribbon.items];
                             items[idx].title = e.target.value;
-                            setConfig((p) => ({ ...p, trust_ribbon: { ...p.trust_ribbon, items } }));
+                            setConfig((p) => ({
+                              ...p,
+                              trust_ribbon: { ...p.trust_ribbon, items },
+                            }));
                             setIsDirty(true);
                           }}
                           placeholder="Title"
@@ -1863,7 +2034,10 @@ function StorefrontBuilderPage() {
                           onChange={(e) => {
                             const items = [...config.trust_ribbon.items];
                             items[idx].desc = e.target.value;
-                            setConfig((p) => ({ ...p, trust_ribbon: { ...p.trust_ribbon, items } }));
+                            setConfig((p) => ({
+                              ...p,
+                              trust_ribbon: { ...p.trust_ribbon, items },
+                            }));
                             setIsDirty(true);
                           }}
                           placeholder="Description"
@@ -1882,7 +2056,8 @@ function StorefrontBuilderPage() {
                         Bottom Delivery & Direct Contact Bar
                       </h3>
                       <p className="text-xs text-muted-foreground">
-                        High-contrast golden banner displaying direct phone and WhatsApp contact info.
+                        High-contrast golden banner displaying direct phone and WhatsApp contact
+                        info.
                       </p>
                     </div>
                     <Switch
@@ -1899,7 +2074,9 @@ function StorefrontBuilderPage() {
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Banner Title</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Banner Title
+                      </Label>
                       <Input
                         value={config.contact_delivery?.title || ""}
                         onChange={(e) => {
@@ -1913,7 +2090,9 @@ function StorefrontBuilderPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Subtitle</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Subtitle
+                      </Label>
                       <Input
                         value={config.contact_delivery?.subtitle || ""}
                         onChange={(e) => {
@@ -1927,7 +2106,9 @@ function StorefrontBuilderPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">Phone Numbers Display</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        Phone Numbers Display
+                      </Label>
                       <Input
                         value={config.contact_delivery?.phones || ""}
                         onChange={(e) => {
@@ -1941,13 +2122,18 @@ function StorefrontBuilderPage() {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs font-bold text-muted-foreground uppercase">WhatsApp Number (Digits only)</Label>
+                      <Label className="text-xs font-bold text-muted-foreground uppercase">
+                        WhatsApp Number (Digits only)
+                      </Label>
                       <Input
                         value={config.contact_delivery?.whatsapp_number || ""}
                         onChange={(e) => {
                           setConfig((p) => ({
                             ...p,
-                            contact_delivery: { ...p.contact_delivery, whatsapp_number: e.target.value },
+                            contact_delivery: {
+                              ...p.contact_delivery,
+                              whatsapp_number: e.target.value,
+                            },
                           }));
                           setIsDirty(true);
                         }}
@@ -1975,7 +2161,9 @@ function StorefrontBuilderPage() {
                       type="button"
                       onClick={() => setPreviewDevice("desktop")}
                       className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
-                        previewDevice === "desktop" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
+                        previewDevice === "desktop"
+                          ? "bg-background text-foreground shadow-xs"
+                          : "text-muted-foreground"
                       }`}
                       title="Desktop View"
                     >
@@ -1985,7 +2173,9 @@ function StorefrontBuilderPage() {
                       type="button"
                       onClick={() => setPreviewDevice("mobile")}
                       className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
-                        previewDevice === "mobile" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
+                        previewDevice === "mobile"
+                          ? "bg-background text-foreground shadow-xs"
+                          : "text-muted-foreground"
                       }`}
                       title="Mobile View"
                     >
@@ -2013,7 +2203,9 @@ function StorefrontBuilderPage() {
 
                   {/* Scrollable Live Frontend Mock */}
                   <div className="h-[calc(100%-34px)] overflow-y-auto bg-background text-foreground scrollbar-thin">
-                    <style dangerouslySetInnerHTML={{ __html: generateStorefrontThemeCss(config.theme) }} />
+                    <style
+                      dangerouslySetInnerHTML={{ __html: generateStorefrontThemeCss(config.theme) }}
+                    />
                     {/* Render sections according to configured section_order */}
                     {config.section_order.map((secId) => {
                       if (secId === "announcement" && config.announcement.enabled) {
@@ -2071,12 +2263,22 @@ function StorefrontBuilderPage() {
 
                       if (secId === "trust_ribbon" && config.trust_ribbon.enabled) {
                         return (
-                          <div key="trust_ribbon" className="p-2 border-b border-border bg-black/40">
+                          <div
+                            key="trust_ribbon"
+                            className="p-2 border-b border-border bg-black/40"
+                          >
                             <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 text-center">
                               {config.trust_ribbon.items.slice(0, 5).map((t, idx) => (
-                                <div key={idx} className="p-1 rounded-lg bg-amber-500/5 border border-amber-500/10">
-                                  <p className="text-[9px] font-extrabold text-amber-400 truncate">{t.title}</p>
-                                  <p className="text-[8px] text-muted-foreground truncate">{t.desc}</p>
+                                <div
+                                  key={idx}
+                                  className="p-1 rounded-lg bg-amber-500/5 border border-amber-500/10"
+                                >
+                                  <p className="text-[9px] font-extrabold text-amber-400 truncate">
+                                    {t.title}
+                                  </p>
+                                  <p className="text-[8px] text-muted-foreground truncate">
+                                    {t.desc}
+                                  </p>
                                 </div>
                               ))}
                             </div>
@@ -2091,7 +2293,9 @@ function StorefrontBuilderPage() {
                               <span className="text-[10px] font-bold text-foreground">
                                 {config.categories.title}
                               </span>
-                              <span className="text-[9px] text-amber-500 font-bold">View all &rarr;</span>
+                              <span className="text-[9px] text-amber-500 font-bold">
+                                View all &rarr;
+                              </span>
                             </div>
                             <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
                               {categories.slice(0, 5).map((c) => (
@@ -2109,7 +2313,10 @@ function StorefrontBuilderPage() {
 
                       if (secId === "featured_products" && config.featured_products.enabled) {
                         return (
-                          <div key="featured_products" className="p-3 border-b border-border space-y-2">
+                          <div
+                            key="featured_products"
+                            className="p-3 border-b border-border space-y-2"
+                          >
                             <div className="text-center">
                               <span className="text-[8px] uppercase font-bold text-amber-500">
                                 {config.featured_products.badge}
@@ -2129,14 +2336,20 @@ function StorefrontBuilderPage() {
                                 >
                                   <div className="h-16 rounded-lg bg-muted overflow-hidden">
                                     {p.image_url ? (
-                                      <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
+                                      <img
+                                        src={p.image_url}
+                                        alt={p.name}
+                                        className="h-full w-full object-cover"
+                                      />
                                     ) : (
                                       <div className="h-full w-full flex items-center justify-center text-[10px] text-muted-foreground">
                                         No Image
                                       </div>
                                     )}
                                   </div>
-                                  <p className="text-[10px] font-bold truncate text-foreground">{p.name}</p>
+                                  <p className="text-[10px] font-bold truncate text-foreground">
+                                    {p.name}
+                                  </p>
                                   <p className="text-[9px] font-extrabold text-amber-500 font-mono">
                                     GH₵ {p.price_ghs}
                                   </p>
@@ -2173,9 +2386,16 @@ function StorefrontBuilderPage() {
                           <div key="value_props" className="p-2 border-b border-border">
                             <div className="grid grid-cols-2 gap-1 text-center">
                               {config.value_props.items.slice(0, 4).map((v, idx) => (
-                                <div key={idx} className="p-1 rounded-lg bg-card border border-border">
-                                  <p className="text-[9px] font-extrabold text-amber-400 truncate">{v.title}</p>
-                                  <p className="text-[8px] text-muted-foreground truncate">{v.desc}</p>
+                                <div
+                                  key={idx}
+                                  className="p-1 rounded-lg bg-card border border-border"
+                                >
+                                  <p className="text-[9px] font-extrabold text-amber-400 truncate">
+                                    {v.title}
+                                  </p>
+                                  <p className="text-[8px] text-muted-foreground truncate">
+                                    {v.desc}
+                                  </p>
                                 </div>
                               ))}
                             </div>
@@ -2188,8 +2408,12 @@ function StorefrontBuilderPage() {
                           <div key="contact_delivery" className="p-3">
                             <div className="rounded-xl bg-linear-to-r from-amber-500 to-amber-400 p-2.5 text-black flex items-center justify-between">
                               <div>
-                                <p className="text-[10px] font-extrabold">{config.contact_delivery?.title || ""}</p>
-                                <p className="text-[8px] truncate">{config.contact_delivery?.subtitle || ""}</p>
+                                <p className="text-[10px] font-extrabold">
+                                  {config.contact_delivery?.title || ""}
+                                </p>
+                                <p className="text-[8px] truncate">
+                                  {config.contact_delivery?.subtitle || ""}
+                                </p>
                               </div>
                               <span className="bg-black text-amber-400 px-2 py-1 rounded-lg text-[9px] font-bold">
                                 WhatsApp

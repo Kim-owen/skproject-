@@ -242,7 +242,10 @@ function AdminOrdersPage() {
         <div className="space-y-3 md:hidden">
           {isLoading ? (
             [1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse rounded-2xl border border-border bg-card p-4 space-y-3">
+              <div
+                key={i}
+                className="animate-pulse rounded-2xl border border-border bg-card p-4 space-y-3"
+              >
                 <div className="h-4 w-1/3 bg-muted rounded" />
                 <div className="h-4 w-2/3 bg-muted rounded" />
                 <div className="h-8 w-full bg-muted rounded" />
@@ -252,7 +255,9 @@ function AdminOrdersPage() {
             <div className="rounded-2xl border border-border bg-card p-8 text-center">
               <ShoppingBag className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
               <h4 className="font-bold text-sm text-foreground">No orders found</h4>
-              <p className="text-xs text-muted-foreground mt-1">Try adjusting your query or status filter.</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Try adjusting your query or status filter.
+              </p>
             </div>
           ) : (
             filteredOrders.map((o) => (
@@ -265,7 +270,9 @@ function AdminOrdersPage() {
                   <div>
                     <div className="flex items-center gap-1.5">
                       <Tag className="h-3.5 w-3.5 text-amber-500" />
-                      <span className="font-mono text-xs font-bold text-foreground">{o.order_number}</span>
+                      <span className="font-mono text-xs font-bold text-foreground">
+                        {o.order_number}
+                      </span>
                     </div>
                     <div className="text-[10px] text-muted-foreground mt-0.5">
                       {new Date(o.created_at).toLocaleDateString([], {
@@ -297,7 +304,8 @@ function AdminOrdersPage() {
                       <span>{o.customer_name}</span>
                     </div>
                     <div className="text-[11px] text-muted-foreground mt-0.5">
-                      {o.delivery_type === "delivery" ? "Doorstep Delivery" : "Branch Pickup"} · {o.payment_method.replace(/_/g, " ")}
+                      {o.delivery_type === "delivery" ? "Doorstep Delivery" : "Branch Pickup"} ·{" "}
+                      {o.payment_method.replace(/_/g, " ")}
                     </div>
                   </div>
 
@@ -342,7 +350,9 @@ function AdminOrdersPage() {
                       }
                     }}
                   >
-                    <SelectTrigger className={`w-full h-9 rounded-xl text-xs font-bold capitalize ${getStatusBadge(o.status)}`}>
+                    <SelectTrigger
+                      className={`w-full h-9 rounded-xl text-xs font-bold capitalize ${getStatusBadge(o.status)}`}
+                    >
                       <SelectValue placeholder="Update status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -368,7 +378,12 @@ function AdminOrdersPage() {
                     <span>{o.rider_name ? "Update Rider" : "Assign Dispatch"}</span>
                   </Button>
 
-                  <Button asChild variant="outline" size="sm" className="h-8 rounded-xl text-xs px-3">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="h-8 rounded-xl text-xs px-3"
+                  >
                     <Link to="/order/$orderNumber" params={{ orderNumber: o.order_number }}>
                       <Eye className="mr-1 h-3.5 w-3.5" />
                       <span>Details</span>
