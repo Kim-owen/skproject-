@@ -112,14 +112,27 @@ export async function notifyAllUsersNewItem(item: {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Fetch user emails from auth
-    const { data: authData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
-    const userEmails = (authData?.users || [])
+    // Fetch customer emails from both auth users and past order records
+    const [authRes, ordersRes] = await Promise.all([
+      supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
+      supabaseAdmin.from("orders").select("customer_email").not("customer_email", "is", null),
+    ]);
+
+    const authEmails = (authRes.data?.users || [])
       .map((u) => u.email)
       .filter(
         (e): e is string =>
           Boolean(e) && typeof e === "string" && !e.includes("@guest.barimabafoods.shop"),
       );
+
+    const orderEmails = (ordersRes.data || [])
+      .map((o) => o.customer_email)
+      .filter(
+        (e): e is string =>
+          Boolean(e) && typeof e === "string" && !e.includes("@guest.barimabafoods.shop"),
+      );
+
+    const userEmails = Array.from(new Set([...authEmails, ...orderEmails]));
 
     if (userEmails.length === 0) {
       console.log("[Resend] No customer emails found to notify.");
@@ -210,13 +223,26 @@ export const sendAdminEmailBroadcast = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: authData } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
-    const userEmails = (authData?.users || [])
+    const [authRes, ordersRes] = await Promise.all([
+      supabaseAdmin.auth.admin.listUsers({ perPage: 1000 }),
+      supabaseAdmin.from("orders").select("customer_email").not("customer_email", "is", null),
+    ]);
+
+    const authEmails = (authRes.data?.users || [])
       .map((u) => u.email)
       .filter(
         (e): e is string =>
           Boolean(e) && typeof e === "string" && !e.includes("@guest.barimabafoods.shop"),
       );
+
+    const orderEmails = (ordersRes.data || [])
+      .map((o) => o.customer_email)
+      .filter(
+        (e): e is string =>
+          Boolean(e) && typeof e === "string" && !e.includes("@guest.barimabafoods.shop"),
+      );
+
+    const userEmails = Array.from(new Set([...authEmails, ...orderEmails]));
 
     if (userEmails.length === 0) {
       return { success: true, sentCount: 0 };

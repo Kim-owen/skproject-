@@ -50,6 +50,7 @@ import {
   CheckCircle2,
   Loader2,
   X,
+  Mail,
 } from "lucide-react";
 
 type Product = {
@@ -63,6 +64,7 @@ type Product = {
   category_id: string | null;
   image_url: string | null;
   is_active: boolean;
+  notify_customers?: boolean;
 };
 
 const EMPTY: Product = {
@@ -75,6 +77,7 @@ const EMPTY: Product = {
   category_id: null,
   image_url: "",
   is_active: true,
+  notify_customers: true,
 };
 
 export const Route = createFileRoute("/portal/products")({
@@ -152,6 +155,7 @@ function AdminProductsPage() {
       category_id: p.category_id,
       image_url: p.image_url ?? "",
       is_active: p.is_active,
+      notify_customers: false,
     });
     setOpen(true);
   };
@@ -248,6 +252,7 @@ function AdminProductsPage() {
           price_ghs: Number(form.price_ghs),
           description: form.description || "",
           image_url: form.image_url || "",
+          notify_customers: form.notify_customers ?? false,
         } as any,
       });
       toast.success(form.id ? "Product updated successfully" : "Product added successfully");
@@ -521,18 +526,35 @@ function AdminProductsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 pt-2">
-                  <Switch
-                    id="active"
-                    checked={form.is_active}
-                    onCheckedChange={(v) => setForm({ ...form, is_active: v })}
-                  />
-                  <Label
-                    htmlFor="active"
-                    className="text-xs font-bold text-foreground cursor-pointer"
-                  >
-                    Visible to customer (Active listing)
-                  </Label>
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      id="active"
+                      checked={form.is_active}
+                      onCheckedChange={(v) => setForm({ ...form, is_active: v })}
+                    />
+                    <Label
+                      htmlFor="active"
+                      className="text-xs font-bold text-foreground cursor-pointer"
+                    >
+                      Visible to customer (Active listing)
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center gap-3 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+                    <Switch
+                      id="notify_customers"
+                      checked={form.notify_customers ?? false}
+                      onCheckedChange={(v) => setForm({ ...form, notify_customers: v })}
+                    />
+                    <Label
+                      htmlFor="notify_customers"
+                      className="text-xs font-bold text-amber-500 cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Mail className="h-4 w-4 shrink-0" />
+                      <span>Send Resend Email Blast to all Customers for this update</span>
+                    </Label>
+                  </div>
                 </div>
 
                 <DialogFooter className="pt-4 border-t">

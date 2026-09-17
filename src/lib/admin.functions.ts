@@ -298,6 +298,7 @@ const productInput = z.object({
   category_id: z.string().uuid().nullable().optional(),
   image_url: z.string().trim().url().max(500).optional().or(z.literal("")),
   is_active: z.boolean(),
+  notify_customers: z.boolean().optional(),
 });
 
 export const upsertProduct = createServerFn({ method: "POST" })
@@ -323,8 +324,10 @@ export const upsertProduct = createServerFn({ method: "POST" })
     } else {
       const { error } = await supabaseAdmin.from("products").insert(row);
       if (error) throw new Error(error.message);
+    }
 
-      // Trigger Resend Email Notification to all registered users
+    // Trigger Resend Email Broadcast notification to all customers if requested or for new active listings
+    if (data.notify_customers || (!data.id && data.is_active)) {
       import("./email.functions")
         .then(({ notifyAllUsersNewItem }) =>
           notifyAllUsersNewItem({
@@ -336,8 +339,9 @@ export const upsertProduct = createServerFn({ method: "POST" })
             description: data.description,
           }),
         )
-        .catch((err) => console.error("New product email notification error:", err));
+        .catch((err) => console.error("Product email notification error:", err));
     }
+
     return { ok: true };
   });
 
