@@ -572,3 +572,78 @@ export const sendPasswordResetConfirmation = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+export const requestPasswordResetLink = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      email: z.string().email("Invalid email address"),
+      origin: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const targetOrigin =
+      data.origin || process.env.VITE_APP_URL || "https://barimabafoods.shop";
+    const redirectUrl = `${targetOrigin.replace(/\/$/, "")}/auth?type=recovery`;
+
+    const cleanEmail = data.email.toLowerCase().trim();
+
+    // 1. Generate Supabase Password Recovery Link
+    const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
+      type: "recovery",
+      email: cleanEmail,
+      options: {
+        redirectTo: redirectUrl,
+      },
+    });
+
+    if (linkErr) {
+      console.error("[requestPasswordResetLink] Error generating link:", linkErr);
+      throw new Error(linkErr.message || "Could not generate password reset link for this email");
+    }
+
+    const recoveryUrl = linkData?.properties?.action_link;
+    if (!recoveryUrl) {
+      throw new Error("Failed to generate password reset link");
+    }
+
+    // 2. Send the Recovery Link via Resend Email
+    await sendResendEmail({
+      to: cleanEmail,
+      subject: "🔑 Password Reset Request — Barima Ba Foods",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 550px; margin: 0 auto; background-color: #09090b; color: #ffffff; padding: 28px; border-radius: 20px; border: 1px solid #f59e0b;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #f59e0b; font-size: 20px; margin: 8px 0 4px 0;">🔑 Reset Your Password</h2>
+            <p style="font-size: 13px; color: #a1a1aa; margin: 0;">Barima Ba Foods Account Security</p>
+          </div>
+
+          <div style="background-color: #18181b; padding: 18px; border-radius: 14px; margin-bottom: 20px; border: 1px solid #27272a; font-size: 13px; line-height: 1.6;">
+            <p style="margin: 0 0 10px 0; color: #ffffff;">Hello,</p>
+            <p style="margin: 0 0 10px 0; color: #d4d4d8;">We received a request to reset the password for your <strong>Barima Ba Foods</strong> account (<span style="color: #f59e0b;">${cleanEmail}</span>).</p>
+            <p style="margin: 0; color: #d4d4d8;">Click the button below to set a new secure password:</p>
+          </div>
+
+          <div style="text-align: center; margin: 24px 0;">
+            <a href="${recoveryUrl}" style="background-color: #f59e0b; color: #000000; font-weight: 900; padding: 14px 32px; border-radius: 12px; text-decoration: none; display: inline-block; font-size: 14px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);">
+              RESET PASSWORD NOW →
+            </a>
+          </div>
+
+          <p style="font-size: 11px; color: #71717a; text-align: center; margin-top: 20px;">
+            If the button doesn't work, copy and paste this link into your browser:<br />
+            <a href="${recoveryUrl}" style="color: #f59e0b; word-break: break-all; font-size: 10px;">${recoveryUrl}</a>
+          </p>
+
+          <hr style="border: 0; border-top: 1px solid #27272a; margin: 20px 0;" />
+          <p style="font-size: 11px; color: #71717a; text-align: center; margin: 0;">
+            If you did not request a password reset, you can safely ignore this email.<br />
+            © ${new Date().getFullYear()} Barima Ba Foods · Taste. Quality. Trust.
+          </p>
+        </div>
+      `,
+    });
+
+    return { ok: true };
+  });

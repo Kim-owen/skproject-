@@ -71,14 +71,44 @@ function AuthPage() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const url = window.location.href;
-      if (url.includes("type=recovery") || url.includes("access_token=")) {
+      const hash = window.location.hash;
+      const search = window.location.search;
+
+      if (
+        url.includes("type=recovery") ||
+        hash.includes("access_token=") ||
+        search.includes("type=recovery")
+      ) {
         setIsRecoveryMode(true);
+
+        if (hash.includes("access_token=")) {
+          const params = new URLSearchParams(hash.replace("#", "?"));
+          const accessToken = params.get("access_token");
+          const refreshToken = params.get("refresh_token");
+
+          if (accessToken && refreshToken) {
+            supabase.auth
+              .setSession({
+                access_token: accessToken,
+                refresh_token: refreshToken,
+              })
+              .then(({ data, error }) => {
+                if (error) {
+                  console.error("[Recovery] Error setting session from hash:", error);
+                } else if (data.session) {
+                  setIsRecoveryMode(true);
+                  setSessionUser(data.session.user);
+                }
+              });
+          }
+        }
       }
     }
 
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY") {
         setIsRecoveryMode(true);
+        if (session?.user) setSessionUser(session.user);
       }
     });
 
@@ -307,16 +337,31 @@ function AuthPage() {
     }
     setBusy(true);
     setAuthError(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(targetEmail, {
-      redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/auth?type=recovery`,
-    });
-    setBusy(false);
-    if (error) {
-      setAuthError(error.message);
-      toast.error(error.message);
-    } else {
+
+    try {
+      const { requestPasswordResetLink } = await import("@/lib/email.functions");
+      await requestPasswordResetLink({
+        data: {
+          email: targetEmail,
+          origin: typeof window !== "undefined" ? window.location.origin : undefined,
+        },
+      });
       setResetSent(true);
       toast.success("Password reset instructions sent to your email!");
+    } catch (err: any) {
+      console.warn("[handleForgotPassword] Resend generator failed, attempting Supabase Auth SDK fallback:", err);
+      const { error } = await supabase.auth.resetPasswordForEmail(targetEmail, {
+        redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/auth?type=recovery`,
+      });
+      if (error) {
+        setAuthError(error.message);
+        toast.error(error.message);
+      } else {
+        setResetSent(true);
+        toast.success("Password reset instructions sent to your email!");
+      }
+    } finally {
+      setBusy(false);
     }
   };
 
