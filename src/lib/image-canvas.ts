@@ -81,7 +81,8 @@ export async function fitImageToCanvas(
             if (!blob) {
               return reject(new Error("Canvas toBlob failed"));
             }
-            const cleanExt = format === "image/webp" ? ".webp" : format === "image/jpeg" ? ".jpg" : ".png";
+            const cleanExt =
+              format === "image/webp" ? ".webp" : format === "image/jpeg" ? ".jpg" : ".png";
             const cleanName = file.name.replace(/\.[^/.]+$/, "") + cleanExt;
             const newFile = new File([blob], cleanName, { type: format });
             resolve(newFile);
