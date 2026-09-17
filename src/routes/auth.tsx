@@ -69,6 +69,19 @@ function AuthPage() {
   ];
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const url = window.location.href;
+      if (url.includes("type=recovery") || url.includes("access_token=")) {
+        setIsRecoveryMode(true);
+      }
+    }
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setIsRecoveryMode(true);
+      }
+    });
+
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
         setSessionUser(data.user);
@@ -93,6 +106,10 @@ function AuthPage() {
         }
       }
     });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const handleSignOut = async () => {
@@ -389,7 +406,81 @@ function AuthPage() {
         <div className="absolute bottom-10 right-10 h-62.5 w-62.5 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
 
         <div className="w-full max-w-md space-y-6 z-10">
-          {sessionUser ? (
+          {isRecoveryMode ? (
+            <div className="rounded-3xl border border-amber-500/40 bg-linear-to-b from-zinc-900/90 via-black to-zinc-950 p-8 shadow-2xl backdrop-blur-xl space-y-6">
+              <div className="flex flex-col items-center text-center space-y-2">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 mb-1 border border-amber-500/40 shadow-lg">
+                  <KeyRound className="h-7 w-7 text-amber-400" />
+                </div>
+                <h1 className="font-display text-2xl font-bold text-foreground">
+                  Set New Account Password
+                </h1>
+                <p className="text-xs text-muted-foreground max-w-72">
+                  Enter and confirm your new password below to recover your Barima Ba account.
+                </p>
+              </div>
+
+              <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    New Password
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="pl-9 pr-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Confirm New Password
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="pl-9 pr-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={busy}
+                  className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md py-5.5 mt-2"
+                >
+                  {busy ? "Updating Password..." : "Update Password & Sign In"}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsRecoveryMode(false)}
+                  className="w-full rounded-xl text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Cancel & Return to Sign In
+                </Button>
+              </form>
+            </div>
+          ) : sessionUser ? (
             <div className="rounded-3xl border border-amber-500/40 bg-linear-to-b from-zinc-900/90 via-black to-zinc-950 p-8 shadow-2xl backdrop-blur-xl space-y-6">
               {/* Signed In Header */}
               <div className="flex flex-col items-center text-center space-y-3">
