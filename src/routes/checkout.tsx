@@ -223,13 +223,20 @@ function Checkout() {
         },
       });
       const orderNumber = res.order_number;
-      clear();
+
       if (res.paystack_url) {
+        clear();
         window.location.href = res.paystack_url;
         return;
       }
-      if (res.paystack_error) toast.warning(res.paystack_error);
-      toast.success("Order placed!");
+
+      if (paymentMethod === "paystack" && res.paystack_error) {
+        toast.error(`Paystack Payment Error: ${res.paystack_error}`);
+        return;
+      }
+
+      clear();
+      toast.success("Order placed successfully!");
       navigate({ to: "/order/$orderNumber", params: { orderNumber } });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to place order");

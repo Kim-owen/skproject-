@@ -402,19 +402,24 @@ export const createOrder = createServerFn({ method: "POST" })
         };
       }
       try {
+        const reference = `${order.order_number}-${Date.now().toString().slice(-6)}`;
+        const cleanEmail =
+          data.customer_email && data.customer_email.includes("@")
+            ? data.customer_email.trim()
+            : `${(data.customer_phone || "").replace(/\D/g, "") || "customer"}@guest.barimabafoods.shop`;
+
         const resp = await fetch("https://api.paystack.co/transaction/initialize", {
           method: "POST",
           headers: { Authorization: `Bearer ${secret}`, "Content-Type": "application/json" },
           body: JSON.stringify({
             amount: Math.round(total * 100),
             currency: "GHS",
-            email:
-              data.customer_email ||
-              `${data.customer_phone.replace(/\D/g, "")}@guest.barimabafoods.shop`,
+            email: cleanEmail,
+            reference,
             callback_url: data.callback_url
               ? data.callback_url.includes("{order_number}")
                 ? data.callback_url.replace("{order_number}", order.order_number)
-                : `${data.callback_url.replace(/\/$/, "")}/${order.order_number}?reference=${order.order_number}&from_paystack=1`
+                : `${data.callback_url.replace(/\/$/, "")}/${order.order_number}?reference=${reference}&from_paystack=1`
               : undefined,
             channels: ["card", "mobile_money"],
             metadata: {
@@ -437,16 +442,23 @@ export const createOrder = createServerFn({ method: "POST" })
             },
           }),
         });
+
         const json = (await resp.json()) as {
           status: boolean;
           data?: { authorization_url: string; access_code?: string; reference: string };
           message?: string;
         };
-        if (!json.status || !json.data) throw new Error(json.message || "Paystack init failed");
+
+        if (!json.status || !json.data) {
+          console.error("[Paystack Init Error]", json);
+          throw new Error(json.message || "Paystack transaction initialize failed");
+        }
+
         await supabaseAdmin
           .from("orders")
-          .update({ payment_reference: order.order_number })
+          .update({ payment_reference: reference })
           .eq("id", order.id);
+
         return {
           order_id: order.id,
           order_number: order.order_number,
@@ -455,6 +467,7 @@ export const createOrder = createServerFn({ method: "POST" })
           paystack_error: null as string | null,
         };
       } catch (e) {
+        console.error("[Paystack Exception]", e);
         return {
           order_id: order.id,
           order_number: order.order_number,
