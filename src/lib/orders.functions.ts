@@ -403,10 +403,31 @@ export const createOrder = createServerFn({ method: "POST" })
       }
       try {
         const reference = `${order.order_number}-${Date.now().toString().slice(-6)}`;
+        const cleanPhone = (data.customer_phone || "").replace(/\D/g, "");
         const cleanEmail =
           data.customer_email && data.customer_email.includes("@")
             ? data.customer_email.trim()
-            : `${(data.customer_phone || "").replace(/\D/g, "") || "customer"}@guest.barimabafoods.shop`;
+            : `${cleanPhone || "customer"}@guest.barimabafoods.shop`;
+
+        // Pre-fill Mobile Money provider metadata for Ghana Telcos (MTN, Telecel, AirtelTigo)
+        let momoProvider = "mtn";
+        if (
+          cleanPhone.startsWith("020") ||
+          cleanPhone.startsWith("050") ||
+          cleanPhone.startsWith("23320") ||
+          cleanPhone.startsWith("23350")
+        ) {
+          momoProvider = "vodafone"; // Telecel Cash
+        } else if (
+          cleanPhone.startsWith("027") ||
+          cleanPhone.startsWith("057") ||
+          cleanPhone.startsWith("026") ||
+          cleanPhone.startsWith("056") ||
+          cleanPhone.startsWith("23327") ||
+          cleanPhone.startsWith("23357")
+        ) {
+          momoProvider = "tigo"; // AirtelTigo Money
+        }
 
         const resp = await fetch("https://api.paystack.co/transaction/initialize", {
           method: "POST",
@@ -427,6 +448,11 @@ export const createOrder = createServerFn({ method: "POST" })
               order_number: order.order_number,
               customer_name: data.customer_name,
               customer_phone: data.customer_phone,
+              phone: cleanPhone,
+              mobile_money: {
+                phone: cleanPhone,
+                provider: momoProvider,
+              },
               custom_fields: [
                 {
                   display_name: "Customer Phone",

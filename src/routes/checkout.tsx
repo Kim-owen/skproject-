@@ -226,7 +226,7 @@ function Checkout() {
 
       if (res.paystack_url) {
         clear();
-        window.location.href = res.paystack_url;
+        window.location.assign(res.paystack_url);
         return;
       }
 
