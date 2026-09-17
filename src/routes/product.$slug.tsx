@@ -9,7 +9,7 @@ import { useState } from "react";
 import { Minus, Plus, ArrowLeft, AlertTriangle, PackageX } from "lucide-react";
 import { ProductDetailSkeleton } from "@/components/shop/Skeletons";
 
-export const productQuery = (slug: string) => ({
+const productQuery = (slug: string) => ({
   queryKey: ["product", slug],
   queryFn: async () => {
     const { data, error } = await supabase
