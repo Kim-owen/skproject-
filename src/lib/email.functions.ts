@@ -511,3 +511,64 @@ export async function sendNewOrderAlertToAdmin(order: {
     html: htmlContent,
   });
 }
+
+export const sendPasswordResetConfirmation = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      email: z.string().optional(),
+      phone: z.string().optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { email, phone } = data;
+
+    // 1. Send Email confirmation via Resend if email is provided
+    if (email && email.includes("@")) {
+      try {
+        await sendResendEmail({
+          to: email,
+          subject: "🔐 Security Alert: Your Barima Ba Password Was Changed",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 550px; margin: 0 auto; background-color: #09090b; color: #ffffff; padding: 28px; border-radius: 20px; border: 1px solid #f59e0b;">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #f59e0b; font-size: 20px; margin: 8px 0 4px 0;">🔐 Password Updated Successfully</h2>
+                <p style="font-size: 13px; color: #a1a1aa; margin: 0;">Barima Ba Foods Security Notification</p>
+              </div>
+
+              <div style="background-color: #18181b; padding: 18px; border-radius: 14px; margin-bottom: 16px; border: 1px solid #27272a; font-size: 13px; line-height: 1.6;">
+                <p style="margin: 0 0 8px 0; color: #ffffff;">Hello,</p>
+                <p style="margin: 0 0 8px 0; color: #d4d4d8;">This email confirms that the password for your <strong>Barima Ba Foods</strong> account (<span style="color: #f59e0b;">${email}</span>) was changed successfully.</p>
+                <p style="margin: 0; color: #d4d4d8;">You can now log in using your new password.</p>
+              </div>
+
+              <div style="background-color: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; padding: 12px; border-radius: 8px; font-size: 12px; color: #fca5a5; margin-bottom: 20px;">
+                <strong>Did not request this change?</strong> If you did not update your password, please contact our support team immediately at <a href="mailto:support@barimabafoods.shop" style="color: #f59e0b; text-decoration: underline;">support@barimabafoods.shop</a> or call +233 24 123 4567.
+              </div>
+
+              <hr style="border: 0; border-top: 1px solid #27272a; margin: 20px 0;" />
+              <p style="font-size: 11px; color: #71717a; text-align: center; margin: 0;">
+                © ${new Date().getFullYear()} Barima Ba Foods · Taste. Quality. Trust. All rights reserved.
+              </p>
+            </div>
+          `,
+        });
+      } catch (err) {
+        console.error("[sendPasswordResetConfirmation] Resend Email error:", err);
+      }
+    }
+
+    // 2. Send SMS confirmation if user phone is provided
+    if (phone && phone.trim().length >= 9) {
+      try {
+        const { sendSMSNotification } = await import("./orders.functions");
+        await sendSMSNotification(
+          phone,
+          "🔐 SECURITY ALERT: Your Barima Ba Foods account password was changed successfully. If this wasn't you, please contact support immediately.",
+        );
+      } catch (err) {
+        console.error("[sendPasswordResetConfirmation] SMS error:", err);
+      }
+    }
+
+    return { ok: true };
+  });

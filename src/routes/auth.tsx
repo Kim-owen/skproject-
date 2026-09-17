@@ -346,6 +346,21 @@ function AuthPage() {
       }
     } else {
       toast.success("Password updated successfully! Please sign in with your new password.");
+
+      // Dispatch SMS & Resend Email confirmation alerts
+      try {
+        const { data: updatedUserData } = await supabase.auth.getUser();
+        const userEmail = updatedUserData?.user?.email || forgotEmail || email;
+        const userPhone = userProfile?.phone || phone;
+
+        const { sendPasswordResetConfirmation } = await import("@/lib/email.functions");
+        sendPasswordResetConfirmation({
+          data: { email: userEmail, phone: userPhone },
+        }).catch((err) => console.error("Password reset notification error:", err));
+      } catch (notifErr) {
+        console.error("Failed to dispatch password reset notifications:", notifErr);
+      }
+
       setIsRecoveryMode(false);
       setShowForgotPassword(false);
       setActiveTab("signin");
