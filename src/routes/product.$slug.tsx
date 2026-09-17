@@ -102,9 +102,9 @@ function ProductPage() {
           <ArrowLeft className="h-4 w-4" /> Back to shop
         </Link>
         <div className="grid gap-8 md:grid-cols-2">
-          <div className="aspect-square overflow-hidden rounded-3xl border border-white/10 bg-muted">
+          <div className="aspect-square overflow-hidden rounded-3xl border border-white/10 bg-zinc-950 flex items-center justify-center p-2">
             {p.image_url && (
-              <img src={p.image_url} alt={p.name} className="h-full w-full object-cover" />
+              <img src={p.image_url} alt={p.name} className="h-full w-full object-contain" />
             )}
           </div>
           <div className="flex flex-col">
