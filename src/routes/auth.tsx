@@ -61,6 +61,13 @@ function AuthPage() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isAdminUser, setIsAdminUser] = useState(false);
 
+  const SUPER_ADMIN_EMAILS = [
+    "admin@barimaba.com",
+    "barimabafoods@gmail.com",
+    "sunumanfred14@gmail.com",
+    "barimabashito@gmail.com",
+  ];
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
@@ -73,11 +80,17 @@ function AuthPage() {
           .then(({ data: prof }) => {
             if (prof) setUserProfile(prof);
           });
-        supabase
-          .rpc("has_role", { _user_id: data.user.id, _role: "admin" })
-          .then(({ data: isAdm }) => {
-            if (isAdm) setIsAdminUser(true);
-          });
+
+        const userEmail = data.user.email?.toLowerCase();
+        if (userEmail && SUPER_ADMIN_EMAILS.includes(userEmail)) {
+          setIsAdminUser(true);
+        } else {
+          supabase
+            .rpc("has_role", { _user_id: data.user.id, _role: "admin" })
+            .then(({ data: isAdm }) => {
+              if (isAdm) setIsAdminUser(true);
+            });
+        }
       }
     });
   }, []);
@@ -115,13 +128,15 @@ function AuthPage() {
     }
 
     const userId = data.user?.id;
+    const userEmail = data.user?.email?.toLowerCase();
     toast.success("Welcome back! Signed in successfully.");
     if (userId) {
+      const isSuperAdmin = userEmail && SUPER_ADMIN_EMAILS.includes(userEmail);
       const { data: isAdmin } = await supabase.rpc("has_role", {
         _user_id: userId,
         _role: "admin",
       });
-      if (isAdmin) {
+      if (isSuperAdmin || isAdmin) {
         navigate({ to: "/portal" });
         return;
       }

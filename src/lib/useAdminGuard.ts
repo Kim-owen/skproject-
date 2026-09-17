@@ -29,7 +29,8 @@ export function useAdminGuard() {
         if (
           email === "admin@barimaba.com" ||
           email === "barimabafoods@gmail.com" ||
-          email === "sunumanfred14@gmail.com"
+          email === "sunumanfred14@gmail.com" ||
+          email === "barimabashito@gmail.com"
         ) {
           if (!cancelled) setState("ok");
           return;
@@ -62,7 +63,7 @@ export function useAdminGuard() {
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, verifier]);
 
   return state;
 }

@@ -10,26 +10,43 @@ export function BottomNav() {
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  const SUPER_ADMIN_EMAILS = [
+    "admin@barimaba.com",
+    "barimabafoods@gmail.com",
+    "sunumanfred14@gmail.com",
+    "barimabashito@gmail.com",
+  ];
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
       if (data.user) {
-        supabase
-          .rpc("has_role", { _user_id: data.user.id, _role: "admin" })
-          .then(({ data: hasAdmin }) => {
-            setIsAdmin(!!hasAdmin);
-          });
+        const email = data.user.email?.toLowerCase();
+        if (email && SUPER_ADMIN_EMAILS.includes(email)) {
+          setIsAdmin(true);
+        } else {
+          supabase
+            .rpc("has_role", { _user_id: data.user.id, _role: "admin" })
+            .then(({ data: hasAdmin }) => {
+              setIsAdmin(!!hasAdmin);
+            });
+        }
       }
     });
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        supabase
-          .rpc("has_role", { _user_id: session.user.id, _role: "admin" })
-          .then(({ data: hasAdmin }) => {
-            setIsAdmin(!!hasAdmin);
-          });
+        const email = session.user.email?.toLowerCase();
+        if (email && SUPER_ADMIN_EMAILS.includes(email)) {
+          setIsAdmin(true);
+        } else {
+          supabase
+            .rpc("has_role", { _user_id: session.user.id, _role: "admin" })
+            .then(({ data: hasAdmin }) => {
+              setIsAdmin(!!hasAdmin);
+            });
+        }
       } else {
         setIsAdmin(false);
       }

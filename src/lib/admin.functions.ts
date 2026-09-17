@@ -6,11 +6,32 @@ import { sendSMSNotification } from "./orders.functions";
 export async function assertAdmin(supabase: any, userId: string, user?: any) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-  if (
-    user?.email === "admin@barimaba.com" ||
-    user?.email === "barimabafoods@gmail.com" ||
-    user?.email === "sunumanfred14@gmail.com"
-  ) {
+  let email = user?.email;
+
+  if (!email && userId) {
+    try {
+      const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
+      email = userData?.user?.email;
+    } catch (e) {
+      console.error("[assertAdmin] Error fetching user by ID:", e);
+    }
+  }
+
+  const SUPER_ADMIN_EMAILS = [
+    "admin@barimaba.com",
+    "barimabafoods@gmail.com",
+    "sunumanfred14@gmail.com",
+    "barimabashito@gmail.com",
+  ];
+
+  if (email && SUPER_ADMIN_EMAILS.includes(email.toLowerCase())) {
+    if (userId) {
+      Promise.resolve(
+        supabaseAdmin
+          .from("user_roles")
+          .upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id" }),
+      ).catch(() => {});
+    }
     return;
   }
 

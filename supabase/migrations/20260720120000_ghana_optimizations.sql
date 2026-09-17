@@ -1,6 +1,6 @@
 -- Add GPS fields to orders table
-ALTER TABLE public.orders ADD COLUMN ghana_post_gps text;
-ALTER TABLE public.orders ADD COLUMN gps_coordinates text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS ghana_post_gps text;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS gps_coordinates text;
 
 -- Insert Bundles & Chopboxes category
 INSERT INTO public.categories (name, slug, sort_order) 

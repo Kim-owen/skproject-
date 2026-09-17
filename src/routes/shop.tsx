@@ -12,7 +12,7 @@ import { z } from "zod";
 
 const searchSchema = z.object({ cat: z.string().optional(), q: z.string().optional() });
 
-export const dataQuery = {
+const dataQuery = {
   queryKey: ["shop-data"],
   queryFn: async () => {
     const [{ data: categories }, { data: products }] = await Promise.all([
