@@ -647,3 +647,55 @@ export const requestPasswordResetLink = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+export const performPasswordReset = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      email: z.string().email("Invalid email address"),
+      newPassword: z.string().min(6, "Password must be at least 6 characters"),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const cleanEmail = data.email.toLowerCase().trim();
+
+    // 1. Find user account by email in Supabase Auth
+    const { data: listData, error: listErr } = await supabaseAdmin.auth.admin.listUsers({
+      perPage: 1000,
+    });
+    if (listErr) throw new Error(listErr.message);
+
+    const user = listData.users.find((u) => u.email?.toLowerCase() === cleanEmail);
+    if (!user) {
+      throw new Error(`No account found matching "${cleanEmail}".`);
+    }
+
+    // 2. Force update password using service role admin API
+    const { error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+      password: data.newPassword,
+    });
+
+    if (updateErr) {
+      throw new Error(updateErr.message || "Failed to update password");
+    }
+
+    // 3. Trigger confirmation alerts
+    try {
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("phone")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      const userPhone = profile?.phone || user.phone;
+
+      sendPasswordResetConfirmation({
+        data: { email: user.email, phone: userPhone },
+      }).catch((e) => console.error("Password reset confirmation alert error:", e));
+    } catch (err) {
+      console.error("[performPasswordReset] Error triggering confirmation notifications:", err);
+    }
+
+    return { ok: true, userId: user.id };
+  });

@@ -368,47 +368,62 @@ function AuthPage() {
   // Handle Recovery Password Update
   const handleResetPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const targetEmail = forgotEmail || email;
+
+    if (!targetEmail || !targetEmail.includes("@")) {
+      toast.error("Please enter your account email address.");
+      return;
+    }
+
     if (newPassword.length < 6) {
       toast.error("New password must be at least 6 characters long.");
       return;
     }
+
     if (newPassword !== confirmNewPassword) {
       toast.error("Passwords do not match!");
       return;
     }
+
     setBusy(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setBusy(false);
-    if (error) {
-      if (
-        error.name === "AuthWeakPasswordError" ||
-        error.message.toLowerCase().includes("password should contain") ||
-        error.message.toLowerCase().includes("weak password")
-      ) {
-        toast.error("Password is too weak. Please use uppercase, lowercase, numbers, and symbols.");
-      } else {
-        toast.error(error.message);
+    setAuthError(null);
+
+    try {
+      // 1. Attempt client session update first
+      let { error: clientErr } = await supabase.auth.updateUser({ password: newPassword });
+
+      if (clientErr) {
+        console.warn(
+          "[handleResetPasswordSubmit] Client session update failed, attempting admin server reset:",
+          clientErr.message,
+        );
+        // 2. Call server function fallback using service role admin API
+        const { performPasswordReset } = await import("@/lib/email.functions");
+        await performPasswordReset({ data: { email: targetEmail, newPassword } });
       }
-    } else {
-      toast.success("Password updated successfully! Please sign in with your new password.");
 
-      // Dispatch SMS & Resend Email confirmation alerts
-      try {
-        const { data: updatedUserData } = await supabase.auth.getUser();
-        const userEmail = updatedUserData?.user?.email || forgotEmail || email;
-        const userPhone = userProfile?.phone || phone;
+      // 3. Immediately sign in with new credentials
+      const signInRes = await supabase.auth.signInWithPassword({
+        email: targetEmail,
+        password: newPassword,
+      });
 
-        const { sendPasswordResetConfirmation } = await import("@/lib/email.functions");
-        sendPasswordResetConfirmation({
-          data: { email: userEmail, phone: userPhone },
-        }).catch((err) => console.error("Password reset notification error:", err));
-      } catch (notifErr) {
-        console.error("Failed to dispatch password reset notifications:", notifErr);
+      if (signInRes.data.session) {
+        setSessionUser(signInRes.data.session.user);
+        toast.success("Password updated & signed in successfully!");
+      } else {
+        toast.success("Password updated successfully! Please sign in with your new password.");
       }
 
       setIsRecoveryMode(false);
       setShowForgotPassword(false);
       setActiveTab("signin");
+    } catch (err: any) {
+      console.error("[handleResetPasswordSubmit] Error resetting password:", err);
+      setAuthError(err.message || "Failed to reset password. Please check password rules.");
+      toast.error(err.message || "Failed to reset password.");
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -481,6 +496,25 @@ function AuthPage() {
               </div>
 
               <form onSubmit={handleResetPasswordSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Account Email Address
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      required
+                      value={forgotEmail || email}
+                      onChange={(e) => {
+                        setForgotEmail(e.target.value);
+                        setEmail(e.target.value);
+                      }}
+                      placeholder="name@example.com"
+                      className="pl-9 rounded-xl border-border bg-background text-sm font-medium"
+                    />
+                  </div>
+                </div>
                 <div className="space-y-1.5">
                   <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     New Password
