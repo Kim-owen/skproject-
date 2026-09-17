@@ -35,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useState, useMemo, useRef } from "react";
+import { fitImageToCanvas } from "@/lib/image-canvas";
 import {
   Plus,
   Pencil,
@@ -168,13 +169,20 @@ function AdminProductsPage() {
 
     setUploadingImage(true);
     try {
-      const ext = file.name.split(".").pop();
+      // Auto-fit image onto target 800x800 canvas so no part is cropped or cut off
+      const fileToUpload = await fitImageToCanvas(file, {
+        targetWidth: 800,
+        targetHeight: 800,
+        mode: "contain",
+      });
+
+      const ext = fileToUpload.name.split(".").pop() || "webp";
       const filename = `product-${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
       const path = `uploads/${filename}`;
 
       const { error: uploadError } = await supabase.storage
         .from("product-images")
-        .upload(path, file, { upsert: true });
+        .upload(path, fileToUpload, { upsert: true });
 
       if (uploadError) {
         // Fallback to media bucket if product-images fails

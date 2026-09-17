@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { fitImageToCanvas } from "@/lib/image-canvas";
 import {
   Image as ImageIcon,
   Upload,
@@ -97,12 +98,18 @@ function AdminMediaPage() {
   const handleProductFileUpload = async (productId: string, file: File) => {
     setUploadingId(productId);
     try {
-      const ext = file.name.split(".").pop();
+      const processedFile = await fitImageToCanvas(file, {
+        targetWidth: 800,
+        targetHeight: 800,
+        mode: "contain",
+      });
+
+      const ext = processedFile.name.split(".").pop() || "webp";
       const path = `uploads/products-${productId}-${Date.now()}.${ext}`;
 
       const { error: uploadError } = await supabase.storage
         .from("product-images")
-        .upload(path, file, { upsert: true });
+        .upload(path, processedFile, { upsert: true });
 
       let publicUrl = "";
       if (uploadError) {

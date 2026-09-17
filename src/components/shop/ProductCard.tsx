@@ -15,13 +15,14 @@ type Product = {
 };
 
 export function getProductImage(name: string, url: string | null): string {
+  if (url && url.trim().length > 0) return url;
   const n = name.toLowerCase();
   if (n.includes("shito")) return "/images/product-shito-jars.png";
   if (n.includes("beef")) return "/images/product-beef-chunks.png";
   if (n.includes("chicken")) return "/images/product-chicken-chunks.png";
   if (n.includes("green") || n.includes("chilli")) return "/images/product-green-chilli.png";
   if (n.includes("gizzard")) return "/images/product-gizzard.png";
-  return url || "/images/product-shito-jars.png";
+  return "/images/product-shito-jars.png";
 }
 
 export function ProductCard({ product }: { product: Product }) {
