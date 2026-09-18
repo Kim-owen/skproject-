@@ -583,8 +583,7 @@ export const requestPasswordResetLink = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const targetOrigin =
-      data.origin || process.env.VITE_APP_URL || "https://barimabafoods.shop";
+    const targetOrigin = data.origin || process.env.VITE_APP_URL || "https://barimabafoods.shop";
     const redirectUrl = `${targetOrigin.replace(/\/$/, "")}/auth?type=recovery`;
 
     const cleanEmail = data.email.toLowerCase().trim();

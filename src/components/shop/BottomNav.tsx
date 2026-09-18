@@ -4,18 +4,18 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Home, ShoppingBag, ShoppingCart, Truck, User, ShieldCheck } from "lucide-react";
 
+const SUPER_ADMIN_EMAILS = [
+  "admin@barimaba.com",
+  "barimabafoods@gmail.com",
+  "sunumanfred14@gmail.com",
+  "barimabashito@gmail.com",
+];
+
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { count } = useCart();
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-
-  const SUPER_ADMIN_EMAILS = [
-    "admin@barimaba.com",
-    "barimabafoods@gmail.com",
-    "sunumanfred14@gmail.com",
-    "barimabashito@gmail.com",
-  ];
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {

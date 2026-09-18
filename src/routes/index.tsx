@@ -53,7 +53,7 @@ function renderDynamicIcon(iconName: string, className = "h-6 w-6 text-amber-400
   return <IconComp className={className} />;
 }
 
-export const featuredQuery = {
+const featuredQuery = {
   queryKey: ["featured-products"],
   queryFn: async () => {
     const { data, error } = await supabase

@@ -17,12 +17,21 @@ import {
 } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useCart, formatGHS } from "@/lib/cart";
-import { createOrder, calculateUberEstimate } from "@/lib/orders.functions";
+import { createOrder, calculateUberEstimate, resolvePaystackAccount } from "@/lib/orders.functions";
 import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
-import { MapPin, Compass, Navigation, ExternalLink, Calculator, Sparkles } from "lucide-react";
+import {
+  MapPin,
+  Compass,
+  Navigation,
+  ExternalLink,
+  Calculator,
+  Sparkles,
+  CheckCircle2,
+  Loader2,
+} from "lucide-react";
 
-export const zonesQuery = {
+const zonesQuery = {
   queryKey: ["zones"],
   queryFn: async () => {
     try {
@@ -55,10 +64,40 @@ function Checkout() {
   const navigate = useNavigate();
   const create = useServerFn(createOrder);
   const getUberQuote = useServerFn(calculateUberEstimate);
+  const resolveAccount = useServerFn(resolvePaystackAccount);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [resolvingPaystack, setResolvingPaystack] = useState(false);
+  const [paystackVerifiedName, setPaystackVerifiedName] = useState<string | null>(null);
+  const [paystackProvider, setPaystackProvider] = useState<string | null>(null);
+
+  const handlePaystackResolve = async (customPhone?: string) => {
+    const targetPhone = customPhone || phone;
+    const clean = (targetPhone || "").replace(/[^0-9]/g, "");
+    if (clean.length < 9) {
+      toast.error("Please enter a valid phone number (at least 9 digits).");
+      return;
+    }
+    setResolvingPaystack(true);
+    try {
+      const res = await resolveAccount({ data: { phone: targetPhone } });
+      if (res.success && res.account_name) {
+        setName(res.account_name);
+        setPaystackVerifiedName(res.account_name);
+        setPaystackProvider(res.provider || "Mobile Money");
+        toast.success(`Paystack verified your name: ${res.account_name} (${res.provider})`);
+      } else {
+        toast.error(res.message || "Could not verify account name via Paystack.");
+      }
+    } catch (err: any) {
+      toast.error("Paystack verification error: " + (err.message || "Failed"));
+    } finally {
+      setResolvingPaystack(false);
+    }
+  };
+
   const [deliveryType, setDeliveryType] = useState<"delivery" | "pickup">("delivery");
   const [dispatchPartner, setDispatchPartner] = useState<"uber" | "in_house" | "pickup">("uber");
   const [zoneId, setZoneId] = useState<string>("");
@@ -94,7 +133,9 @@ function Checkout() {
             if (profile) {
               setWalletBalance(Number((profile as any).wallet_balance_ghs || 0));
               if ((profile as any).phone) setPhone((profile as any).phone);
-              if ((profile as any).full_name && !name) setName((profile as any).full_name);
+              if ((profile as any).full_name) {
+                setName((prev) => prev || (profile as any).full_name);
+              }
               if ((profile as any).delivery_address) setAddress((profile as any).delivery_address);
               if ((profile as any).ghana_post_gps) setGhanaPostGps((profile as any).ghana_post_gps);
               if ((profile as any).gps_coordinates) {
@@ -105,6 +146,7 @@ function Checkout() {
           });
       }
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Uber Dynamic Map & Estimate State
@@ -193,16 +235,31 @@ function Checkout() {
       return;
     }
 
+    if (!name || name.trim().length < 2) {
+      toast.error("Customer full name is required to place your order (minimum 2 characters).");
+      return;
+    }
+
+    if (!phone || phone.trim().length < 7) {
+      toast.error("A valid customer phone number is required.");
+      return;
+    }
+
     if (orderScheduleType === "schedule" && !scheduledDate) {
       toast.error("Please select a scheduled delivery date and time.");
       return;
+    }
+
+    // Keep profile full_name synced
+    if (authUser?.id && name.trim()) {
+      supabase.from("profiles").update({ full_name: name.trim() }).eq("id", authUser.id).then();
     }
 
     setSubmitting(true);
     try {
       const res = await create({
         data: {
-          customer_name: name,
+          customer_name: name.trim(),
           customer_phone: phone,
           customer_email: email || undefined,
           delivery_type: deliveryType,
@@ -291,7 +348,12 @@ function Checkout() {
                 </div>
                 <div>
                   <span className="text-xs font-extrabold text-emerald-400 uppercase tracking-wider block">
-                    Logged in as {name || authUser.email}
+                    Logged in as{" "}
+                    {name && name !== "Customer"
+                      ? name
+                      : authUser.email?.includes("@phone.barimaba.com")
+                        ? phone || "Verified Customer"
+                        : authUser.email}
                   </span>
                   <span className="text-xs text-zinc-300">
                     Barima Ba Wallet Balance:{" "}
@@ -318,11 +380,49 @@ function Checkout() {
           )}
 
           <section className="rounded-xl border bg-card p-5">
-            <h2 className="text-lg font-semibold">Contact details</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Contact details</h2>
+              <button
+                type="button"
+                onClick={() => handlePaystackResolve()}
+                disabled={resolvingPaystack || !phone || phone.trim().length < 9}
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50 cursor-pointer bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-2.5 py-1"
+              >
+                {resolvingPaystack ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Verifying...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3.5 w-3.5" /> Verify via MoMo (Paystack)
+                  </>
+                )}
+              </button>
+            </div>
+
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
-                <Label htmlFor="name">Full name *</Label>
-                <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="name">Full name *</Label>
+                  {paystackVerifiedName && (
+                    <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400">
+                      <CheckCircle2 className="h-3 w-3" /> Paystack Verified
+                    </span>
+                  )}
+                </div>
+                <Input
+                  id="name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Kwame Mensah"
+                  className="mt-1"
+                />
+                {paystackVerifiedName && (
+                  <p className="mt-1 text-[11px] text-emerald-400 font-medium">
+                    ✓ Official {paystackProvider} registered name
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="phone">Phone (Mobile Money) *</Label>
@@ -332,7 +432,11 @@ function Checkout() {
                   type="tel"
                   placeholder="024 000 0000"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    if (paystackVerifiedName) setPaystackVerifiedName(null);
+                  }}
+                  className="mt-1"
                 />
               </div>
               <div className="sm:col-span-2">
@@ -342,6 +446,7 @@ function Checkout() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="mt-1"
                 />
               </div>
             </div>

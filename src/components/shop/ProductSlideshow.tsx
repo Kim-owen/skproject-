@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { ProductCard } from "./ProductCard";
 import { ChevronLeft, ChevronRight, Flame, Sparkles } from "lucide-react";
 
@@ -20,7 +20,7 @@ export function ProductSlideshow({ products }: { products: Product[] }) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  const updateScrollState = () => {
+  const updateScrollState = useCallback(() => {
     if (!scrollRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
     setCanScrollLeft(scrollLeft > 10);
@@ -30,7 +30,7 @@ export function ProductSlideshow({ products }: { products: Product[] }) {
     const cardWidth = scrollRef.current.clientWidth > 640 ? 300 : 250;
     const idx = Math.round(scrollLeft / cardWidth);
     setActiveIndex(Math.min(idx, products.length - 1));
-  };
+  }, [products.length]);
 
   const scrollToIndex = (index: number) => {
     if (!scrollRef.current) return;
@@ -70,7 +70,7 @@ export function ProductSlideshow({ products }: { products: Product[] }) {
     el.addEventListener("scroll", updateScrollState);
     updateScrollState();
     return () => el.removeEventListener("scroll", updateScrollState);
-  }, []);
+  }, [updateScrollState]);
 
   if (!products || products.length === 0) return null;
 

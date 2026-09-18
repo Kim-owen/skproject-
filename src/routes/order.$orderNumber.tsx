@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { formatGHS } from "@/lib/cart";
 
-export const orderQuery = (
+const orderQuery = (
   fetcher: (args: {
     data: { order_number: string };
   }) => Promise<Awaited<ReturnType<typeof getOrderByNumber>>>,

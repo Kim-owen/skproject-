@@ -14,7 +14,7 @@ type Product = {
   stock_quantity: number;
 };
 
-export function getProductImage(name: string, url: string | null): string {
+function getProductImage(name: string, url: string | null): string {
   if (url && url.trim().length > 0) return url;
   const n = name.toLowerCase();
   if (n.includes("shito")) return "/images/product-shito-jars.png";

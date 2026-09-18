@@ -42,21 +42,62 @@ export function Header() {
   const prev = useRef(count);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      if (data.user) {
-        setAuthUser(data.user);
-        setUserName(data.user.user_metadata?.full_name || "");
+    const fetchUserData = async (user: any) => {
+      if (!user) {
+        setAuthUser(null);
+        setUserName("");
+        return;
       }
+      setAuthUser(user);
+
+      // 1. Fetch real customer name from profiles table
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name, phone")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (
+          profile?.full_name &&
+          profile.full_name.trim().length >= 2 &&
+          profile.full_name.trim() !== "Customer"
+        ) {
+          setUserName(profile.full_name.trim());
+          return;
+        }
+      } catch (e) {
+        console.warn("[Header] Profile name fetch error:", e);
+      }
+
+      // 2. Check user_metadata
+      const metaName = user.user_metadata?.full_name;
+      if (metaName && metaName.trim().length >= 2 && metaName.trim() !== "Customer") {
+        setUserName(metaName.trim());
+        return;
+      }
+
+      // 3. Fallback to phone number
+      const phone =
+        user.user_metadata?.phone ||
+        (user.email?.includes("@phone.barimaba.com")
+          ? user.email.replace("@phone.barimaba.com", "")
+          : "");
+      if (phone) {
+        const clean = phone.replace(/[^0-9]/g, "");
+        const formatted = clean.startsWith("233") ? "0" + clean.slice(3) : clean;
+        setUserName(formatted);
+      } else {
+        setUserName("");
+      }
+    };
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) fetchUserData(data.user);
     });
 
     const { data: authListener } = supabase.auth.onAuthStateChange((_, session) => {
-      if (session?.user) {
-        setAuthUser(session.user);
-        setUserName(session.user.user_metadata?.full_name || "");
-      } else {
-        setAuthUser(null);
-        setUserName("");
-      }
+      fetchUserData(session?.user ?? null);
     });
 
     return () => {
@@ -232,8 +273,12 @@ export function Header() {
                 className="flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/15 px-3 py-1.5 text-xs font-extrabold text-amber-400 hover:bg-amber-500/25 transition-all shadow-sm"
               >
                 <User className="h-3.5 w-3.5 text-amber-400" />
-                <span className="max-w-27.5 truncate">
-                  {userName || authUser.email?.split("@")[0]}
+                <span className="max-w-36 truncate capitalize">
+                  {userName && userName !== "Customer"
+                    ? userName
+                    : authUser.email?.includes("@phone.barimaba.com")
+                      ? authUser.user_metadata?.phone || "My Account"
+                      : authUser.email?.split("@")[0]}
                 </span>
                 <ChevronDown
                   className={`h-3 w-3 text-amber-400 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
@@ -243,11 +288,21 @@ export function Header() {
               {userMenuOpen && (
                 <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-amber-500/30 bg-zinc-950/95 p-2.5 backdrop-blur-2xl shadow-2xl z-50 animate-fade-in-up">
                   <div className="border-b border-zinc-800 pb-2 mb-2 px-2">
-                    <span className="block text-xs font-extrabold text-amber-400 truncate">
-                      {userName || "Barima Ba Customer"}
+                    <span className="block text-xs font-extrabold text-amber-400 truncate capitalize">
+                      {userName && userName !== "Customer" ? userName : "Valued Customer"}
                     </span>
-                    <span className="block text-[10px] text-zinc-400 truncate">
-                      {authUser.email}
+                    <span className="block text-[10px] text-zinc-400 truncate font-mono">
+                      {authUser.email?.includes("@phone.barimaba.com")
+                        ? (() => {
+                            const p =
+                              authUser.user_metadata?.phone ||
+                              authUser.email.replace("@phone.barimaba.com", "");
+                            const clean = p.replace(/[^0-9]/g, "");
+                            return clean.startsWith("233")
+                              ? `+233 ${clean.slice(3, 5)} ${clean.slice(5, 8)} ${clean.slice(8)}`
+                              : p;
+                          })()
+                        : authUser.email}
                     </span>
                   </div>
                   <Link

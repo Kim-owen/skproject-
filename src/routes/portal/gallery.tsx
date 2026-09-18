@@ -59,7 +59,7 @@ export const Route = createFileRoute("/portal/gallery")({
 
 const DEFAULT_CATEGORIES = ["Shito", "Meats", "Catering", "Sauces", "Kitchen", "Events"];
 
-export const VIDEO_PRESETS = [
+const VIDEO_PRESETS = [
   {
     title: "Signature Shito Animi Cooking Reel",
     url: "/videos/shito-animi.mp4",

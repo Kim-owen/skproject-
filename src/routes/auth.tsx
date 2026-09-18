@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { sendPhoneOTP, verifyPhoneOTP } from "@/lib/orders.functions";
+import { sendPhoneOTP, verifyPhoneOTP, resolvePaystackAccount } from "@/lib/orders.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { ShopLayout } from "@/components/shop/Layout";
 import { Input } from "@/components/ui/input";
@@ -21,10 +21,19 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
+  CheckCircle2,
   Sparkles,
   KeyRound,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
+
+const SUPER_ADMIN_EMAILS = [
+  "admin@barimaba.com",
+  "barimabafoods@gmail.com",
+  "sunumanfred14@gmail.com",
+  "barimabashito@gmail.com",
+];
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign In — Barima Ba Foods" }] }),
@@ -33,7 +42,8 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"signin" | "signup" | "otp">("signin");
+  const [activeTab, setActiveTab] = useState<"signin" | "signup">("signin");
+  const [usePasswordLogin, setUsePasswordLogin] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -56,17 +66,42 @@ function AuthPage() {
 
   const sendOtp = useServerFn(sendPhoneOTP);
   const verifyOtp = useServerFn(verifyPhoneOTP);
+  const resolveAccount = useServerFn(resolvePaystackAccount);
+
+  const [resolvingPaystack, setResolvingPaystack] = useState(false);
+  const [paystackVerifiedName, setPaystackVerifiedName] = useState<string | null>(null);
+  const [paystackProvider, setPaystackProvider] = useState<string | null>(null);
+
+  const handleVerifyWithPaystack = async (phoneToVerify?: string) => {
+    const targetPhone = phoneToVerify || phone;
+    const clean = (targetPhone || "").replace(/[^0-9]/g, "");
+    if (clean.length < 9) {
+      toast.error("Please enter a valid phone number (e.g. 024 123 4567).");
+      return;
+    }
+    setResolvingPaystack(true);
+    try {
+      const res = await resolveAccount({ data: { phone: targetPhone } });
+      if (res.success && res.account_name) {
+        setName(res.account_name);
+        setPaystackVerifiedName(res.account_name);
+        setPaystackProvider(res.provider || "Mobile Money");
+        toast.success(`Paystack Account Verified: ${res.account_name} (${res.provider})`);
+      } else {
+        toast.error(
+          res.message || "Could not verify account name via Paystack. Please enter name manually.",
+        );
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to verify account via Paystack.");
+    } finally {
+      setResolvingPaystack(false);
+    }
+  };
 
   const [sessionUser, setSessionUser] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isAdminUser, setIsAdminUser] = useState(false);
-
-  const SUPER_ADMIN_EMAILS = [
-    "admin@barimaba.com",
-    "barimabafoods@gmail.com",
-    "sunumanfred14@gmail.com",
-    "barimabashito@gmail.com",
-  ];
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -157,17 +192,27 @@ function AuthPage() {
     setBusy(true);
     setAuthError(null);
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    let loginIdentifier = (email || phone).trim();
+    if (!loginIdentifier.includes("@") && loginIdentifier.length >= 9) {
+      const clean = loginIdentifier.replace(/[^0-9]/g, "");
+      const formatted = clean.startsWith("0") ? `233${clean.slice(1)}` : clean;
+      loginIdentifier = `${formatted}@phone.barimaba.com`;
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: loginIdentifier,
+      password,
+    });
     setBusy(false);
 
     if (error) {
       console.error("Sign-in error:", error);
       if (error.message.includes("Invalid login credentials")) {
         setAuthError(
-          "Invalid email or password. Please verify your details or register a new account.",
+          "Invalid phone/email or password. Please verify your details or sign in with SMS code.",
         );
       } else if (error.message.includes("Email not confirmed")) {
-        setAuthError("Email not confirmed. Please sign in with your password or use Phone OTP.");
+        setAuthError("Account not confirmed. Please use SMS verification to sign in.");
       } else {
         setAuthError(error.message);
       }
@@ -196,89 +241,33 @@ function AuthPage() {
     setBusy(true);
     setAuthError(null);
 
+    if (!name || name.trim().length < 2) {
+      setBusy(false);
+      setAuthError("Please enter your full name (minimum 2 characters).");
+      return toast.error("Please enter your full name.");
+    }
+
     if (!phone || phone.trim().length < 9) {
       setBusy(false);
-      setAuthError("Please enter a valid phone number (e.g. 0241234567).");
-      return;
+      setAuthError("Please enter a valid Ghanaian phone number (e.g. 024 123 4567).");
+      return toast.error("Please enter a valid phone number.");
     }
 
-    const hasLower = /[a-z]/.test(password);
-    const hasUpper = /[A-Z]/.test(password);
-    const hasDigit = /[0-9]/.test(password);
-    const hasSymbol = /[^a-zA-Z0-9]/.test(password);
-
-    if (password.length < 6 || !hasLower || !hasUpper || !hasDigit || !hasSymbol) {
-      setBusy(false);
+    try {
+      await sendOtp({ data: { phone: phone.trim() } });
+      toast.success(`6-digit SMS verification code sent to ${phone}`);
+      navigate({
+        to: "/verify-otp",
+        search: { phone: phone.trim(), name: name.trim() },
+      });
+    } catch (smsErr: any) {
+      console.error("SMS OTP signup error:", smsErr);
       setAuthError(
-        "Password must be at least 6 characters and contain an uppercase letter (A-Z), lowercase letter (a-z), number (0-9), and symbol (e.g. BarimaBa2026!).",
+        smsErr.message || "Failed to send SMS verification code. Please check your phone number.",
       );
-      return toast.error("Password is missing required characters (A-Z, a-z, 0-9, symbol).");
-    }
-
-    if (password !== confirmPassword) {
+      toast.error(smsErr.message || "Failed to send SMS verification code.");
+    } finally {
       setBusy(false);
-      setAuthError("Passwords do not match. Please verify your password entry.");
-      return toast.error("Passwords do not match!");
-    }
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { full_name: name, phone: phone },
-      },
-    });
-    setBusy(false);
-
-    if (error) {
-      console.error("Sign-up error:", error);
-      if (error.message.includes("User already registered")) {
-        setAuthError("An account with this email or phone already exists. Please click Sign In.");
-        setActiveTab("signin");
-      } else if (
-        error.name === "AuthWeakPasswordError" ||
-        error.message.toLowerCase().includes("password should contain") ||
-        error.message.toLowerCase().includes("weak password")
-      ) {
-        setAuthError(
-          "Password is too weak. Please ensure your password includes uppercase & lowercase letters, numbers, and symbols (e.g. BarimaBa2026!), or relax password rules in your Supabase project settings.",
-        );
-        return toast.error("Password is too weak. See requirements below.");
-      } else {
-        setAuthError(error.message);
-      }
-      return toast.error("Registration error. See details below.");
-    }
-
-    // Upsert profile phone & name
-    if (data.user) {
-      await supabase
-        .from("profiles")
-        .upsert(
-          { id: data.user.id, full_name: name, phone: phone, is_phone_verified: false },
-          { onConflict: "id" },
-        );
-      try {
-        await sendOtp({ data: { phone } });
-      } catch (smsErr) {
-        console.error("SMS OTP signup error:", smsErr);
-      }
-    }
-
-    if (data.session) {
-      toast.success("Account created! Verify your phone number to continue.");
-      navigate({ to: "/verify-otp", search: { phone } });
-    } else {
-      // Attempt immediate login so user is not blocked by unconfirmed email setting
-      const loginRes = await supabase.auth.signInWithPassword({ email, password });
-      if (loginRes.data.session) {
-        toast.success("Account created! Verify your phone number to continue.");
-        navigate({ to: "/verify-otp", search: { phone } });
-      } else {
-        toast.success("Account created! Please verify your phone number.");
-        navigate({ to: "/verify-otp", search: { phone } });
-      }
     }
   };
 
@@ -293,7 +282,7 @@ function AuthPage() {
     try {
       await sendOtp({ data: { phone } });
       toast.success(`Verification OTP sent to ${phone}`);
-      navigate({ to: "/verify-otp", search: { phone } });
+      navigate({ to: "/verify-otp", search: { phone, name } });
     } catch (err: any) {
       toast.error(err.message || "Failed to send OTP code");
     } finally {
@@ -310,16 +299,34 @@ function AuthPage() {
     }
     setOtpBusy(true);
     try {
-      await verifyOtp({ data: { phone, code: otpCode } });
+      const res = await verifyOtp({
+        data: {
+          phone,
+          code: otpCode,
+          name: name ? name.trim() : undefined,
+        },
+      });
       toast.success("Phone verified successfully!");
-      // If user already signed in or creating profile, navigate
+
+      if (res?.token_hash) {
+        try {
+          await supabase.auth.verifyOtp({
+            token_hash: res.token_hash,
+            type: "magiclink",
+          });
+        } catch (authErr) {
+          console.warn("[handleVerifyOtp] session token exchange warning:", authErr);
+        }
+      }
+
       const { data } = await supabase.auth.getUser();
       if (data.user) {
-        await supabase.from("profiles").update({ phone }).eq("id", data.user.id);
-        navigate({ to: "/checkout" });
-      } else {
-        setActiveTab("signin");
+        await supabase
+          .from("profiles")
+          .update({ phone, is_phone_verified: true })
+          .eq("id", data.user.id);
       }
+      navigate({ to: "/checkout" });
     } catch (err: any) {
       toast.error(err.message || "Invalid OTP code");
     } finally {
@@ -349,7 +356,10 @@ function AuthPage() {
       setResetSent(true);
       toast.success("Password reset instructions sent to your email!");
     } catch (err: any) {
-      console.warn("[handleForgotPassword] Resend generator failed, attempting Supabase Auth SDK fallback:", err);
+      console.warn(
+        "[handleForgotPassword] Resend generator failed, attempting Supabase Auth SDK fallback:",
+        err,
+      );
       const { error } = await supabase.auth.resetPasswordForEmail(targetEmail, {
         redirectTo: `${typeof window !== "undefined" ? window.location.origin : ""}/auth?type=recovery`,
       });
@@ -390,7 +400,7 @@ function AuthPage() {
 
     try {
       // 1. Attempt client session update first
-      let { error: clientErr } = await supabase.auth.updateUser({ password: newPassword });
+      const { error: clientErr } = await supabase.auth.updateUser({ password: newPassword });
 
       if (clientErr) {
         console.warn(
@@ -424,52 +434,6 @@ function AuthPage() {
       toast.error(err.message || "Failed to reset password.");
     } finally {
       setBusy(false);
-    }
-  };
-
-  // Quick Demo Admin Login Helper
-  const quickDemoLogin = async () => {
-    const demoEmail = "admin@barimaba.com";
-    const demoPass = "BarimaBa2026!";
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    setBusy(true);
-    setAuthError(null);
-
-    // Try signing in with demo account
-    let { data, error } = await supabase.auth.signInWithPassword({
-      email: demoEmail,
-      password: demoPass,
-    });
-
-    // If demo user doesn't exist yet, create it
-    if (error && error.message.includes("Invalid login credentials")) {
-      const res = await supabase.auth.signUp({
-        email: demoEmail,
-        password: demoPass,
-        options: { data: { full_name: "Barima Ba Admin" } },
-      });
-      if (res.data.session) {
-        toast.success("Demo Admin created & signed in!");
-        setBusy(false);
-        return navigate({ to: "/portal" });
-      }
-      // Re-try signin
-      const res2 = await supabase.auth.signInWithPassword({
-        email: demoEmail,
-        password: demoPass,
-      });
-      data = res2.data;
-      error = res2.error;
-    }
-
-    setBusy(false);
-    if (error) {
-      toast.error(error.message);
-      setAuthError(error.message);
-    } else {
-      toast.success("Logged in as Demo Store Manager!");
-      navigate({ to: "/portal" });
     }
   };
 
@@ -593,12 +557,27 @@ function AuthPage() {
                   <span className="inline-block rounded-full bg-amber-500/15 px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-amber-400 border border-amber-500/30 mb-1">
                     ACTIVE ACCOUNT
                   </span>
-                  <h1 className="font-display text-2xl font-bold text-foreground">
-                    {userProfile?.full_name ||
-                      sessionUser.user_metadata?.full_name ||
-                      "Barima Ba Customer"}
+                  <h1 className="font-display text-2xl font-bold text-foreground capitalize">
+                    {userProfile?.full_name && userProfile.full_name !== "Customer"
+                      ? userProfile.full_name
+                      : sessionUser.user_metadata?.full_name &&
+                          sessionUser.user_metadata.full_name !== "Customer"
+                        ? sessionUser.user_metadata.full_name
+                        : "Valued Customer"}
                   </h1>
-                  <p className="text-xs text-muted-foreground">{sessionUser.email}</p>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {sessionUser.email?.includes("@phone.barimaba.com")
+                      ? userProfile?.phone ||
+                        sessionUser.user_metadata?.phone ||
+                        (() => {
+                          const p = sessionUser.email.replace("@phone.barimaba.com", "");
+                          const clean = p.replace(/[^0-9]/g, "");
+                          return clean.startsWith("233")
+                            ? `+233 ${clean.slice(3, 5)} ${clean.slice(5, 8)} ${clean.slice(8)}`
+                            : p;
+                        })()
+                      : sessionUser.email}
+                  </p>
                 </div>
               </div>
 
@@ -693,10 +672,10 @@ function AuthPage() {
 
               <Tabs
                 value={activeTab}
-                onValueChange={(v) => setActiveTab(v as "signin" | "signup" | "otp")}
+                onValueChange={(v) => setActiveTab(v as "signin" | "signup")}
                 className="w-full"
               >
-                <TabsList className="grid w-full grid-cols-3 rounded-xl bg-muted/60 p-1 mb-6 border">
+                <TabsList className="grid w-full grid-cols-2 rounded-xl bg-muted/60 p-1 mb-6 border">
                   <TabsTrigger
                     value="signin"
                     className="rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all"
@@ -709,88 +688,145 @@ function AuthPage() {
                   >
                     Register
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="otp"
-                    className="rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all flex items-center gap-1"
-                  >
-                    <span>Phone OTP</span>
-                  </TabsTrigger>
                 </TabsList>
 
                 {/* SIGN IN */}
                 <TabsContent value="signin" className="space-y-4">
                   {!showForgotPassword ? (
-                    <form onSubmit={signIn} className="space-y-4.5">
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="signin-email"
-                          className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
-                        >
-                          Email Address
-                        </Label>
-                        <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                          <Input
-                            id="signin-email"
-                            type="email"
-                            required
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="name@example.com"
-                            className="pl-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
+                    !usePasswordLogin ? (
+                      <form onSubmit={handleRequestOtp} className="space-y-4.5">
+                        <div className="space-y-1.5">
                           <Label
-                            htmlFor="signin-password"
+                            htmlFor="signin-phone"
+                            className="text-[10px] font-bold uppercase tracking-wider text-amber-500"
+                          >
+                            Ghanaian Mobile Phone Number *
+                          </Label>
+                          <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-500" />
+                            <Input
+                              id="signin-phone"
+                              type="tel"
+                              required
+                              value={phone}
+                              onChange={(e) => setPhone(e.target.value)}
+                              placeholder="024 123 4567"
+                              className="pl-9 rounded-xl border-amber-500/40 bg-amber-500/5 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm font-semibold"
+                            />
+                          </div>
+                          <p className="text-[11px] text-muted-foreground">
+                            Enter your phone number to receive a 6-digit SMS verification code.
+                          </p>
+                        </div>
+
+                        <Button
+                          type="submit"
+                          className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md py-5.5 mt-2 cursor-pointer transition-all"
+                          disabled={otpBusy}
+                        >
+                          {otpBusy ? (
+                            <div className="flex items-center justify-center gap-2">
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                              <span>Sending SMS Code...</span>
+                            </div>
+                          ) : (
+                            "Send SMS Login Code"
+                          )}
+                        </Button>
+
+                        <div className="pt-2 text-center">
+                          <button
+                            type="button"
+                            onClick={() => setUsePasswordLogin(true)}
+                            className="text-xs text-muted-foreground hover:text-amber-400 font-semibold transition-colors cursor-pointer"
+                          >
+                            Store Manager / Admin? Sign in with password
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <form onSubmit={signIn} className="space-y-4.5">
+                        <div className="space-y-1.5">
+                          <Label
+                            htmlFor="signin-email"
                             className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
                           >
-                            Password
+                            Admin Email or Phone
                           </Label>
-                          <button
-                            type="button"
-                            onClick={() => setShowForgotPassword(true)}
-                            className="text-[11px] font-bold text-amber-400 hover:underline"
-                          >
-                            Forgot password?
-                          </button>
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              id="signin-email"
+                              type="text"
+                              required
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              placeholder="admin@barimaba.com or 0241234567"
+                              className="pl-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm"
+                            />
+                          </div>
                         </div>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                          <Input
-                            id="signin-password"
-                            type={showPassword ? "text" : "password"}
-                            required
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
-                            className="pl-9 pr-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
 
-                      <Button
-                        type="submit"
-                        className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md py-5.5 mt-2"
-                        disabled={busy}
-                      >
-                        {busy ? "Signing in..." : "Sign In"}
-                      </Button>
-                    </form>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center justify-between">
+                            <Label
+                              htmlFor="signin-password"
+                              className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+                            >
+                              Password
+                            </Label>
+                            <button
+                              type="button"
+                              onClick={() => setShowForgotPassword(true)}
+                              className="text-[11px] font-bold text-amber-400 hover:underline"
+                            >
+                              Forgot password?
+                            </button>
+                          </div>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                            <Input
+                              id="signin-password"
+                              type={showPassword ? "text" : "password"}
+                              required
+                              value={password}
+                              onChange={(e) => setPassword(e.target.value)}
+                              placeholder="••••••••"
+                              className="pl-9 pr-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        <Button
+                          type="submit"
+                          className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md py-5.5 mt-2 cursor-pointer"
+                          disabled={busy}
+                        >
+                          {busy ? "Signing in..." : "Sign In with Password"}
+                        </Button>
+
+                        <div className="pt-2 text-center">
+                          <button
+                            type="button"
+                            onClick={() => setUsePasswordLogin(false)}
+                            className="text-xs text-amber-400 hover:underline font-semibold transition-colors cursor-pointer"
+                          >
+                            ← Back to SMS Login (Default)
+                          </button>
+                        </div>
+                      </form>
+                    )
                   ) : (
                     <form
                       onSubmit={handleForgotPassword}
@@ -869,12 +905,19 @@ function AuthPage() {
                 <TabsContent value="signup" className="space-y-4">
                   <form onSubmit={signUp} className="space-y-4.5">
                     <div className="space-y-1.5">
-                      <Label
-                        htmlFor="signup-name"
-                        className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
-                      >
-                        Full Name *
-                      </Label>
+                      <div className="flex items-center justify-between">
+                        <Label
+                          htmlFor="signup-name"
+                          className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
+                        >
+                          Full Name *
+                        </Label>
+                        {paystackVerifiedName && (
+                          <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400">
+                            <CheckCircle2 className="h-3 w-3" /> Paystack Verified
+                          </span>
+                        )}
+                      </div>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
@@ -889,12 +932,30 @@ function AuthPage() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label
-                        htmlFor="signup-phone"
-                        className="text-[10px] font-bold uppercase tracking-wider text-amber-500"
-                      >
-                        Phone Number (For OTP Verification) *
-                      </Label>
+                      <div className="flex items-center justify-between">
+                        <Label
+                          htmlFor="signup-phone"
+                          className="text-[10px] font-bold uppercase tracking-wider text-amber-500"
+                        >
+                          Ghanaian Mobile Phone Number *
+                        </Label>
+                        <button
+                          type="button"
+                          onClick={() => handleVerifyWithPaystack()}
+                          disabled={resolvingPaystack || !phone || phone.trim().length < 9}
+                          className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 disabled:opacity-50 cursor-pointer"
+                        >
+                          {resolvingPaystack ? (
+                            <>
+                              <Loader2 className="h-3 w-3 animate-spin" /> Verifying...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-3 w-3" /> Verify via MoMo (Paystack)
+                            </>
+                          )}
+                        </button>
+                      </div>
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-500" />
                         <Input
@@ -902,235 +963,56 @@ function AuthPage() {
                           type="tel"
                           required
                           value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
+                          onChange={(e) => {
+                            setPhone(e.target.value);
+                            if (paystackVerifiedName) setPaystackVerifiedName(null);
+                          }}
                           placeholder="024 123 4567"
                           className="pl-9 rounded-xl border-amber-500/40 bg-amber-500/5 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm font-semibold"
                         />
                       </div>
+                      {paystackVerifiedName ? (
+                        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-2 text-xs text-emerald-300 flex items-center justify-between">
+                          <div className="flex items-center gap-1.5">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                            <div>
+                              <span className="font-bold text-white block">
+                                {paystackVerifiedName}
+                              </span>
+                              <span className="text-[10px] text-emerald-400">
+                                {paystackProvider} Account Verified
+                              </span>
+                            </div>
+                          </div>
+                          <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            Paystack
+                          </span>
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-muted-foreground">
+                          Enter your MoMo number. Click "Verify via MoMo" to auto-fetch your legal
+                          account name from Paystack.
+                        </p>
+                      )}
                     </div>
-
-                    <div className="space-y-1.5">
-                      <Label
-                        htmlFor="signup-email"
-                        className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
-                      >
-                        Email Address *
-                      </Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          required
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="kwame@example.com"
-                          className="pl-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="signup-password"
-                          className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
-                        >
-                          Password (Min 6) *
-                        </Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                          <Input
-                            id="signup-password"
-                            type={showPassword ? "text" : "password"}
-                            required
-                            minLength={6}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="••••••••"
-                            className="pl-9 pr-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="signup-confirm-password"
-                          className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
-                        >
-                          Confirm Password *
-                        </Label>
-                        <div className="relative">
-                          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                          <Input
-                            id="signup-confirm-password"
-                            type={showPassword ? "text" : "password"}
-                            required
-                            minLength={6}
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                            placeholder="••••••••"
-                            className={`pl-9 pr-9 rounded-xl border-border bg-background focus:ring-1 focus:ring-amber-500 text-sm ${
-                              confirmPassword && password !== confirmPassword
-                                ? "border-red-500/80 bg-red-500/5"
-                                : ""
-                            }`}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* LIVE PASSWORD REQUIREMENT CHECKLIST */}
-                    {password && (
-                      <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 text-xs space-y-1.5">
-                        <div className="text-[11px] font-bold text-zinc-400">
-                          Password requirements:
-                        </div>
-                        <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                          <div
-                            className={`flex items-center gap-1.5 ${password.length >= 6 ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}
-                          >
-                            <span>{password.length >= 6 ? "✓" : "○"}</span>
-                            <span>Min 6 characters</span>
-                          </div>
-                          <div
-                            className={`flex items-center gap-1.5 ${/[A-Z]/.test(password) ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}
-                          >
-                            <span>{/[A-Z]/.test(password) ? "✓" : "○"}</span>
-                            <span>Uppercase (A-Z)</span>
-                          </div>
-                          <div
-                            className={`flex items-center gap-1.5 ${/[a-z]/.test(password) ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}
-                          >
-                            <span>{/[a-z]/.test(password) ? "✓" : "○"}</span>
-                            <span>Lowercase (a-z)</span>
-                          </div>
-                          <div
-                            className={`flex items-center gap-1.5 ${/[0-9]/.test(password) ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}
-                          >
-                            <span>{/[0-9]/.test(password) ? "✓" : "○"}</span>
-                            <span>Number (0-9)</span>
-                          </div>
-                          <div
-                            className={`flex items-center gap-1.5 ${/[^a-zA-Z0-9]/.test(password) ? "text-emerald-400 font-semibold" : "text-zinc-500"}`}
-                          >
-                            <span>{/[^a-zA-Z0-9]/.test(password) ? "✓" : "○"}</span>
-                            <span>Symbol (!@#$...)</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
 
                     <Button
                       type="submit"
-                      className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md py-5.5 mt-2"
+                      className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md py-5.5 mt-2 transition-all cursor-pointer"
                       disabled={busy}
                     >
-                      {busy
-                        ? "Registering Account..."
-                        : "Create Account (No Email Confirmation Required)"}
+                      {busy ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Sending Verification Code...</span>
+                        </div>
+                      ) : (
+                        "Register & Verify Phone Number (SMS OTP)"
+                      )}
                     </Button>
                   </form>
                 </TabsContent>
-
-                {/* PHONE OTP TAB */}
-                <TabsContent value="otp" className="space-y-4">
-                  {!otpSent ? (
-                    <form onSubmit={handleRequestOtp} className="space-y-4.5">
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="otp-phone"
-                          className="text-[10px] font-bold uppercase tracking-wider text-amber-400"
-                        >
-                          Ghanaian Mobile Number
-                        </Label>
-                        <div className="relative">
-                          <Smartphone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-500" />
-                          <Input
-                            id="otp-phone"
-                            type="tel"
-                            required
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            placeholder="024 123 4567"
-                            className="pl-9 rounded-xl border-amber-500/40 bg-amber-500/5 focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all text-sm font-semibold"
-                          />
-                        </div>
-                        <p className="text-[11px] text-muted-foreground mt-1">
-                          We will send a 6-digit SMS OTP code to your phone for instant
-                          verification.
-                        </p>
-                      </div>
-
-                      <Button
-                        type="submit"
-                        className="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold shadow-md py-5.5 mt-2"
-                        disabled={otpBusy}
-                      >
-                        {otpBusy ? "Sending SMS OTP..." : "Send SMS Verification OTP"}
-                      </Button>
-                    </form>
-                  ) : (
-                    <form onSubmit={handleVerifyOtp} className="space-y-4.5">
-                      <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300 text-center font-semibold">
-                        SMS OTP Code sent to{" "}
-                        <span className="font-mono text-white font-bold">{phone}</span>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="otp-code"
-                          className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground"
-                        >
-                          Enter 6-Digit OTP Code
-                        </Label>
-                        <Input
-                          id="otp-code"
-                          type="text"
-                          required
-                          maxLength={6}
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value)}
-                          placeholder="123456"
-                          className="rounded-xl border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all text-center tracking-[0.5em] font-mono text-lg font-bold"
-                        />
-                      </div>
-
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="w-1/3 rounded-xl text-xs"
-                          onClick={() => setOtpSent(false)}
-                        >
-                          Change Phone
-                        </Button>
-                        <Button
-                          type="submit"
-                          className="w-2/3 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-extrabold py-5.5"
-                          disabled={otpBusy}
-                        >
-                          {otpBusy ? "Verifying..." : "Verify OTP Code"}
-                        </Button>
-                      </div>
-                    </form>
-                  )}
-                </TabsContent>
               </Tabs>
-
-              {/* Quick Demo Login Option */}
-              <div className="mt-6 pt-4 border-t border-border text-center">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={quickDemoLogin}
-                  className="w-full rounded-xl border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 font-bold text-xs gap-2 py-4"
-                  disabled={busy}
-                >
-                  <KeyRound className="h-4 w-4 text-amber-400" />
-                  <span>1-Click Store Manager Login (Demo)</span>
-                </Button>
-              </div>
             </div>
           )}
 

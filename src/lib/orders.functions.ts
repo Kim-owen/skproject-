@@ -118,22 +118,155 @@ export const sendPhoneOTP = createServerFn({ method: "POST" })
   .validator(z.object({ phone: z.string().trim().min(7).max(20) }))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
     const formattedPhone = normalizePhoneNumber(data.phone);
 
-    const { error } = await supabaseAdmin
+    // 1. Rate-limiting & anti-SMS pumping: Enforce 60-second cooldown between SMS requests
+    const { data: existingRecord } = await supabaseAdmin
       .from("phone_otps")
-      .upsert({ phone: formattedPhone, code: otp, expires_at: expiresAt }, { onConflict: "phone" });
-    if (error) throw new Error("Failed to store OTP: " + error.message);
+      .select("created_at")
+      .eq("phone", formattedPhone)
+      .maybeSingle();
 
-    const message = `Your Barima Ba Foods login code is: ${otp}. Valid for 10 minutes.`;
+    if (existingRecord?.created_at) {
+      const timeSinceCreation = Date.now() - new Date(existingRecord.created_at).getTime();
+      const COOLDOWN_MS = 60 * 1000;
+      if (timeSinceCreation < COOLDOWN_MS) {
+        const remainingSec = Math.ceil((COOLDOWN_MS - timeSinceCreation) / 1000);
+        throw new Error(
+          `Please wait ${remainingSec} second${remainingSec > 1 ? "s" : ""} before requesting another code.`,
+        );
+      }
+    }
+
+    // 2. Cryptographically secure random 6-digit number (CSPRNG)
+    const crypto = await import("node:crypto");
+    const otp = crypto.randomInt(100000, 1000000).toString();
+
+    // 3. Tighter 5-minute validity window
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+
+    // 4. Store OTP with 0 initial failed attempts (format: 'CODE:ATTEMPTS') and refreshed created_at
+    const { error } = await supabaseAdmin.from("phone_otps").upsert(
+      {
+        phone: formattedPhone,
+        code: `${otp}:0`,
+        expires_at: expiresAt,
+        created_at: new Date().toISOString(),
+      },
+      { onConflict: "phone" },
+    );
+    if (error) throw new Error("Failed to store verification code: " + error.message);
+
+    const message = `Your Barima Ba Foods verification code is: ${otp}. Valid for 5 minutes. Never share this code.`;
     await sendSMSNotification(formattedPhone, message);
-    return { ok: true, message: "OTP sent via SMS" };
+    return { ok: true, message: "Verification code sent via SMS" };
+  });
+
+/**
+ * Paystack Mobile Money Account Verification
+ * Queries Paystack Resolve API (GET https://api.paystack.co/bank/resolve)
+ * to retrieve the registered account name for Ghanaian Mobile Money numbers (MTN, Telecel, AirtelTigo).
+ */
+export async function queryPaystackAccountResolve(phone: string) {
+  const secret = process.env.PAYSTACK_SECRET_KEY;
+  if (!secret) {
+    return {
+      success: false,
+      message: "Paystack secret key is not configured.",
+    };
+  }
+
+  const clean = phone.replace(/[^0-9]/g, "");
+  const localNumber = clean.startsWith("233") ? "0" + clean.slice(3) : clean;
+
+  if (localNumber.length < 9 || localNumber.length > 10) {
+    return {
+      success: false,
+      message: "Please enter a valid Ghanaian phone number (e.g. 024 123 4567).",
+    };
+  }
+
+  // Determine candidate providers in order of priority based on network prefix
+  let candidateProviders: Array<{ code: string; name: string }> = [];
+  if (/^0(24|54|55|59|53|25)/.test(localNumber)) {
+    candidateProviders = [
+      { code: "MTN", name: "MTN Mobile Money" },
+      { code: "VOD", name: "Telecel Cash" },
+      { code: "ATL", name: "AirtelTigo Money" },
+    ];
+  } else if (/^0(20|50)/.test(localNumber)) {
+    candidateProviders = [
+      { code: "VOD", name: "Telecel Cash" },
+      { code: "MTN", name: "MTN Mobile Money" },
+      { code: "ATL", name: "AirtelTigo Money" },
+    ];
+  } else if (/^0(27|57|26|56)/.test(localNumber)) {
+    candidateProviders = [
+      { code: "ATL", name: "AirtelTigo Money" },
+      { code: "MTN", name: "MTN Mobile Money" },
+      { code: "VOD", name: "Telecel Cash" },
+    ];
+  } else {
+    candidateProviders = [
+      { code: "MTN", name: "MTN Mobile Money" },
+      { code: "VOD", name: "Telecel Cash" },
+      { code: "ATL", name: "AirtelTigo Money" },
+    ];
+  }
+
+  for (const provider of candidateProviders) {
+    try {
+      const resp = await fetch(
+        `https://api.paystack.co/bank/resolve?account_number=${encodeURIComponent(localNumber)}&bank_code=${encodeURIComponent(provider.code)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${secret}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      if (resp.ok) {
+        const json = await resp.json();
+        if (json.status && json.data?.account_name) {
+          return {
+            success: true,
+            account_name: (json.data.account_name as string).trim(),
+            account_number: (json.data.account_number as string) || localNumber,
+            provider: provider.name,
+            bank_code: provider.code,
+          };
+        }
+      }
+    } catch (err) {
+      console.warn(`[queryPaystackAccountResolve] Error checking ${provider.code}:`, err);
+    }
+  }
+
+  return {
+    success: false,
+    message: "Could not resolve account name on Mobile Money. Please enter your name manually.",
+  };
+}
+
+export const resolvePaystackAccount = createServerFn({ method: "POST" })
+  .validator(
+    z.object({
+      phone: z.string().trim().min(7).max(25),
+    }),
+  )
+  .handler(async ({ data }) => {
+    return await queryPaystackAccountResolve(data.phone);
   });
 
 export const verifyPhoneOTP = createServerFn({ method: "POST" })
-  .validator(z.object({ phone: z.string().trim().min(7).max(20), code: z.string().trim() }))
+  .validator(
+    z.object({
+      phone: z.string().trim().min(7).max(20),
+      code: z.string().trim(),
+      name: z.string().trim().optional(),
+    }),
+  )
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const formattedPhone = normalizePhoneNumber(data.phone);
@@ -142,24 +275,189 @@ export const verifyPhoneOTP = createServerFn({ method: "POST" })
       .from("phone_otps")
       .select("code, expires_at")
       .eq("phone", formattedPhone)
-      .single();
+      .maybeSingle();
 
     if (error || !record) {
-      throw new Error("OTP code expired or not found. Please request a new code.");
+      throw new Error("Verification code expired or not found. Please request a new code.");
     }
 
     const isExpired = new Date(record.expires_at).getTime() < Date.now();
     if (isExpired) {
       await supabaseAdmin.from("phone_otps").delete().eq("phone", formattedPhone);
-      throw new Error("OTP code expired. Please request a new code.");
+      throw new Error("Verification code has expired. Please request a fresh code.");
     }
 
-    if (record.code !== data.code.trim()) {
-      throw new Error("Invalid verification code. Please check and try again.");
+    // Anti-Brute-Force: Parse stored code and failed attempts count
+    const [storedCode, attemptsStr] = (record.code || "").split(":");
+    const currentAttempts = parseInt(attemptsStr || "0", 10);
+    const enteredCode = data.code.trim();
+
+    // Lockout check: If already 3 or more attempts, burn the code
+    if (currentAttempts >= 3) {
+      await supabaseAdmin.from("phone_otps").delete().eq("phone", formattedPhone);
+      throw new Error(
+        "Too many failed attempts. For your security, this code was invalidated. Please request a new one.",
+      );
     }
 
+    if (enteredCode !== storedCode) {
+      const nextAttempts = currentAttempts + 1;
+      if (nextAttempts >= 3) {
+        // Burn the code after 3rd failure
+        await supabaseAdmin.from("phone_otps").delete().eq("phone", formattedPhone);
+        throw new Error(
+          "Incorrect code entered 3 times. This code has been burned for security. Please request a new code.",
+        );
+      }
+
+      // Record failed attempt in database
+      await supabaseAdmin
+        .from("phone_otps")
+        .update({ code: `${storedCode}:${nextAttempts}` })
+        .eq("phone", formattedPhone);
+
+      const attemptsLeft = 3 - nextAttempts;
+      throw new Error(
+        `Invalid verification code. You have ${attemptsLeft} attempt${attemptsLeft > 1 ? "s" : ""} remaining.`,
+      );
+    }
+
+    // Correct code entered: burn immediately (single-use)
     await supabaseAdmin.from("phone_otps").delete().eq("phone", formattedPhone);
-    return { ok: true };
+
+    const syntheticEmail = `${formattedPhone}@phone.barimaba.com`;
+    let targetEmail = syntheticEmail;
+    let userId: string | null = null;
+    let finalCustomerName: string | undefined = undefined;
+
+    // 1. Check if a profile already exists with this verified phone number
+    const { data: existingProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("id, full_name, phone")
+      .eq("phone", formattedPhone)
+      .maybeSingle();
+
+    if (existingProfile?.id) {
+      userId = existingProfile.id;
+      // Fetch associated auth user to see if they registered with a real email
+      try {
+        const { data: authUserData } = await supabaseAdmin.auth.admin.getUserById(userId);
+        if (authUserData?.user?.email) {
+          targetEmail = authUserData.user.email;
+        }
+      } catch (e) {
+        console.warn("[verifyPhoneOTP] Could not fetch auth user by id:", e);
+      }
+
+      // Update name and verified status
+      let resolvedName = data.name ? data.name.trim() : "";
+      if (!resolvedName || resolvedName.length < 2) {
+        if (!existingProfile.full_name || existingProfile.full_name === "Customer") {
+          const paystackResolve = await queryPaystackAccountResolve(formattedPhone);
+          if (paystackResolve.success && paystackResolve.account_name) {
+            resolvedName = paystackResolve.account_name;
+          }
+        }
+      }
+
+      if (resolvedName && resolvedName.length >= 2) {
+        finalCustomerName = resolvedName;
+        await supabaseAdmin
+          .from("profiles")
+          .update({ full_name: resolvedName, is_phone_verified: true })
+          .eq("id", userId);
+
+        try {
+          await supabaseAdmin.auth.admin.updateUserById(userId, {
+            user_metadata: { full_name: resolvedName, phone: formattedPhone },
+          });
+        } catch (updateErr) {
+          console.warn("[verifyPhoneOTP] updateUserById note:", updateErr);
+        }
+      } else {
+        await supabaseAdmin.from("profiles").update({ is_phone_verified: true }).eq("id", userId);
+        finalCustomerName = existingProfile.full_name || undefined;
+      }
+    } else {
+      // 2. New user registration with phone — Full Name is mandatory!
+      let fullName = data.name ? data.name.trim() : "";
+      if (!fullName || fullName.length < 2) {
+        // Fallback: Verify & resolve official legal name from Paystack Mobile Money Account API
+        const paystackResolve = await queryPaystackAccountResolve(formattedPhone);
+        if (paystackResolve.success && paystackResolve.account_name) {
+          fullName = paystackResolve.account_name;
+        } else {
+          throw new Error(
+            "Customer full name is required (minimum 2 characters). Please provide your name to register.",
+          );
+        }
+      }
+
+      const { data: createdUser, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+        email: syntheticEmail,
+        email_confirm: true,
+        phone_confirm: true,
+        user_metadata: {
+          full_name: fullName,
+          phone: formattedPhone,
+        },
+      });
+
+      if (createErr) {
+        console.warn("[verifyPhoneOTP] createUser note:", createErr.message);
+        // If user already existed in Supabase Auth, lookup by email
+        const { data: listData } = await supabaseAdmin.auth.admin.listUsers();
+        const found = listData?.users.find(
+          (u) => u.email?.toLowerCase() === syntheticEmail.toLowerCase(),
+        );
+        if (found) {
+          userId = found.id;
+          // Update their user_metadata with real name
+          await supabaseAdmin.auth.admin.updateUserById(userId, {
+            user_metadata: { full_name: fullName, phone: formattedPhone },
+          });
+        }
+      } else if (createdUser?.user) {
+        userId = createdUser.user.id;
+      }
+
+      if (userId) {
+        await supabaseAdmin.from("profiles").upsert(
+          {
+            id: userId,
+            full_name: fullName,
+            phone: formattedPhone,
+            is_phone_verified: true,
+          },
+          { onConflict: "id" },
+        );
+      }
+      finalCustomerName = fullName;
+    }
+
+    // 3. Generate magiclink session token for immediate client-side login
+    let token_hash: string | undefined;
+    try {
+      const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
+        type: "magiclink",
+        email: targetEmail,
+      });
+      if (linkErr) {
+        console.warn("[verifyPhoneOTP] generateLink warning:", linkErr.message);
+      } else if (linkData?.properties?.hashed_token) {
+        token_hash = linkData.properties.hashed_token;
+      }
+    } catch (err) {
+      console.warn("[verifyPhoneOTP] generateLink failed:", err);
+    }
+
+    return {
+      ok: true,
+      userId,
+      token_hash,
+      phone: formattedPhone,
+      name: finalCustomerName || data.name,
+    };
   });
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -731,11 +1029,19 @@ export const verifyPaystackPayment = createServerFn({ method: "POST" })
     };
   });
 
-export const getUserAccountDetails = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+export const getUserAccountDetails = createServerFn({ method: "POST" })
+  .validator((d: { userId?: string } | undefined) => d)
+  .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const userId = context.userId;
+    const userId = (context as any)?.userId || data?.userId;
+
+    if (!userId) {
+      return {
+        profile: null,
+        transactions: [],
+        orders: [],
+      };
+    }
 
     const [{ data: profile }, authUserRes, txRes] = await Promise.all([
       supabaseAdmin
@@ -803,9 +1109,9 @@ export const getUserAccountDetails = createServerFn({ method: "GET" })
   });
 
 export const updateUserProfileData = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .validator(
     z.object({
+      userId: z.string().optional(),
       full_name: z.string().trim().min(2).max(100),
       phone: z.string().trim().min(7).max(20),
       delivery_address: z.string().trim().max(500).optional(),
@@ -815,9 +1121,14 @@ export const updateUserProfileData = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userId = (context as any)?.userId || data?.userId;
+    if (!userId) {
+      throw new Error("User ID is required to update profile");
+    }
+
     const { error } = await supabaseAdmin.from("profiles").upsert(
       {
-        id: context.userId,
+        id: userId,
         full_name: data.full_name,
         phone: data.phone,
         ...(data.delivery_address !== undefined ? { delivery_address: data.delivery_address } : {}),

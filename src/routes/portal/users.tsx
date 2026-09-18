@@ -292,10 +292,16 @@ function AdminUsersPage() {
                               {initials}
                             </div>
                             <div>
-                              <p className="font-bold text-foreground line-clamp-1">
-                                {u.full_name || "Unnamed User"}
+                              <p className="font-bold text-foreground line-clamp-1 capitalize">
+                                {u.full_name && u.full_name !== "Customer"
+                                  ? u.full_name
+                                  : "Customer"}
                               </p>
-                              <p className="text-xs text-muted-foreground font-mono">{u.email}</p>
+                              <p className="text-xs text-muted-foreground font-mono">
+                                {u.email.includes("@phone.barimaba.com")
+                                  ? u.phone || u.email.replace("@phone.barimaba.com", "")
+                                  : u.email}
+                              </p>
                             </div>
                           </div>
                         </td>
@@ -318,7 +324,7 @@ function AdminUsersPage() {
                             </span>
                           )}
                           {u.delivery_address && (
-                            <p className="text-[11px] text-muted-foreground truncate max-w-[200px] mt-0.5">
+                            <p className="text-[11px] text-muted-foreground truncate max-w-50 mt-0.5">
                               📍 {u.delivery_address}
                             </p>
                           )}

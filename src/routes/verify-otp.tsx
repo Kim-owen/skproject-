@@ -1,19 +1,29 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { sendPhoneOTP, verifyPhoneOTP } from "@/lib/orders.functions";
+import { sendPhoneOTP, verifyPhoneOTP, resolvePaystackAccount } from "@/lib/orders.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { ShopLayout } from "@/components/shop/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
-import { Smartphone, ShieldCheck, ArrowLeft, RefreshCw } from "lucide-react";
+import {
+  Smartphone,
+  ShieldCheck,
+  ArrowLeft,
+  RefreshCw,
+  User,
+  CheckCircle2,
+  Sparkles,
+  Loader2,
+} from "lucide-react";
 
 export const Route = createFileRoute("/verify-otp")({
   validateSearch: (search: Record<string, unknown>) => {
     return {
       phone: (search.phone as string) || "",
+      name: (search.name as string) || "",
     };
   },
   head: () => ({ meta: [{ title: "Verify Phone Number — Barima Ba Foods" }] }),
@@ -21,10 +31,17 @@ export const Route = createFileRoute("/verify-otp")({
 });
 
 function VerifyOtpPage() {
-  const { phone } = Route.useSearch();
+  const { phone, name } = Route.useSearch();
   const navigate = useNavigate();
   const sendOtp = useServerFn(sendPhoneOTP);
   const verifyOtp = useServerFn(verifyPhoneOTP);
+  const resolveAccount = useServerFn(resolvePaystackAccount);
+
+  const [customerName, setCustomerName] = useState(name || "");
+  const [existingUserHasName, setExistingUserHasName] = useState(false);
+  const [resolvingPaystack, setResolvingPaystack] = useState(false);
+  const [paystackVerifiedName, setPaystackVerifiedName] = useState<string | null>(null);
+  const [paystackProvider, setPaystackProvider] = useState<string | null>(null);
 
   const [otpValues, setOtpValues] = useState<string[]>(Array(6).fill(""));
   const [timer, setTimer] = useState(60);
@@ -32,6 +49,57 @@ function VerifyOtpPage() {
   const [resending, setResending] = useState(false);
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handlePaystackResolve = useCallback(
+    async (customPhone?: string) => {
+      const targetPhone = customPhone || phone;
+      if (!targetPhone) return;
+      setResolvingPaystack(true);
+      try {
+        const res = await resolveAccount({ data: { phone: targetPhone } });
+        if (res.success && res.account_name) {
+          setCustomerName(res.account_name);
+          setPaystackVerifiedName(res.account_name);
+          setPaystackProvider(res.provider || "Mobile Money");
+          toast.success(`Paystack verified your name: ${res.account_name} (${res.provider})`);
+        } else if (customPhone) {
+          toast.error(res.message || "Could not resolve account name on Mobile Money.");
+        }
+      } catch (err: any) {
+        if (customPhone) toast.error("Paystack verification error: " + err.message);
+      } finally {
+        setResolvingPaystack(false);
+      }
+    },
+    [phone, resolveAccount],
+  );
+
+  // Check if profile already exists with a verified full name or auto-fetch via Paystack
+  useEffect(() => {
+    if (!phone) return;
+    const checkProfile = async () => {
+      const clean = phone.replace(/[^0-9]/g, "");
+      const formatted = clean.startsWith("0") ? `233${clean.slice(1)}` : clean;
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("phone", formatted)
+        .maybeSingle();
+
+      if (data?.full_name && data.full_name.trim().length >= 2 && data.full_name !== "Customer") {
+        setExistingUserHasName(true);
+        setCustomerName((prev) => prev || data.full_name || "");
+      } else {
+        setCustomerName((prev) => {
+          if (!prev || prev.trim().length < 2) {
+            handlePaystackResolve(phone);
+          }
+          return prev;
+        });
+      }
+    };
+    checkProfile();
+  }, [phone, handlePaystackResolve]);
 
   // Countdown timer logic
   useEffect(() => {
@@ -95,6 +163,12 @@ function VerifyOtpPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const finalName = (customerName || name).trim();
+    if (!existingUserHasName && (!finalName || finalName.length < 2)) {
+      toast.error("Customer full name is required (minimum 2 characters).");
+      return;
+    }
+
     const fullCode = otpValues.join("");
     if (fullCode.length < 6) {
       toast.error("Please enter the complete 6-digit code.");
@@ -103,18 +177,42 @@ function VerifyOtpPage() {
 
     setBusy(true);
     try {
-      await verifyOtp({ data: { phone, code: fullCode } });
+      const res = await verifyOtp({
+        data: {
+          phone,
+          code: fullCode,
+          name: finalName || undefined,
+        },
+      });
       toast.success("Phone number verified successfully!");
 
-      // Update database profile verified flag
+      // If session token hash is returned, establish Supabase auth session directly
+      if (res?.token_hash) {
+        try {
+          await supabase.auth.verifyOtp({
+            token_hash: res.token_hash,
+            type: "magiclink",
+          });
+        } catch (authErr) {
+          console.warn("[verify-otp] Session token exchange warning:", authErr);
+        }
+      }
+
+      // Update database profile verified flag and full_name
       const { data: userData } = await supabase.auth.getUser();
       if (userData?.user) {
         await supabase
           .from("profiles")
-          .update({ is_phone_verified: true })
+          .update({
+            is_phone_verified: true,
+            ...(finalName ? { full_name: finalName } : {}),
+          })
           .eq("id", userData.user.id);
       }
 
+      if (finalName) {
+        toast.success(`Welcome to Barima Ba Foods, ${finalName}!`);
+      }
       navigate({ to: "/checkout" });
     } catch (err: any) {
       toast.error(err.message || "Verification code is incorrect or expired.");
@@ -148,6 +246,69 @@ function VerifyOtpPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {!existingUserHasName && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label
+                    htmlFor="otp-customer-name"
+                    className="text-[10px] font-extrabold uppercase tracking-widest text-amber-400"
+                  >
+                    Customer Full Name *
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    {paystackVerifiedName ? (
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400">
+                        <CheckCircle2 className="h-3 w-3" /> Paystack Verified
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handlePaystackResolve(phone)}
+                        disabled={resolvingPaystack}
+                        className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        {resolvingPaystack ? (
+                          <>
+                            <Loader2 className="h-3 w-3 animate-spin" /> Verifying...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-3 w-3" /> Auto-detect via Paystack
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+                  <Input
+                    id="otp-customer-name"
+                    required
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="e.g. Kwame Mensah"
+                    className="pl-10 h-12 rounded-xl bg-zinc-900 border-zinc-700 text-white text-sm font-semibold placeholder:text-zinc-500 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                  />
+                </div>
+                {paystackVerifiedName ? (
+                  <div className="flex items-center gap-1.5 text-xs text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-3 py-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                    <span>
+                      Verified Mobile Money account:{" "}
+                      <strong className="text-white">{paystackVerifiedName}</strong> (
+                      {paystackProvider})
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-zinc-400">
+                    Customer name is required for order preparation, delivery dispatch, and official
+                    receipt.
+                  </p>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400">
                 Enter Verification Code
